@@ -1,0 +1,22 @@
+{
+  "name": "fakecraft",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamdalf/fakecraft.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hamdalf/fakecraft/issues"
+  },
+  "homepage": "https://github.com/hamdalf/fakecraft#readme",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}
