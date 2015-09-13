@@ -3,8 +3,6 @@
         '/scripts/threex/threex.windowresize.js',
         '/scripts/threex/threex.animation.js',
         '/scripts/threex/threex.animations.js',
-//        '/scripts/threex/threex.grassground.js',
-        '/scripts/threex/threex.terrain.js',
         '/scripts/threex/threex.minecraft.js',
         '/scripts/threex/threex.minecraftcharheadanim.js',
         '/scripts/threex/threex.minecraftcharbodyanim.js',
@@ -26,9 +24,9 @@
         var winResize = new THREEx.WindowResize(renderer, camera);
 
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 200);
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
         camera.position.z = 2;
-        camera.position.y = 0.3;
+        camera.position.y = -1;
 
         var ambientLight = new THREE.AmbientLight(0xcccccc);
         scene.add(ambientLight);
@@ -43,31 +41,6 @@
         container.position.x = 0;
         container.position.y = -0.5;
         scene.add(container);*/
-        
-        /*var groundMesh = new THREEx.GrassGround({
-            width		: 10,
-            height		: 10,
-            repeatX		: 10,
-            repeatY		: 10,
-        });
-        groundMesh.scale.multiplyScalar(10);
-        scene.add(groundMesh);*/
-        
-        var heightMap = THREEx.Terrain.allocateHeightMap(128, 128);
-        THREEx.Terrain.simplexHeightMap(heightMap);
-        var geometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap);
-        THREEx.Terrain.heightMapToVertexColor(heightMap, geometry);
-        var material = new THREE.MeshPhongMaterial({
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        });
-        var groundMesh = new THREE.Mesh(geometry, material);
-        scene.add(groundMesh);
-        groundMesh.rotateX(-Math.PI/2);
-        groundMesh.scale.x = 20 * 10;
-        groundMesh.scale.y = 20 * 10;
-        groundMesh.scale.z = 1 * 10;
-        //groundMesh.scale.multiplyScalar(10);
 
         var player;
 
@@ -80,6 +53,7 @@
 
         player = new THREEx.MinecraftPlayer();
         scene.add(player.character.root);
+        player.character.root.position.y = -0.5;
         
         var switchHeadValue	= function(value) {
             player.headAnims.start(value);
@@ -88,16 +62,6 @@
         var switchBodyValue	= function(value) {
             player.bodyAnims.start(value);
         };
-        
-        onRenderFcts.push(function (delta, now) {
-            var position = player.character.root.position;
-            position.y = THREEx.Terrain.planeToHeightMapCoords(heightMap, groundMesh, position.x, position.z);
-        });
-        
-        player.character.root.add(camera);
-        camera.position.z = -2;
-        camera.position.y = 1;
-        camera.lookAt(new THREE.Vector3(0,0.5,2));
 
         onRenderFcts.push(function () {
             renderer.render(scene, camera);
@@ -131,29 +95,15 @@
             });
         });
 
-        /*var mouse = {x : 0, y : 0}
+        var mouse = {x : 0, y : 0}
         document.addEventListener('mousemove', function(event) {
             mouse.x	= (event.clientX / window.innerWidth ) - 0.5;
             mouse.y	= (event.clientY / window.innerHeight) - 0.5;
         }, false);
         onRenderFcts.push(function(delta, now) {
             camera.position.x += (mouse.x*3.0 - camera.position.x) * (delta*3);
-            camera.position.y += (mouse.y*3.0 - camera.position.y) * (delta*3);
+            camera.position.y -= (mouse.y*1.5 + camera.position.y) * (delta*3);
             camera.lookAt( scene.position );
-        });*/
-        
-        document.body.addEventListener('keydown', function(e) {
-            var input = player.controls.input;
-            if( e.keyCode === 'W'.charCodeAt(0) )	input.up	= true;
-            if( e.keyCode === 'S'.charCodeAt(0) )	input.down	= true;
-            if( e.keyCode === 'A'.charCodeAt(0) )	input.left	= true;
-            if( e.keyCode === 'D'.charCodeAt(0) )	input.right	= true;
-        });
-        document.body.addEventListener('keyup', function(e) {
-            var input = player.controls.input;
-            if( e.keyCode === 'W'.charCodeAt(0) )	input.up	= false;
-            if( e.keyCode === 'S'.charCodeAt(0) )	input.down	= false;
-            if( e.keyCode === 'A'.charCodeAt(0) )	input.left	= false;
-            if( e.keyCode === 'D'.charCodeAt(0) )	input.right	= false;
+            //camera.lookAt(player.character.root.position);
         });
     });
