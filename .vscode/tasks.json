@@ -87,6 +87,30 @@
 }*/
 
 // for gulp
+// 1. upgrade node.js to latest version
+// sudo npm cache clean -f
+// sudo npm install -g n
+// sudo n stable
+// node -v
+// 2. install gulp
+// npm install -g gulp
+// npm -v gulp
+// 3. make package.js
+// npm init
+// 4. make tasks.json
+// 5. make GulpFile.js
+// 6. install gulp-less & less
+// npm install -g less
+// npm install -g gulp-less
+// npm -v less
+// npm -v gulp-less
+// 7. if possible, put latest version into package.js
+// 8. npm install
+// install all components by package.js setting
+// 9. local gulp (command error in the node_module or other folder)
+// npm link gulp
+// npm link gulp-less
+// 10. command + shift + B / Ctrl + shift + B
 {
 	"version": "0.1.0",
 	"command": "gulp",
@@ -95,7 +119,8 @@
 		{
 			"taskName": "less",
 			"isBuildCommand": true,
-			"showOutput": "silent"
+			"showOutput": "silent",
+			"isWatching": true
 		}
 	]
 }
