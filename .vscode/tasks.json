@@ -78,11 +78,26 @@
 */
 
 // Less configuration
-{
+/*{
     "version": "0.1.0",
     "command": "lessc",
     "isShellCommand": true,
-    "args": ["${workspaceRoot}/static/styles/style.less", ">", "${workspaceRoot}/static/styles/style.css"]
+    //"args": ["${workspaceRoot}/static/styles/style.less", ">", "${workspaceRoot}/static/styles/style.css"]
+	"args": ["${workspaceRoot}/static/styles/style3.less", ">", "${workspaceRoot}/static/styles/style3.css"]
+}*/
+
+// for gulp
+{
+	"version": "0.1.0",
+	"command": "gulp",
+	"isShellCommand": true,
+	"tasks": [
+		{
+			"taskName": "less",
+			"isBuildCommand": true,
+			"showOutput": "silent"
+		}
+	]
 }
 
 // Sass configuration
