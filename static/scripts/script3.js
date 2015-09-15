@@ -50,14 +50,29 @@ require(
                     });
                     
                     character.root.position.z = -z*0.6 - 1;
-                    character.root.position.y = Math.random()*Math.PI*2;
                     character.root.position.x = (x-(nColumns/2))*0.9;
-                });
+                    character.root.rotation.y = Math.random()*Math.PI*2;
+                    
+                    character.loadWellKnownSkinRandomly();
+
+                })();
             }
         }
         
         onRenderFcts.push(function() {
             renderer.render(scene, camera);
         });
+        
+        var lastTimeMsec = null;
+        var animation = function(nowMsec) {
+            lastTimeMsec = lastTimeMsec || nowMsec - 1000/60;
+            var deltaMsec = Math.min(200, nowMsec - lastTimeMsec);
+            lastTimeMsec = nowMsec;
+            onRenderFcts.forEach(function(func) {
+                func(deltaMsec/1000, nowMsec/1000);
+            });
+            requestAnimationFrame(animation);
+        };
+        requestAnimationFrame(animation);
 	}
 );
