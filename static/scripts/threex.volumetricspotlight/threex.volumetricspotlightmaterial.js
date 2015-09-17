@@ -1,10 +1,10 @@
-var THREEx = THREEx || {}
+var THREEx = THREEx || {};
 
 /**
  * from http://stemkoski.blogspot.fr/2013/07/shaders-in-threejs-glow-and-halo.html
  * @return {[type]} [description]
  */
-THREEx.VolumetricSpotLightMaterial	= function(){
+THREEx.VolumetricSpotLightMaterial	= function() {
 	// 
 	var vertexShader	= [
 		'varying vec3 vNormal;',
@@ -20,7 +20,8 @@ THREEx.VolumetricSpotLightMaterial	= function(){
 			'// set gl_Position',
 			'gl_Position	= projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 		'}',
-	].join('\n')
+	].join('\n');
+	
 	var fragmentShader	= [
 		'varying vec3		vNormal;',
 		'varying vec3		vWorldPosition;',
@@ -56,7 +57,7 @@ THREEx.VolumetricSpotLightMaterial	= function(){
 			// set the final color
 			'gl_FragColor	= vec4( lightColor, intensity);',
 		'}',
-	].join('\n')
+	].join('\n');
 
 	// create custom material from the shader code above
 	//   that is within specially labeled script tags
@@ -86,5 +87,6 @@ THREEx.VolumetricSpotLightMaterial	= function(){
 		transparent	: true,
 		depthWrite	: false,
 	});
-	return material
-}
+	
+	return material;
+};

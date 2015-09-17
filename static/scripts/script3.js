@@ -24,9 +24,9 @@ require(
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.01, 1000);
         camera.position.z = 3;
-        camera.position.x = 0;
-        camera.position.y = 3;
-        camera.lookAt(new THREE.Vector3(0,0,-2));
+        camera.position.x = -0.5;
+        camera.position.y = 1;
+        camera.lookAt(new THREE.Vector3(-0.5,0,-2));
         
         var onRenderFcts = [];
         
@@ -34,7 +34,7 @@ require(
         
         var ambientLight = new THREE.AmbientLight(0x020202);
         scene.add(ambientLight);
-        var frontLight = new THREE.DirectionalLight('white', 0.2);
+        var frontLight = new THREE.DirectionalLight('white', 0.4);
         frontLight.position.set(0.5, 0.5, 2);
         scene.add(frontLight);
         var backLight = new THREE.DirectionalLight('white', 2);
@@ -134,13 +134,51 @@ require(
         // back wall
         var geometry = new THREE.BoxGeometry(40, 0.1, 20, 20, 1, 20);
         var material = new THREE.MeshPhongMaterial({
-            color: new THREE.Color('white')
+            color: new THREE.Color('gray')
         });
         var mesh = new THREE.Mesh(geometry, material);
         mesh.receiveShadow = true;
         mesh.castShadow = true;
         mesh.rotateX(Math.PI/2);
         mesh.position.set(0, -geometry.parameters.height/2, -4);
+        scene.add(mesh);
+        
+        // back wall's wire frame
+        var material = new THREE.MeshBasicMaterial({
+            wireframe: true,
+            wireframeLinewidth: 2,
+            color: new THREE.Color('black')
+        });
+        var mesh = new THREE.Mesh(geometry.clone(), material);
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+        mesh.scale.multiplyScalar(1.01);
+        mesh.rotateX(Math.PI/2);
+        mesh.position.set(0, -geometry.parameters.height/2, -4);
+        scene.add(mesh);
+        
+        // ground
+        var geometry = new THREE.BoxGeometry(40, 0.1, 20, 20, 1, 20);
+        var material = new THREE.MeshPhongMaterial({
+            color: new THREE.Color('gray')
+        });
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+        mesh.position.set(0, -geometry.parameters.height/2, -3);
+        scene.add(mesh);
+        
+        // back wall's wire frame
+        var material = new THREE.MeshBasicMaterial({
+            wireframe: true,
+            wireframeLinewidth: 2,
+            color: new THREE.Color('black')
+        });
+        var mesh = new THREE.Mesh(geometry.clone(), material);
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+        mesh.scale.multiplyScalar(1.01);
+        mesh.position.set(0, -geometry.parameters.height/2, -3);
         scene.add(mesh);
         
         // spot light
@@ -150,7 +188,7 @@ require(
            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
            
            var material = new THREEx.VolumetricSpotLightMaterial();
-           
+           //var 
         });
         
         onRenderFcts.push(function() {
