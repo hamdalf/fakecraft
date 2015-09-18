@@ -10,7 +10,8 @@ require(
         '/scripts/threex/threex.minecraftcharbodyanim.js',
         '/scripts/threex/threex.minecraftcontrols.js',
         '/scripts/threex/threex.minecraftplayer.js',
-        '/scripts/threex.volumetricspotlight/package.require.js'
+        '/scripts/threex.volumetricspotlight/package.require.js',
+        '/scripts/webaudiox/webaudiox.js'
     ], function () {
         if (!Detector.webgl) {
             Detector.addGetWebGLMessage();
@@ -181,19 +182,140 @@ require(
         mesh.position.set(0, -geometry.parameters.height/2, -3);
         scene.add(mesh);
         
-        // spot light
+        // spot light #1
         (function() {
-           var geometry = new THREE.CylinderGeometry(0.1, 1.5, 5, 32*2, 20, true); 
-           geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -geometry.parameters.height/2, 0));
-           geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
-           
-           var material = new THREEx.VolumetricSpotLightMaterial();
-           //var 
+            var geometry = new THREE.CylinderGeometry(0.1, 1.5, 5, 32*2, 20, true); 
+            geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -geometry.parameters.height/2, 0));
+            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+            
+            var material = new THREEx.VolumetricSpotLightMaterial();
+            var mesh	= new THREE.Mesh( geometry, material );
+            mesh.position.set(1.5,2,2);
+            mesh.lookAt(new THREE.Vector3(0,0,0));
+            material.uniforms.lightColor.value.set('red');
+            material.uniforms.spotPosition.value	= mesh.position;
+            scene.add( mesh );
+            
+            onRenderFcts.push(function (delta, now) {
+                var angle	= 0.3 * Math.PI*2*now;
+                var target	= new THREE.Vector3(1*Math.cos(angle),0,1*Math.sin(angle));
+                mesh.lookAt(target);
+                spotLight.target.position.copy(target);
+            });
+            
+            var spotLight	= new THREE.SpotLight();
+            spotLight.position	= mesh.position;
+            spotLight.color		= mesh.material.uniforms.lightColor.value;
+            spotLight.exponent	= 30;
+            spotLight.angle		= Math.PI/3;
+            spotLight.intensity	= 2;
+            scene.add( spotLight );
+            renderer.shadowMapEnabled	= true;
+            
+            var light	= spotLight;
+            light.castShadow	= true;
+            light.shadowCameraNear	= 0.01;
+            light.shadowCameraFar	= 15;
+            light.shadowCameraFov	= 90;
+            
+            light.shadowCameraLeft	= -8;
+            light.shadowCameraRight	=  8;
+            light.shadowCameraTop	=  8;
+            light.shadowCameraBottom= -8;
+            
+            light.shadowBias	= 0.0;
+            light.shadowDarkness	= 0.5;
+            
+            light.shadowMapWidth	= 1024;
+            light.shadowMapHeight	= 1024;
+        })();
+        
+        // spot light #2
+        (function() {
+            var geometry = new THREE.CylinderGeometry(0.1, 1.5, 5, 32*2, 20, true); 
+            geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -geometry.parameters.height/2, 0));
+            geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+            
+            var material = new THREEx.VolumetricSpotLightMaterial();
+            var mesh	= new THREE.Mesh( geometry, material );
+            mesh.position.set(-1.5,2,2);
+            mesh.lookAt(new THREE.Vector3(0,0,0));
+            material.uniforms.lightColor.value.set('blue');
+            material.uniforms.spotPosition.value	= mesh.position;
+            scene.add( mesh );
+            
+            onRenderFcts.push(function (delta, now) {
+                var angle	= 0.3 * Math.PI*2*now - Math.PI;
+                var target	= new THREE.Vector3(1*Math.cos(angle),0,1*Math.sin(angle));
+                mesh.lookAt(target);
+                spotLight.target.position.copy(target);
+            });
+            
+            var spotLight	= new THREE.SpotLight();
+            spotLight.position	= mesh.position;
+            spotLight.color		= mesh.material.uniforms.lightColor.value;
+            spotLight.exponent	= 30;
+            spotLight.angle		= Math.PI/3;
+            spotLight.intensity	= 2;
+            scene.add( spotLight );
+            renderer.shadowMapEnabled	= true;
+            
+            var light	= spotLight;
+            light.castShadow	= true;
+            light.shadowCameraNear	= 0.01;
+            light.shadowCameraFar	= 15;
+            light.shadowCameraFov	= 90;
+            
+            light.shadowCameraLeft	= -8;
+            light.shadowCameraRight	=  8;
+            light.shadowCameraTop	=  8;
+            light.shadowCameraBottom= -8;
+            
+            light.shadowBias	= 0.0;
+            light.shadowDarkness	= 0.5;
+            
+            light.shadowMapWidth	= 1024;
+            light.shadowMapHeight	= 1024;
+        })();
+        
+        // Camera control
+        var mouse	= {x : 0, y : 0};
+        var cameraControlsDisabled	= false;
+        document.addEventListener('mousemove', function(event){
+            mouse.x	= (event.clientX / window.innerWidth ) - 0.5;
+            mouse.y	= (event.clientY / window.innerHeight) - 0.5;
+        }, false);
+        onRenderFcts.push(function(delta, now) {
+            if( cameraControlsDisabled === true )	return;
+            camera.position.x += (mouse.x*2 - camera.position.x) * (delta*3);
+            camera.position.y += (mouse.y*5 - camera.position.y) * (delta*3);
+            camera.position.y	= Math.max(camera.position.y, 0.4);
+            
+            var target	= scene.position.clone();
+            target.y	+= 1;
+            camera.lookAt( target );
         });
         
         onRenderFcts.push(function() {
             renderer.render(scene, camera);
         });
+        
+        // Sound
+        if (AudioContext) {
+            var gameSounds	= new WebAudiox.GameSounds()
+            gameSounds.lineOut.volume	= 0.2
+            onRenderFcts.push(function(delta){
+                gameSounds.update(delta)
+            })
+        
+            var url	= '/scripts/webaudiox/sounds/rezoner-7DFPS-2013-2.mp3'
+            gameSounds.createSound().load(url, function(sound) {
+                sound.play({
+                    loop	: true,
+                    volume	: 1.0,
+                })
+            });
+        }
         
         var lastTimeMsec = null;
         var animation = function(nowMsec) {
