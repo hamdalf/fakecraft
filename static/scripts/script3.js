@@ -132,6 +132,216 @@ require(
             TWEEN.update();
         });
         
+        Flow().seq(
+            function (next) {
+                var object3d = player1.character.root;
+                object3d.position.set(4,0,0);
+                object3d.rotation.y = -Math.PI/2;
+                player1.bodyAnims.start('walk');
+                
+                var tween = new TWEEN.Tween({x:4}).to({x:0}, 2000).onUpdate(function() {
+                    object3d.position.x = this.x;
+                }).onComplete(function() {
+                    player1.bodyAnims.start('stand');
+                    setTimeout(function() {
+                        next();
+                    }, 1000 * 1);
+                }).start();
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('Hello, My name is Hamdalf');
+                setTimeout(function() {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                var object3d = player1.character.root;
+                var tween = new TWEEN.Tween({y:-Math.PI/2}).to({y:0}, 2000).onUpdate(function() {
+                    object3d.rotation.y = this.y;
+                }).onComplete(function() {
+                    setTimeout(function() {
+                        next();
+                    }, 1000 * 1);
+                }).start();
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('Hello, my name is Batman');
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('How are things ?')	;
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('Slow... And i lost Robin :(');
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('Hmm OK, have you seen women around ?')	;
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3)
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('No...')	;
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('I keep thinking about Robin')	;
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('And btw for women...');
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('I think you miss something...');
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('Hue ? What do you mean ?');
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('Well Look');
+                setTimeout(function () {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                cameraControlsDisabled	= true;
+                camera.position.set(1, 1, 0.5);
+                camera.lookAt( new THREE.Vector3(0, 0, 0) );
+                setTimeout(function() {
+                    camera.position.z = 3;
+                    cameraControlsDisabled	= false;
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player2.clearSay();
+                player2.setSay('... flat.');
+                setTimeout(function() {
+                    player2.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('oh...');
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                setTimeout(function () {
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('(embarrassing)');
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                setTimeout(function () {
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                player1.clearSay();
+                player1.setSay('OK i gonna play video Games.');
+                setTimeout(function () {
+                    player1.clearSay();
+                    next();
+                }, 1000 * 3);
+            }
+        ).seq(
+            function (next) {
+                var object3d = player1.character.root;
+                var tween = new TWEEN.Tween({ y: 0 }).to({ y: Math.PI/2 }, 2000 ).onUpdate(function(){
+                        object3d.rotation.y = this.y;
+                    }).onComplete(function () {
+                        next();
+                    }).start();
+            }
+        ).seq(
+            function (next) {
+                var object3d = player1.character.root;
+                player1.bodyAnims.start('walk');
+                var tween = new TWEEN.Tween({ x: 0 }).to({ x: 4 }, 2000 ).onUpdate(function () {
+                        object3d.position.x	= this.x;
+                    }).onComplete(function () {
+                        player1.bodyAnims.start('stand');
+                        setTimeout(function () {
+                            next();
+                        }, 1000 * 1);
+                    }).start();
+            }
+        );
+        
         // back wall
         var geometry = new THREE.BoxGeometry(40, 0.1, 20, 20, 1, 20);
         var material = new THREE.MeshPhongMaterial({
