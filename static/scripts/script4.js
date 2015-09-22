@@ -8,7 +8,9 @@ require([
 	'/scripts/threex/threex.minecraftcharheadanim.js',
 	'/scripts/threex/threex.minecraftcharbodyanim.js',
 	'/scripts/threex/threex.minecraftcontrols.js',
-	'/scripts/threex/threex.minecraftplayer.js'
+	'/scripts/threex/threex.minecraftplayer.js',
+	'/scripts/threex/htmlmixer/package.require.js',
+	'/scripts/threex/domevents/threex.domevents.js'
 ], function () {
 	if (!Detector.webgl) {
 		Detector.addGetWebGLMessage();
@@ -27,10 +29,6 @@ require([
 	camera.position.z = 2;
 	
 	THREEx.WindowResize(renderer, camera);
-	
-	window.addEventListener('resize', function(e) {
-		
-	});
 	
 	var light = new THREE.AmbientLight(0x020202);
 	scene.add(light);
@@ -136,7 +134,6 @@ require([
 	});
 	
 	document.body.addEventListener('keyup', function(e) {
-		console.log(e);
 		var input = player.controls.input;
 		if( e.keyCode === 'W'.charCodeAt(0) )	input.up	= false;
 		if( e.keyCode === 'S'.charCodeAt(0) )	input.down	= false;
@@ -155,6 +152,82 @@ require([
 		if( e.keyCode === 39 &&  e.shiftKey )	input.strafeRight= false;
 	});
 	
+	
+	
+	var mixerContext = new THREEx.HtmlMixer.Context(renderer, scene, camera);
+	onRenderFcts.push(function (delta, now) {
+		mixerContext.update(delta, now);
+	});
+	
+	window.addEventListener('resize', function(e) {
+		mixerContext.rendererCSS.setSize(window.innerWidth, window.innerHeight);
+	});
+	
+	var domEvents = new THREEx.DomEvents(camera, renderer.domElement),
+		roomNames = [
+			'nexoneu',
+			'combatarms'
+		],
+		homeRoomName = 'nexoneu',
+		roomName = location.hash.substr(1);
+		
+	if (roomNames.indexOf(roomName) === -1) {
+		roomName = homeRoomName;
+	}
+	var roomScriptUrl = '/scripts/room/room-' + roomName + '.js';
+	location.hash = '#' + roomName;
+	
+	var gotoRoom = function (roomName) {
+		if (roomNames.indexOf(roomName) !== -1) {
+			roomName = homeRoomName;
+		}
+		location.hash = '#' + roomName;
+		location.reload(true);
+	};
+	window.gotoRoom = gotoRoom;
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', roomScriptUrl, true);
+	xhr.onreadystatechange = function(e) {
+		if (this.readyState == 4 && this.status == 200) {
+			var jsCode = this.responseText;
+			eval(jsCode);
+		}
+	};
+	xhr.send();
+	
+	var addPage = function (options) {
+		var position = options.position,
+			mixerPlaneOpts = options.mixerPlaneOpts || {
+				elementW: 1024	
+			};
+			
+		if (options.url) {
+			var domElement = document.createElement('iframe');
+			domElement.src = options.url;
+			domElement.style.border = 'none';
+		} else if (options.domElement) {
+			var domElement = options.domElement;
+		} else {
+			console.assert(false);
+		}
+		
+		var mixerPlane = new THREEx.HtmlMixer.Plane(mixerContext, domElement, mixerPlaneOpts),
+			object3d = mixerPlane.object3d;
+		scene.add(object3d);
+		onRenderFcts.push(function (delta, now) {
+			mixerPlane.update(delta, now);
+		});
+		object3d.position.copy(position);
+		object3d.scale.multiplyScalar(2);
+		
+		var target = player.character.root.position.clone();
+		target.y = object3d.position.y;
+		object3d.lookAt(target);
+		
+		return object3d;
+	};
+	
 	onRenderFcts.push(function () {
 		renderer.render(scene, camera);
 	});
@@ -167,7 +240,7 @@ require([
 			onRenderFcts.forEach(function(fnc) {
 				fnc(deltaMsec/1000, nowMsec/1000);
 			});
-			requestAnimationFrame(animate)
+			requestAnimationFrame(animate);
 		};
 	requestAnimationFrame(animate);
 });

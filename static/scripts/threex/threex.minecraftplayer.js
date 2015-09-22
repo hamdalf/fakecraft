@@ -37,6 +37,17 @@ THREEx.MinecraftPlayer = function () {
 		previousPos.copy( object3d.position );
 	});
     */
+	
+	updateFcts.push(function (delta, now) {
+		var input = controls.input;
+		if (input.up || input.down) {
+			bodyAnims.start('run');
+		} else if (input.strafeLeft || input.strafeRight) {
+			bodyAnims.start('strafe');
+		} else {
+			bodyAnims.start('stand');
+		}
+	});
 
     var controls	= new THREEx.MinecraftControls(character.root);
 	this.controls	= controls;
