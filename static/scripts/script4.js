@@ -18,7 +18,8 @@ require([
 	}
 	
 	var renderer = new THREE.WebGLRenderer({
-		antialias: true
+		antialias: true,
+		alpha: true
 	});
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	document.body.appendChild(renderer.domElement);
@@ -155,16 +156,35 @@ require([
 	
 	
 	var mixerContext = new THREEx.HtmlMixer.Context(renderer, scene, camera);
+	mixerContext.rendererCss.setSize(window.innerWidth, window.innerHeight);
+	
 	onRenderFcts.push(function (delta, now) {
 		mixerContext.update(delta, now);
 	});
-	
+
 	window.addEventListener('resize', function(e) {
-		mixerContext.rendererCSS.setSize(window.innerWidth, window.innerHeight);
+		mixerContext.rendererCss.setSize(window.innerWidth, window.innerHeight);
 	});
 	
-	var domEvents = new THREEx.DomEvents(camera, renderer.domElement),
-		roomNames = [
+	var rendererCss		= mixerContext.rendererCss;
+	var rendererWebgl	= mixerContext.rendererWebgl;
+	var css3dElement		= rendererCss.domElement;
+	css3dElement.style.position	= 'absolute';
+	css3dElement.style.top		= '0px';
+	css3dElement.style.width	= '100%';
+	css3dElement.style.height	= '100%';
+	document.body.appendChild( css3dElement );
+	
+	var webglCanvas			= rendererWebgl.domElement;
+	webglCanvas.style.position	= 'absolute';
+	webglCanvas.style.top		= '0px';
+	webglCanvas.style.width		= '100%';
+	webglCanvas.style.height	= '100%';
+	webglCanvas.style.pointerEvents	= 'none';
+	//webglCanvas.style.zIndex	= '-1';
+	css3dElement.appendChild( webglCanvas );
+
+	var roomNames = [
 			'nexoneu',
 			'combatarms'
 		],
@@ -200,14 +220,19 @@ require([
 		var position = options.position,
 			mixerPlaneOpts = options.mixerPlaneOpts || {
 				elementW: 1024	
-			};
+			},
+			domElement;
 			
 		if (options.url) {
-			var domElement = document.createElement('iframe');
+			domElement = document.createElement('iframe');
 			domElement.src = options.url;
 			domElement.style.border = 'none';
+			domElement.style.WebkitTransformStyle = 'preserve-3d';
+			domElement.style.MozTransformStyle = 'preserve-3d';
+			domElement.style.oTransformStyle = 'preserve-3d';
+			domElement.style.transformStyle = 'preserve-3d';
 		} else if (options.domElement) {
-			var domElement = options.domElement;
+			domElement = options.domElement;
 		} else {
 			console.assert(false);
 		}
@@ -224,7 +249,7 @@ require([
 		var target = player.character.root.position.clone();
 		target.y = object3d.position.y;
 		object3d.lookAt(target);
-		
+
 		return object3d;
 	};
 	

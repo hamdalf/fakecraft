@@ -1,7 +1,7 @@
-var THREEx = THREEx || {}
+var THREEx = THREEx || {};
 
 
-THREEx.HtmlMixer	= THREEx.HtmlMixer	|| {}
+THREEx.HtmlMixer	= THREEx.HtmlMixer	|| {};
 
 /**
  * define a context for THREEx.HtmlMixer
@@ -20,39 +20,40 @@ THREEx.HtmlMixer.Context	= function(rendererWebgl, scene, camera){
 	}
 
 	// build cssFactor to workaround bug due to no display 
-	var cssFactor	= 1000
-	this.cssFactor	= cssFactor
+	//var cssFactor	= 1000
+	var cssFactor	= 1;
+	this.cssFactor	= cssFactor;
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		update renderer
 	//////////////////////////////////////////////////////////////////////////////////
 
-	var rendererCss	= new THREE.CSS3DRenderer()
-	this.rendererCss= rendererCss
-
-
-	this.rendererWebgl	= rendererWebgl
+	var rendererCss	= new THREE.CSS3DRenderer();
+	this.rendererCss= rendererCss;
+	this.rendererWebgl	= rendererWebgl;
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Handle Camera
 	//////////////////////////////////////////////////////////////////////////////////
 
 	var cssCamera	= new THREE.PerspectiveCamera(camera.fov, camera.aspect, camera.near*cssFactor, camera.far*cssFactor);
-
-	updateFcts.push(function(){
-		cssCamera.quaternion.copy(camera.quaternion)
-
-		cssCamera.position
-			.copy(camera.position)
-			.multiplyScalar(cssFactor)
-	})
+	cssCamera.matrixWorldNeedsUpdate = true;
+	
+	updateFcts.push(function () {
+		/*cssCamera.quaternion.copy(camera.quaternion);
+		cssCamera.position.copy(camera.position).multiplyScalar(cssFactor);
+		cssCamera.updateMatrix();	// update matrix manually*/
+		cssCamera.matrix.makeRotationFromQuaternion(camera.quaternion);
+		cssCamera.matrix.setPosition(camera.position).multiplyScalar(cssFactor);
+		cssCamera.matrixAutoUpdate = false;
+	});
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Comment								//
 	//////////////////////////////////////////////////////////////////////////////////
 	// create a new scene to hold CSS
 	var cssScene = new THREE.Scene();
-	this.cssScene= cssScene
+	this.cssScene= cssScene;
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Auto update objects
@@ -61,7 +62,7 @@ THREEx.HtmlMixer.Context	= function(rendererWebgl, scene, camera){
 	this.autoUpdateObjects	= true
 	updateFcts.push(function(){
 		if( this.autoUpdateObjects !== true )	return
-		cssScene.traverse(function(cssObject){
+		cssScene.traverse(function(cssObject) {
 			if( cssObject instanceof THREE.Scene === true )	return
 			var mixerPlane	= cssObject.userData.mixerPlane
 			if( mixerPlane === undefined )	return
@@ -93,73 +94,74 @@ THREEx.HtmlMixer.Plane = function(mixerContext, domElement, opts) {
 	this.domElement	= domElement
 
 	// update functions
-	var updateFcts	= []
-	this.update	= function(){
+	var updateFcts	= [];
+	this.update	= function() {
 		updateFcts.forEach(function(updateFct){
-			updateFct()
-		})
-	}
+			updateFct();
+		});
+	};
 
-	var planeW	= opts.planeW
-	var planeH	= opts.planeH
-	if( opts.object3d === null ){
+	var planeW	= opts.planeW;
+	var planeH	= opts.planeH;
+	if ( opts.object3d === null ) {
 		var planeMaterial   = new THREE.MeshBasicMaterial({
 			opacity	: 0,
 			color	: new THREE.Color('black'),
 			blending: THREE.NoBlending,
 			side	: THREE.DoubleSide,
 		})
-		var geometry	= new THREE.PlaneGeometry( opts.planeW, opts.planeH )
-		var object3d	= new THREE.Mesh( geometry, planeMaterial )		
-	}else{
-		var object3d	= opts.object3d
+		var geometry	= new THREE.PlaneGeometry( opts.planeW, opts.planeH );
+		var object3d	= new THREE.Mesh( geometry, planeMaterial );
+	} else {
+		var object3d	= opts.object3d;
 	}
 
-	this.object3d	= object3d
+	this.object3d	= object3d;
 
 
 	// width of iframe in pixels
-	var aspectRatio		= planeH / planeW
+	var aspectRatio		= planeH / planeW;
 	var elementWidth	= opts.elementW;
-	var elementHeight	= elementWidth * aspectRatio
+	var elementHeight	= elementWidth * aspectRatio;
 
 	this.setDomElement	= function(newDomElement){
-		console.log('setDomElement: newDomElement', newDomElement)
+		console.log('setDomElement: newDomElement', newDomElement);
 		// remove the oldDomElement
-		var oldDomElement	= domElement
+		var oldDomElement	= domElement;
 		if( oldDomElement.parentNode ){
 			oldDomElement.parentNode.removeChild(oldDomElement);
 		}
 		// update local variables	
-		this.domElement		= domElement	= newDomElement
+		this.domElement		= domElement	= newDomElement;
 		// update cssObject
-		cssObject.element	= domElement
+		cssObject.element	= domElement;
 		// reset the size of the domElement
-		setDomElementSize()
+		setDomElementSize();
 	}
-	function setDomElementSize(){
+	function setDomElementSize() {
 		domElement.style.width	= elementWidth  + "px";
 		domElement.style.height	= elementHeight + "px";
 	}
-	setDomElementSize()
+	setDomElementSize();
 
 	// create a CSS3DObject to display element
-	var cssObject		= new THREE.CSS3DObject( domElement )
-	this.cssObject		= cssObject
-	cssObject.scale.set(1,1,1)
-		.multiplyScalar(mixerContext.cssFactor/(elementWidth/planeW))
+	var cssObject = new THREE.CSS3DObject( domElement );
+	//cssObject.matrixWorldNeedsUpdate = true;	// manually control
+	this.cssObject		= cssObject;
+	this.cssObject.quaternion.copy(object3d.quaternion);
+	cssObject.scale.set(1,1,1).multiplyScalar(mixerContext.cssFactor/(elementWidth/planeW));
 
 	// hook cssObhect to mixerPlane
-	cssObject.userData.mixerPlane	= this
+	cssObject.userData.mixerPlane	= this;
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		hook event so cssObject is attached to cssScene when object3d is added/removed
 	//////////////////////////////////////////////////////////////////////////////////
 	object3d.addEventListener('added', function(event){
-		mixerContext.cssScene.add(cssObject)
+		mixerContext.cssScene.add(cssObject);
 	})
 	object3d.addEventListener('removed', function(event){
-		mixerContext.cssScene.remove(cssObject)
+		mixerContext.cssScene.remove(cssObject);
 	})
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -172,20 +174,22 @@ THREEx.HtmlMixer.Plane = function(mixerContext, domElement, opts) {
 		var worldMatrix	= object3d.matrixWorld;
 
 		// get position/quaternion/scale of object3d
-		var position	= new THREE.Vector3()
-		var scale	= new THREE.Vector3()
-		var quaternion	= new THREE.Quaternion()
-		worldMatrix.decompose(position, quaternion, scale)
+		var position	= new THREE.Vector3();
+		var scale	= new THREE.Vector3();
+		var quaternion	= new THREE.Quaternion();
+		worldMatrix.decompose(position, quaternion, scale);
 
 		// handle quaternion
-		cssObject.quaternion.copy(quaternion)
-
+		cssObject.quaternion.copy(quaternion);
+		//cssObject.matrix.makeRotationFromQuaternion(quaternion);
+		
 		// handle position
-		cssObject.position
-			.copy(position)
-			.multiplyScalar(mixerContext.cssFactor)
+		cssObject.position.copy(position).multiplyScalar(mixerContext.cssFactor);
+		//cssObject.matrix.setPosition(position).multiplyScalar(mixerContext.cssFactor);
+		//cssObject.matrixAutoUpdate = false;
+		
 		// handle scale
-		var scaleFactor	= elementWidth/(object3d.geometry.parameters.width*scale.x)
-		cssObject.scale.set(1,1,1).multiplyScalar(mixerContext.cssFactor/scaleFactor)
+		var scaleFactor	= elementWidth/(object3d.geometry.parameters.width*scale.x);
+		cssObject.scale.set(1,1,1).multiplyScalar(mixerContext.cssFactor/scaleFactor);
 	})
 };
