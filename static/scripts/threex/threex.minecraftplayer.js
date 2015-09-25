@@ -38,16 +38,22 @@ THREEx.MinecraftPlayer = function () {
 	});
     */
 	
+	var controlsEnabled = true;
+	this.controlsEnabled = controlsEnabled;
+	
 	updateFcts.push(function (delta, now) {
-		var input = controls.input;
-		if (input.up || input.down) {
-			bodyAnims.start('run');
-		} else if (input.strafeLeft || input.strafeRight) {
-			bodyAnims.start('strafe');
-		} else {
-			bodyAnims.start('stand');
+		//console.log(controlsEnabled);
+		if (this.controlsEnabled) {
+			var input = controls.input;
+			if (input.up || input.down) {
+				bodyAnims.start('run');
+			} else if (input.strafeLeft || input.strafeRight) {
+				bodyAnims.start('strafe');
+			} else {
+				bodyAnims.start('stand');
+			}
 		}
-	});
+	}.bind(this));
 
     var controls	= new THREEx.MinecraftControls(character.root);
 	this.controls	= controls;

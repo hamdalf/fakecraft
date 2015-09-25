@@ -106,6 +106,7 @@ require(
         
         var player1 = new THREEx.MinecraftPlayer();
         player1.setNickname('Hamdalf');
+        player1.controlsEnabled = false;
         scene.add(player1.character.root);
         player1.character.root.traverse(function(object3d) {
             object3d.receiveShadow = true;
@@ -117,6 +118,7 @@ require(
         
         var player2 = new THREEx.MinecraftPlayer();
         player2.setNickname('Batman');
+        player1.controlsEnabled = false;
         player2.character.loadWellKnownSkin('batman');
         player2.character.root.position.x = -1;
         scene.add(player2.character.root);

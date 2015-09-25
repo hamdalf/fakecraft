@@ -114,6 +114,7 @@ require(
         });
 
         player = new THREEx.MinecraftPlayer();
+        player.controlsEnabled = false;
         scene.add(player.character.root);
         player.character.root.position.y = -0.5;
         

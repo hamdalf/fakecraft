@@ -110,7 +110,8 @@ THREEx.HtmlMixer.Plane = function(mixerContext, domElement, opts) {
 			blending: THREE.NoBlending,
 			side	: THREE.DoubleSide,
 		})
-		var geometry	= new THREE.PlaneGeometry( opts.planeW, opts.planeH );
+		//var geometry	= new THREE.PlaneGeometry( opts.planeW, opts.planeH );
+		var geometry	= new THREE.PlaneBufferGeometry( opts.planeW, opts.planeH );
 		var object3d	= new THREE.Mesh( geometry, planeMaterial );
 	} else {
 		var object3d	= opts.object3d;

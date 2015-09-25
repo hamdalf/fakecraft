@@ -54,6 +54,7 @@
         player = new THREEx.MinecraftPlayer();
         scene.add(player.character.root);
         player.character.root.position.y = -0.5;
+        player.controlsEnabled = false;
         
         var switchHeadValue	= function(value) {
             player.headAnims.start(value);

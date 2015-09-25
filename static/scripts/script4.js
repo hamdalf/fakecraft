@@ -10,7 +10,8 @@ require([
 	'/scripts/threex/threex.minecraftcontrols.js',
 	'/scripts/threex/threex.minecraftplayer.js',
 	'/scripts/threex/htmlmixer/package.require.js',
-	'/scripts/threex/domevents/threex.domevents.js'
+	'/scripts/threex/domevents/threex.domevents.js',
+	'/scripts/threex/tvset/package.require.js'
 ], function () {
 	if (!Detector.webgl) {
 		Detector.addGetWebGLMessage();
@@ -85,7 +86,7 @@ require([
 	player.character.loadWellKnownSkin('iron-man');
 	player.character.root.rotation.y = Math.PI;
 	player.character.root.position.x = 0;
-	player.character.root.position.z = 10;
+	player.character.root.position.z = 5;
 	scene.add(player.character.root);
 	onRenderFcts.push(function (delta, now) {
 		player.update(delta, now);
@@ -219,7 +220,7 @@ require([
 	var addPage = function (options) {
 		var position = options.position,
 			mixerPlaneOpts = options.mixerPlaneOpts || {
-				elementW: 1024	
+				elementW: 1280	
 			},
 			domElement;
 			
