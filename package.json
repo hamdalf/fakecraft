@@ -19,11 +19,15 @@
   "dependencies": {
     "express": "^4.13.3",
     "gulp": "^3.9.0",
-    "gulp-less": "^3.0.3"
+    "gulp-less": "^3.0.3",
+    "mongoose": "^4.1.9",
+    "body-parser": "^1.14.1"
   },
   "devDependencies": {
     "express": "^4.13.3",
     "gulp": "^3.9.0",
-    "gulp-less": "^3.0.3"
+    "gulp-less": "^3.0.3",
+    "mongoose": "^4.1.9",
+    "body-parser": "^1.14.1"
   }
 }
