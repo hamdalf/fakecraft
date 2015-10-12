@@ -30,10 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		skyboxMesh = new THREE.Mesh(new THREE.BoxGeometry(100000, 100000, 100000, 1, 1, 1), material);
 	scene.add(skyboxMesh);
 	
-	var tempCube = new THREE.Mesh(new THREE.BoxGeometry(100,100,100), new THREE.MeshBasicMaterial({color:0xffffff}));
-	scene.add(tempCube);
-	
-	
 	var container = document.createElement('div');
 	document.body.appendChild(container);
 	
