@@ -15,10 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			new THREE.Color().setRGB(0.5, 0.5, 1),
 			new THREE.Color().setRGB(0.5, 0.5, 0.5)
 		],
-		voxelPosition = new THREE.Vector3();
+		voxelPosition = new THREE.Vector3(),
+		cubeType;
 	
-	var setCubeType = function (cubeType) {
-		document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cubeType].getHexString();
+	var setCubeType = function (cType) {
+		document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
+		rollOverMesh.material.color = cubeColors[cType];
+		cubeType = cType;	
 	};
 	
 	var container = document.querySelector('#container'),
@@ -34,6 +37,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	camera.position.y = 800;
 	camera.position.z = 800;
 	camera.lookAt(new THREE.Vector3(0, 200, 0));
+	
+	var controls = new THREE.TrackballControls(camera);
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed = 1.2;
+	controls.panSpeed = 0.8;
+	controls.noZoom = false;
+	controls.noPan = false;
+	controls.staticMoving = true;
+	controls.dynamicDampingFactor = 0.3;
+	controls.keys = [65, 83, 68];	// a:rotate, s:zoom, d:pan
+	//controls.addEventListener('change', render);
 	
 	THREEx.WindowResize(renderer, camera);
 	
@@ -102,7 +116,86 @@ document.addEventListener('DOMContentLoaded', function() {
 		mouse2D.y = - (e.clientY / window.innerHeight) * 2 + 1;
 	};
 	
+	var isCtrlDown = false,
+		isAltDown = false,
+		isADown = false,
+		isSDown = false,
+		isDDown = false;
+		
+	var onDocumentKeyDown = function (e) {
+		console.log(e.keyCode);
+		switch (e.keyCode) {
+			case '0'.charCodeAt(0):
+				setCubeType(0);
+				break;
+			case '1'.charCodeAt(0):
+				setCubeType(1);
+				break;
+			case '2'.charCodeAt(0):
+				setCubeType(2);
+				break;
+			case '3'.charCodeAt(0):
+				setCubeType(3);
+				break;
+			case '4'.charCodeAt(0):
+				setCubeType(4);
+				break;
+			case '5'.charCodeAt(0):
+				setCubeType(5);
+				break;
+			case '6'.charCodeAt(0):
+				setCubeType(6);
+				break;
+			case '7'.charCodeAt(0):
+				setCubeType(7);
+				break;
+			case '8'.charCodeAt(0):
+				setCubeType(8);
+				break;
+			case '9'.charCodeAt(0):
+				setCubeType(9);
+				break;
+			case 'a'.charCodeAt(0):
+				isADown = true;
+				break;
+			case 's'.charCodeAt(0):
+				isSDown = true;
+				break;
+			case 'd'.charCodeAt(0):
+				isDDown = true;
+				break;
+			case 17:
+				isCtrlDown = true;
+				break;
+			case 18:
+				isAltDown = true;
+				break;
+		}	
+	};
+	
+	var onDocumentKeyUp = function (e) {
+		switch (e.keyCode) {
+			case 'a'.charCodeAt(0):
+				isADown = false;
+				break;
+			case 's'.charCodeAt(0):
+				isSDown = false;
+				break;
+			case 'd'.charCodeAt(0):
+				isDDown = false;
+				break;
+			case 17:
+				isCtrlDown = false;
+				break;
+			case 18:
+				isAltDown = false;
+				break;
+		}	
+	};
+	
 	document.addEventListener('mousemove', onDocumentMouseMove, false);
+	document.addEventListener('keydown', onDocumentKeyDown, false);
+	document.addEventListener('keyup', onDocumentKeyUp, false);
 	
 	var getRealIntersector = function (intersects) {
 		var intersector;
@@ -127,8 +220,41 @@ document.addEventListener('DOMContentLoaded', function() {
 		voxelPosition.z = Math.floor(voxelPosition.z / 50) * 50 + 25;
 	};
 	
+	var lastPutDelTime = Date.now();
+	var putDelVoxel = function () {
+		if (isCtrlDown === false && isAltDown === false) {
+			return;
+		}
+		
+		if (Date.now() - lastPutDelTime < 500) {
+			return;
+		} else {
+			lastPutDelTime = Date.now();
+		}
+		
+		var intersects = raycaster.intersectObjects(scene.children);
+		
+		if (intersects.length > 0) {
+			var intersector = getRealIntersector(intersects);
+			
+			if (isAltDown) {
+				if (intersector.object != plane) {
+					scene.remove(intersector.object);
+				}
+			} else if (isCtrlDown) {
+				setVoxelPosition(intersector);
+				var voxel = new THREE.Mesh(cubeGeo, cubeMaterials[cubeType]);
+				voxel.position.copy(voxelPosition);
+				voxel.matrixAutoUpdate = false;
+				voxel.updateMatrix();
+				scene.add(voxel);
+			}
+		}
+	};
+	
 	var animate = function () {
 		requestAnimationFrame(animate);
+		controls.update();
 		render();
 		stats.update();
 	};
@@ -140,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		//ray.direction = mouse3D.subSelf(camera.position).normalize();
 		//ray.direction = mouse3D.sub(camera.position).normalize();
 		//var intersects = ray.intersectScene(scene);
+		putDelVoxel();
 		raycaster.setFromCamera(mouse2D, camera);
 		var intersects = raycaster.intersectObjects(scene.children);
 
