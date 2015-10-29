@@ -116,6 +116,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		mouse2D.y = - (e.clientY / window.innerHeight) * 2 + 1;
 	};
 	
+	var translateCubes = function (dx, dy, dz) {
+		var children = scene.children,
+			child;
+			
+		for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (child.geometry instanceof THREE.CubeGeometry === false) {
+				continue;
+			}
+			if (child === rollOverMesh) {
+				continue;
+			}
+			child.position.x += dx * 50;
+			child.position.y += dy * 50;
+			child.position.z += dz * 50;
+			
+			child.updateMatrix();
+		}
+	};
+	
 	var isCtrlDown = false,
 		isAltDown = false,
 		isADown = false,
@@ -123,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		isDDown = false;
 		
 	var onDocumentKeyDown = function (e) {
-		console.log(e.keyCode);
 		switch (e.keyCode) {
 			case '0'.charCodeAt(0):
 				setCubeType(0);
@@ -155,14 +177,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			case '9'.charCodeAt(0):
 				setCubeType(9);
 				break;
-			case 'a'.charCodeAt(0):
+			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;
-			case 's'.charCodeAt(0):
+			case 'S'.charCodeAt(0):
 				isSDown = true;
 				break;
-			case 'd'.charCodeAt(0):
+			case 'D'.charCodeAt(0):
 				isDDown = true;
+				break;
+			case 'I'.charCodeAt(0):
+				translateCubes(0, +1, 0);
+				break;
+			case 'K'.charCodeAt(0):
+				translateCubes(0, -1, 0);
 				break;
 			case 17:
 				isCtrlDown = true;
@@ -175,13 +203,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var onDocumentKeyUp = function (e) {
 		switch (e.keyCode) {
-			case 'a'.charCodeAt(0):
+			case 'A'.charCodeAt(0):
 				isADown = false;
 				break;
-			case 's'.charCodeAt(0):
+			case 'S'.charCodeAt(0):
 				isSDown = false;
 				break;
-			case 'd'.charCodeAt(0):
+			case 'D'.charCodeAt(0):
 				isDDown = false;
 				break;
 			case 17:
@@ -251,6 +279,97 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 	};
+	
+	var savePNG = function () {
+		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
+	};
+	
+	var saveJSON = function () {
+		var children = scene.children,
+			voxels = [],
+			child;
+
+		for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (child.geometry instanceof THREE.CubeGeometry === false) {
+				continue;
+			}
+			if (child === rollOverMesh) {
+				continue;
+			}
+			
+			voxels.push({
+				x: (child.position.x - 25) / 50,
+				y: (child.position.y - 25) / 50,
+				z: (child.position.z - 25) / 50,
+				t: child.material._cubeType
+			});
+		}
+		
+		var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(voxels);
+		window.open(dataUri, 'jsonwindow');
+	};
+	
+	var buttons = document.querySelectorAll('.iofunctions button');
+	buttons[0].addEventListener('click', savePNG, false);
+	buttons[1].addEventListener('click', saveJSON, false);
+	
+	var onDragOver = function (e) {
+		e.preventDefault()
+	};
+	
+	var onDrop = function (e) {
+		event.preventDefault();
+		var file, reader;
+		
+		for (var i = 0; i < e.dataTransfer.files.length; i++) {
+			file = e.dataTransfer.files[i];
+			reader = new FileReader();
+			reader.onload = function (e) {
+				var dataUri = e.target.result,
+					base64 = dataUri.match(/[^,]*,(.*)/)[1],
+					json = window.atob(base64);
+				loadJSON(json);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+	
+	var loadJSON = function (mapJSON) {
+		var children = scene.children.slice(0);
+		
+		for (var i = 0; i < children.length; i++) {
+			if (children[i] instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (children[i].geometry instanceof THREE.CubeGeometry === false) {
+				continue;
+			}
+			if (children[i] === rollOverMesh) {
+				continue;
+			}
+			
+			scene.remove(children[i]);
+		}
+		
+		var voxels = JSON.parse(mapJSON),
+			voxel, mesh;
+		for (var i = 0; i < voxels.length; i++) {
+			voxel = voxels[i];
+			mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.t]);
+			mesh.position.x = voxel.x * 50 + 25;
+			mesh.position.y = voxel.y * 50 + 25;
+			mesh.position.z = voxel.z * 50 + 25;
+			mesh.matrixAutoUpdate = true;
+			mesh.updateMatrix();
+			scene.add(mesh);
+		}
+	};
+	document.addEventListener('dragover', onDragOver, false);
+	document.addEventListener('drop', onDrop, false);
 	
 	var animate = function () {
 		requestAnimationFrame(animate);
