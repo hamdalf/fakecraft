@@ -1,6 +1,6 @@
 var Playground	= Playground	|| {};
 
-Playground.nBodyGravity	= function()
+Playground.nBodyGravity	= function ()
 {
 	// TODO inerit from vphy base accelerator, this no type and no remove
 	this._accelerator	= {

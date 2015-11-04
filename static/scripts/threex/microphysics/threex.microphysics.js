@@ -149,9 +149,9 @@ THREEx.Microphysics.prototype._bindCube	= function(mesh, opts)
 
 	mesh.geometry.computeBoundingBox();
 	mesh._vphyBody	= new vphy.AABB({
-		width		: mesh.geometry.boundingBox.x[1] - mesh.geometry.boundingBox.x[0],
-		height		: mesh.geometry.boundingBox.y[1] - mesh.geometry.boundingBox.y[0],
-		depth		: mesh.geometry.boundingBox.z[1] - mesh.geometry.boundingBox.z[0],
+		width		: mesh.geometry.boundingBox.max.x - mesh.geometry.boundingBox.min.x,
+		height		: mesh.geometry.boundingBox.max.y - mesh.geometry.boundingBox.min.y,
+		depth		: mesh.geometry.boundingBox.max.z - mesh.geometry.boundingBox.min.z,
 		x		: mesh.position.x,
 		y		: mesh.position.y,
 		z		: mesh.position.z,
@@ -168,10 +168,12 @@ THREEx.Microphysics.prototype._bindSphere	= function(mesh, opts)
 
 	opts		= opts	|| {};
 	var restitution	= 'restitution' in opts	? opts.restitution	: 0.6;
+	//console.log(mesh);
 	mesh.geometry.computeBoundingBox();
 	mesh._vphyBody	= new vphy.Sphere({
 		restitution	: restitution,
-		radius		: (mesh.geometry.boundingBox.x[1] - mesh.geometry.boundingBox.x[0])/2,
+		//radius		: (mesh.geometry.boundingBox.x[1] - mesh.geometry.boundingBox.x[0])/2,
+		radius		: (mesh.geometry.boundingBox.max.x - mesh.geometry.boundingBox.min.x)/2,
 		x		: mesh.position.x,
 		y		: mesh.position.y,
 		z		: mesh.position.z

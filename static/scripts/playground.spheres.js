@@ -4,9 +4,9 @@ var sphereMeshes	= [];
 
 Playground.Spheres	= function()
 {
-	this._material	= new THREE.MeshNormalMaterial();
+	this._material = new THREE.MeshNormalMaterial();
 	//this._material	= new THREE.MeshLambertMaterial();
-	this._meshes	= [];
+	this._meshes = [];
 	this.config();
 }
 
@@ -41,7 +41,7 @@ Playground.Spheres.prototype._removeOne	= function()
 {
 	var mesh	= this._meshes.shift();
 	if( !mesh )	return;
-	scene.removeChild(mesh);
+	scene.remove(mesh);
 	microPhysics.unbindMesh(mesh);
 }
 
@@ -49,13 +49,13 @@ Playground.Spheres.prototype._addOne	= function()
 {
 	var restitution	= pageOptions.spheres.restitution;
 	var radius	= 20 + Math.random()*50;
-radius	= 180;
+	radius	= 180;
 	var geometry	= new THREE.SphereGeometry(radius, 15, 15);
 	var mesh	= new THREE.Mesh(geometry, this._material);
 	mesh.position.x	= (2*Math.random()-1) * 1500;
 	mesh.position.y	= (2*Math.random()-1) * 1500;
 	mesh.position.z	= (2*Math.random()-1) * 1500;
-	scene.addChild(mesh);
+	scene.add(mesh);
 
 	sphereMeshes.push(mesh);
 	this._meshes.push(mesh);

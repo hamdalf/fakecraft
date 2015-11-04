@@ -10,14 +10,15 @@ Playground.InnerCube	= function()
 	var restitution	= pageOptions.innerCube.restitution;
 	
 	var geometry	= new THREE.CubeGeometry(size.x, size.y, size.z);
-	var material	= [
+	/*var material	= [
 		new THREE.MeshBasicMaterial( { color: 0xffaa00, wireframe: true } ),
 		new THREE.MeshNormalMaterial()
-	];
+	];*/
+	var material	=  new THREE.MeshBasicMaterial( { color: 0x00aaff, wireframe: true } );
 	var mesh	= new THREE.Mesh(geometry, material);
 	mesh.position.x	= 200; 
-	mesh.position.y	= -300 - size.y/2;
-	scene.addChild(mesh);
+	mesh.position.y	= -200 - size.y/2;
+	scene.add(mesh);
 	this._mesh	= mesh;
 
 	microPhysics.bindMesh(mesh, {
@@ -27,7 +28,7 @@ Playground.InnerCube	= function()
 
 Playground.InnerCube.prototype.destroy	= function()
 {
-	scene.removeChild(this._mesh);
+	scene.remove(this._mesh);
 	microPhysics.unbindMesh(this._mesh);
 	this._mesh	= null;
 }
