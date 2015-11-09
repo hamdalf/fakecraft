@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Script-Type" content="text/javascript">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Tunnel</title>
+    <link rel="stylesheet" href="/styles/html5doctor.css" >
+    <style>
+        body {
+            overflow: hidden;
+            font-family: arial;
+            color: #222;
+        }
+        
+        #inlineDoc {
+            position: absolute;
+            bottom: 0px;
+            right: 5px;
+            padding: 5px;
+        }
+        
+        #logo {
+            position: absolute;
+            width: 258px;
+            height: 106px;
+            left: 50%;
+            top: 50%;
+            margin: -53px 0 0 -129px;
+        }
+    </style>
+    <script src="/scripts/threejs/three72.min.js"></script>
+    <script src="/scripts/threejs/Detector.js"></script>
+    <script src="/scripts/threex/threex.windowresize.js"></script>
+    <script src="/scripts/threex/threex.screenshot.js"></script>
+    <script src="/scripts/threex/threex.fullscreen.js"></script>
+	<script src="/scripts/threejs/Stats.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="inlineDoc">
+		<span id="fullscreenDoc"><i>f</i> for fullscreen - </span><i>p</i> for screenshot
+	</div>
+    <img id="logo" src="http://caimage.nexoneu.com/landing/201511/logo_top_v2.png?v=?0.0.7">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!Detector.webgl) {
+                Detector.addGetWebGLMessage();
+                return true;
+            }
+            var renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            preserveDrawingBuffer: true 
+            });
+            renderer.setClearColor(0x000000, 1);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.querySelector('#container').appendChild(renderer.domElement);
+            
+            stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.bottom = '0px';
+            document.body.appendChild(stats.domElement);
+            
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000);
+            camera.position.set(0, 0, 7);
+            camera.lookAt(scene.position);
+            scene.add(camera);
+            
+            THREEx.WindowResize.bind(renderer, camera);
+            THREEx.Screenshot.bindKey(renderer);
+            if (THREEx.FullScreen.available()) {
+                THREEx.FullScreen.bindKey();
+            } else {
+                document.querySelector('#fullscreenDoc').style.display = 'none';
+            }
+            
+            var light = new THREE.DirectionalLight(0xff8000, 1.5);
+            light.position.set(1, 1, 0).normalize();
+            scene.add(light);
+            
+            light = new THREE.DirectionalLight(0xff8000, 1.5);
+            light.position.set(-1, -1, 0).normalize();
+            scene.add(light);
+            
+            light = new THREE.PointLight(0x44FFAA, 10, 25);
+            light.position.set(0, 3, 0);
+            scene.add(light);
+            
+            light = new THREE.PointLight(0xff4400, 15, 30);
+            light.position.set(0, -3, 0);
+            scene.add(light);
+            
+            scene.fog = new THREE.FogExp2(0x000000, 0.15);
+            
+            var geometry = new THREE.CylinderGeometry(1, 1, 30, 32, 1, true);
+            var texture = THREE.ImageUtils.loadTexture('/images/tunnel/water.jpg');
+            texture.wrapT = THREE.RepeatWrapping;
+            var material = new THREE.MeshLambertMaterial({
+                color: 0xffffff,
+                map: texture,
+                side: THREE.BackSide
+            });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = Math.PI / 2;
+            scene.add(mesh);
+            
+            var animate = function () {
+                requestAnimationFrame(animate);
+                render();
+                stats.update();
+            };
+            
+            var render = function () {
+                //texture.offset.y += 0.008;
+                texture.offset.y -= 0.008;
+                texture.offset.y %= 1;
+                texture.needUpdate = true;
+                
+                var seconds = Date.now() / 1000;
+                var radius = 0.70;
+                var angle = Math.sin(0.75 * seconds * Math.PI) / 4;
+                
+                camera.position.x = Math.cos(angle - Math.PI / 2) * radius;
+                camera.position.y = Math.sin(angle - Math.PI) * radius;
+                camera.position.z = angle;
+                
+                renderer.render(scene, camera);
+            };
+            
+            animate();
+        });
+    </script>
+</body>
+</html>
