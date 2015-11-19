@@ -1,4 +1,4 @@
-var TimerId;
+var TimerId, controls;
 
 document.addEventListener('DOMContentLoaded', function() {
 	if (!Detector.webgl) {
@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var voxelPosition = new THREE.Vector3(),
 		cbPattern, cbType,
-		cbTexture = {};
+		cbTexture = {},
+		zoomFactor = 1,
+		zoomIncFactor = 0.01;
 		
 	var setCubeType = function (cPattern, cType) {
 		//document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
@@ -54,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	camera.position.z = 800;
 	camera.lookAt(new THREE.Vector3(0, 200, 0));
 	
-	var controls = new THREE.TrackballControls(camera);
+	controls = new THREE.TrackballControls(camera);
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 3.6;
 	controls.panSpeed = 2;
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				newTexture[m] = cubePattern[k][l][m];
 			}
 			tempCube = new THREE.MeshPhongMaterial(newTexture);
+			tempCube._cubePattern = k;
+			tempCube._cubeType = l;
 			cubeMaterials[k][l] = tempCube;
 		}
 	}
@@ -176,10 +180,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				isAltDown = true;
 				break;
 			case 38:
-				camera.position.z -= 100;
+				zoomInOut('in');
+				//controls.position0.setZ(controls.position0.z - 100);
+				//controls.reset();
 				break;
 			case 40:
-				camera.position.z += 100;
+				zoomInOut('out');
+				//controls.position0.setZ(controls.position0.z + 100);
+				//controls.reset();
 				break;
 		}	
 	};
@@ -256,13 +264,41 @@ document.addEventListener('DOMContentLoaded', function() {
 				setVoxelPosition(intersector);
 				
 				var voxel = new THREE.Mesh(cubeGeo, cubeMaterials[cbPattern][cbType]);
-				console.log(voxel);
 				voxel.position.copy(voxelPosition);
 				voxel.matrixAutoUpdate = false;
 				voxel.updateMatrix();
 				scene.add(voxel);
 			}
 		}
+	};
+	
+	var zoomInOut = function (inout) {
+			//intersects = raycaster.intersectObjects(scene.children);
+		/*if (intersects.length > 0) {
+			var intersector = getRealIntersector(intersects);
+			//var center = intersector.center;
+			setVoxelPosition(intersector);
+			var distance = voxelPosition.distanceTo(camera.position);
+		}*/
+		
+		switch (inout) {
+			case 'in':
+				zoomFactor = (zoomFactor > 1) ? 1 : zoomFactor;
+				zoomFactor = zoomFactor - zoomIncFactor;
+				zoomFactor = (zoomFactor <= 0.2) ? 0.2 : zoomFactor;
+				break;
+			case 'out':
+				zoomFactor = (zoomFactor < 1) ? 1 : zoomFactor;
+				zoomFactor = zoomFactor + zoomIncFactor;
+				zoomFactor = (zoomFactor >= 2) ? 1 : zoomFactor;
+				break;
+		}
+		
+		//console.log(zoomFactor);
+		//camera.fov = fov;
+		camera.fov *= zoomFactor;
+		camera.updateProjectionMatrix();
+		//console.log(distance);
 	};
 	
 	var savePNG = function () {
@@ -390,3 +426,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	animate();
 });
+
+document.write('[');
+for (var x = -260; x < 260; x++) {
+	for (var z = -98; z < 97; z++) {
+		document.write('{"x":' + x + ',"y":0,"z":' + z + ',"p":"floor","t":"0"},');
+	}
+}
+document.write(']');
