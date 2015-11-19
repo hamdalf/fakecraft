@@ -28,7 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		var rollOverMaterial = new THREE.MeshPhongMaterial(newTexture);
-		rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+		if (!rollOverMesh) {
+			rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+		} else {
+			rollOverMesh.material = rollOverMaterial;
+		}
 	};
 	
 	// roll-over helper
@@ -158,6 +162,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 	var onDocumentKeyDown = function (e) {
 		switch (e.keyCode) {
+			case '0'.charCodeAt(0):
+				setCubeType('floor', 0);
+				break;
+			case '1'.charCodeAt(0):
+				setCubeType('floor', 1);
+				break;
+			case '2'.charCodeAt(0):
+				setCubeType('floor', 2);
+				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;
@@ -426,11 +439,3 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	animate();
 });
-
-document.write('[');
-for (var x = -260; x < 260; x++) {
-	for (var z = -98; z < 97; z++) {
-		document.write('{"x":' + x + ',"y":0,"z":' + z + ',"p":"floor","t":"0"},');
-	}
-}
-document.write(']');

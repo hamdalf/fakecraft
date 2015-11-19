@@ -6,6 +6,10 @@ var cubePattern = {
 		},
 		1: {
 			shading: THREE.FlatShading,
+			map: THREE.ImageUtils.loadTexture('/images/officeeditor/floor_wood2.jpg')
+		},
+		2: {
+			shading: THREE.FlatShading,
 			color: new THREE.Color().setRGB(0.5, 0.5, 0.5)
 		}
 	},
