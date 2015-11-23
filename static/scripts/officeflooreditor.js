@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		ambientLight = new THREE.AmbientLight(0x606060),
 		directionalLight = new THREE.DirectionalLight(0xffffff);
 	scene.add(ambientLight);
-	directionalLight.position.set(1, 1, 1).normalize();
+	directionalLight.position.set(1, 1, -1).normalize();
 	scene.add(directionalLight);
 	
 	var stats = new Stats();
