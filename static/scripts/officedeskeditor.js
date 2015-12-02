@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			case '2'.charCodeAt(0):
 				setCubeType('floor', 2);
 				break;
+			case '3'.charCodeAt(0):
+				setCubeType('wall', 0);
+				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;
