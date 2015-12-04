@@ -317,11 +317,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		//console.log(distance);
 	};
 	
-	var savePNG = function () {
+	var printPNG = function () {
 		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
 	};
 	
-	var saveJSON = function () {
+	var printJSON = function () {
 		var children = scene.children,
 			voxels = [],
 			child;
@@ -351,9 +351,52 @@ document.addEventListener('DOMContentLoaded', function() {
 		window.open(dataUri, 'jsonwindow');
 	};
 	
+	var saveJSON = function () {
+		var children = scene.children,
+			voxels = [],
+			child;
+
+		for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (child.geometry instanceof THREE.BoxGeometry === false) {
+				continue;
+			}
+			if (child === rollOverMesh) {
+				continue;
+			}
+			
+			voxels.push({
+				x: (child.position.x - 5) / 10,
+				y: (child.position.y - 5) / 10,
+				z: (child.position.z - 5) / 10,
+				p: child.material._cubePattern,
+				t: child.material._cubeType
+			});
+		}
+		
+		var dataUri = JSON.stringify(voxels);
+		var xhr = new XMLHttpRequest();
+		var params = 'filename=' + encodeURIComponent(Date.now().valueOf()) + '&content=' + dataUri;
+		xhr.open('POST', '/api/savejson', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		//xhr.setRequestHeader('content-length', params.length);
+		//xhr.setRequestHeader('connection', 'close');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+				console.log(this.response.message);
+			}
+		};
+		xhr.send(params);
+	};
+	
 	var buttons = document.querySelectorAll('.iofunctions button');
-	buttons[0].addEventListener('click', savePNG, false);
-	buttons[1].addEventListener('click', saveJSON, false);
+	buttons[0].addEventListener('click', printPNG, false);
+	buttons[1].addEventListener('click', printJSON, false);
+	buttons[2].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
 		e.preventDefault()

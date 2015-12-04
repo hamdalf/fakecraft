@@ -26,7 +26,7 @@ var userRouters = require('./routes/users'),
 
 // specifies this directory is cleared for serving static files
 app.use(express.static(path.join(__dirname, "static")));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(bodyParser.json());
 
 app.use('/api', userRouters);

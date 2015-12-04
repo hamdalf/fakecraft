@@ -1,5 +1,6 @@
 var express = require('express'),
 	router = express.Router(),
+	path = require("path"),
 	fs = require('fs');
 	
 router.route('/savejson').all(function(req, res, next) {
@@ -11,7 +12,7 @@ router.route('/savejson').all(function(req, res, next) {
 	var content = req.body.content,
 		filename = req.body.filename;
 		
-	fs.writeFile('/saves/officemap/' + filename + '.json', content, function(ex) {
+	fs.writeFile(path.join(__dirname, '../saves/officemap/') + filename + '.json', content, function(ex) {
 		if (ex) {
 			return console.log(ex);
 		}
