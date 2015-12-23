@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var projector = new THREE.Projector();
 	
 	// grid
-	var planeW = 530,
+	/*var planeW = 530,
 		planeH = 200,
 		planeNumberW = 10,
 		pleneNumberH = 10,
@@ -110,15 +110,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			wireframe: true
 		}));
 	plane.rotation.x = -(Math.PI * 90 / 180);
-	scene.add(plane);
+	scene.add(plane);*/
 	
 	var mouse2D = new THREE.Vector2(),
 		raycaster = new THREE.Raycaster(),
-		ambientLight = new THREE.AmbientLight(0x606060),
+		ambientLight = new THREE.AmbientLight(0xa0a0a0),
 		directionalLight = new THREE.DirectionalLight(0xffffff);
+        //hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 	scene.add(ambientLight);
 	directionalLight.position.set(1, 1, -1).normalize();
 	scene.add(directionalLight);
+    //hemiLight.color.setHSL(0.6, 1, 0.6);
+    //hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+    //hemiLight.position.set(0, 500, 0);
+    //scene.add(hemiLight);
 	
 	var stats = new Stats();
 	stats.domElement.style.position = 'absolute';

@@ -174,6 +174,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			case '3'.charCodeAt(0):
 				setCubeType('wall', 0);
 				break;
+            case '4'.charCodeAt(0):
+				setCubeType('wall', 1);
+				break;
+            case '5'.charCodeAt(0):
+				setCubeType('wall', 2);
+				break;
+            case '6'.charCodeAt(0):
+				setCubeType('wall', 3);
+				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;
@@ -439,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var voxels = JSON.parse(mapJSON),
 			voxel, mesh;
 		for (var i = 0; i < voxels.length; i++) {
-			voxel = voxels[i];
+            voxel = voxels[i];
 			mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
 			mesh.position.x = voxel.x * 10 + 5;
 			mesh.position.y = voxel.y * 10 + 5;
