@@ -1,3 +1,5 @@
+/* global = */
+/* global ; */
 var TimerId, controls;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,7 +11,156 @@ document.addEventListener('DOMContentLoaded', function() {
 		cbPattern, cbType,
 		cbTexture = {},
 		zoomFactor = 1,
-		zoomIncFactor = 0.01;
+		zoomIncFactor = 0.01,
+        numberOfFloorCubes = 0,
+        meshesByTypes = {},
+        groups = {},
+        mergedGeos = {};
+        
+    var addMesh = function (m) {
+        if (typeof meshesByTypes[m.__p] === 'undefined') {
+            meshesByTypes[m.__p] = {};
+            meshesByTypes[m.__p][m.__t] = [];
+        } else {
+            if (typeof meshesByTypes[m.__p][m.__t] === 'undefined') {
+                meshesByTypes[m.__p][m.__t] = [];
+            }
+        }
+        
+        meshesByTypes[m.__p][m.__t].push(m);
+    };
+        
+    var setGroup = function (mgs) {
+        for (var p in mgs) {
+            groups[p] = {};
+            for (var t in mgs[p]) {
+                groups[p][t] = new THREE.Mesh(mgs[p][t], cubeMaterials[p][t]);
+                groups[p][t].name = 'floorplan';
+            }
+        }
+
+        //mgs[i].computeFaceNormals();
+    };
+    
+    var setMergedGeo = function (ms) {
+        var tempCounter, tempArray, triangles, tempGeometry, tempVector, tG,
+            positions, normals, colors, uvs, faces,
+            attrIndex, attrLocalIndex;
+            //tempNormals;
+        
+        for (var p in ms) {
+            for (var t in ms[p]) {
+                if (typeof mergedGeos[p] === 'undefined') {
+                    mergedGeos[p] = {};
+                }
+                
+                if (typeof mergedGeos[p][t] === 'undefined') {
+                    mergedGeos[p][t] = new THREE.BufferGeometry();
+                }
+                
+                tempArray = ms[p][t];
+                tempCounter = tempArray.length;
+                triangles = 12 * tempCounter;   // 12 triangles per cube (6 quads)
+                
+                for (var i = 0; i < tempCounter; i++) {
+                    
+                    if (i === 0) {
+                        mergedGeos[p][t].addAttribute('position', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('normal', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('color', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('uv', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 2), 2).setDynamic( true ));
+                        //mergedGeos[p][t].faces = [];
+                        mergedGeos[p][t].faces = new Float32Array(triangles);
+                        //mergedGeos[p][t].dynamic = true;
+                        //mergedGeos[p][t].attributes.position.needsUpdate = true;
+                        // also same settings may be needed for each properties
+                        // 
+                        positions = mergedGeos[p][t].attributes.position.array;
+                        normals = mergedGeos[p][t].attributes.normal.array;
+                        colors = mergedGeos[p][t].attributes.color.array;
+                        uvs = mergedGeos[p][t].attributes.uv.array;
+                        mergedGeos[p][t].clearGroups();
+                        faces = mergedGeos[p][t].faces;
+                        //tempNormals = [];
+                    }
+                    
+                    tempArray[i].updateMatrix();
+                    tempArray[i].updateMatrixWorld();
+                    tG = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
+                    tempGeometry = tempArray[i].geometry.__directGeometry;
+                    
+                    
+                    if (i === 0) {
+                        console.log(tempArray[i]);
+                        console.log(tG);
+                    }
+                    
+                    attrIndex = i * 108;
+                    for (var j = attrIndex; j < attrIndex + 107; j += 3) {
+                        attrLocalIndex = Math.floor((j - (108 * i)) / 3);
+                        tempVector = tempGeometry.vertices[attrLocalIndex].clone();
+                        tempVector.applyMatrix4(tempArray[i].matrixWorld);
+                        positions[j] = tempVector.x;
+                        positions[j + 1] = tempVector.y;
+                        positions[j + 2] = tempVector.z;
+                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
+                        normals[j + 1] = tempGeometry.normals[attrLocalIndex].y;
+                        normals[j + 2] = tempGeometry.normals[attrLocalIndex].z;
+                        colors[j] = tempGeometry.colors[attrLocalIndex].r;
+                        colors[j + 1] = tempGeometry.colors[attrLocalIndex].g;
+                        colors[j + 2] = tempGeometry.colors[attrLocalIndex].b;
+                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
+                        //tempNormals.push(new THREE.Vector3(normals[j], normals[j + 1], normals[j + 2]));
+                    }
+                    
+                    attrIndex = i * 72;
+                    for (var j = attrIndex; j < attrIndex + 72; j += 2) {
+                        attrLocalIndex = Math.floor((j - (72 * i)) / 2);
+                        uvs[j] = tG.attributes.uv.array[attrLocalIndex].x;
+                        uvs[j + 1] = tG.attributes.uv.array[attrLocalIndex].y;
+                    }
+                    
+                    attrIndex = i * 6 * 6;
+                    for (var j = attrIndex; j < attrIndex + 36; j += 6) {
+                        mergedGeos[p][t].addGroup(j, 6, 0); // one boxMaterial has 6 groups. material is only 1 (0)
+                    }
+                    
+                    attrIndex = i * 12;
+                    for (var j = attrIndex; j < attrIndex + 12; j += 3) {
+                        //var a = j, b = j + 1, c = j + 2;
+                        
+                        //var vertexNormals = normals !== undefined ? [ tempNormals[ a ].clone(), tempNormals[ b ].clone(), tempNormals[ c ].clone() ] : [];
+                        //var vertexColors = colors !== undefined ? [ scope.colors[ a ].clone(), scope.colors[ b ].clone(), scope.colors[ c ].clone() ] : [];
+
+                        faces[j] = new THREE.Face3(j, j+1, j+2, [], []);
+
+                        //if ( uvs !== undefined ) {
+
+                            //scope.faceVertexUvs[ 0 ].push( [ tempUVs[ a ].clone(), tempUVs[ b ].clone(), tempUVs[ c ].clone() ] );
+
+                        //}
+
+                        //if ( uvs2 !== undefined ) {
+
+                            //scope.faceVertexUvs[ 1 ].push( [ tempUVs2[ a ].clone(), tempUVs2[ b ].clone(), tempUVs2[ c ].clone() ] );
+
+                        //}
+                    }
+
+                    // floor use same geometry 'box'. So, don't need merge geometry.
+                    //tempGeometry = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
+                    //mergedGeos[p][t].merge(tempGeometry);
+                }
+
+                mergedGeos[p][t].computeBoundingSphere();
+                mergedGeos[p][t].computeBoundingBox();
+                
+                
+                
+                console.log(mergedGeos[p][t]);
+            }
+        }
+    };
 		
 	var setCubeType = function (cPattern, cType) {
 		//document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
@@ -101,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var projector = new THREE.Projector();
 	
 	// grid
-	/*var planeW = 530,
+	var planeW = 530,
 		planeH = 200,
 		planeNumberW = 10,
 		pleneNumberH = 10,
@@ -110,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			wireframe: true
 		}));
 	plane.rotation.x = -(Math.PI * 90 / 180);
-	scene.add(plane);*/
+	scene.add(plane);
 	
 	var mouse2D = new THREE.Vector2(),
 		raycaster = new THREE.Raycaster(),
@@ -404,8 +555,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		var voxels = JSON.parse(mapJSON),
 			voxel, mesh;
-		var group = new THREE.Object3D();
-		for (var i = 0; i < voxels.length; i++) {
+            
+        numberOfFloorCubes = voxels.length;
+		
+		for (var i = 0; i < numberOfFloorCubes; i++) {
 			voxel = voxels[i];
 			if (voxel.p == 'wall') {
 				for (var h = voxel.y; h < voxel.y + 20; h++) {
@@ -413,25 +566,36 @@ document.addEventListener('DOMContentLoaded', function() {
 					mesh.position.x = voxel.x * 10 + 5;
 					mesh.position.y = h * 10 + 5;
 					mesh.position.z = voxel.z * 10 + 5;
-					mesh.matrixAutoUpdate = true;
-					mesh.updateMatrix();
-					group.add(mesh);
-					//scene.add(mesh);
+                    mesh.matrixAutoUpdate = true;
+			        //mesh.updateMatrix();
+                    mesh.__p = voxel.p;
+                    mesh.__t = voxel.t;
+                    addMesh(mesh);
 				}
 			} else {
 				mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
 				mesh.position.x = voxel.x * 10 + 5;
 				mesh.position.y = voxel.y * 10 + 5;
 				mesh.position.z = voxel.z * 10 + 5;
-				mesh.matrixAutoUpdate = true;
-				mesh.updateMatrix();
-				group.add(mesh);
-				//scene.add(mesh);
+                mesh.matrixAutoUpdate = true;
+			    //mesh.updateMatrix();
+                mesh.__p = voxel.p;
+                mesh.__t = voxel.t;
+                addMesh(mesh);
 			}
 		}
-		group.name = 'floorplan';
-		scene.add(group);
+
+        setMergedGeo(meshesByTypes);
+        setGroup(mergedGeos);
+        console.log(groups);
+        
+        for (var p in groups) {
+            for (var t in groups[p]) {
+                scene.add(groups[p][t]);
+            }
+        }
 	};
+    
 	document.addEventListener('dragover', onDragOver, false);
 	document.addEventListener('drop', onDrop, false);
 	
@@ -443,12 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	var render = function () {
-		//var mouse3D = projector.unprojectVector(mouse2D.clone(), camera);
-		//var mouse3D = mouse2D.clone();
-		//mouse3D.unproject(camera);
-		//ray.direction = mouse3D.subSelf(camera.position).normalize();
-		//ray.direction = mouse3D.sub(camera.position).normalize();
-		//var intersects = ray.intersectScene(scene);
 		putDelVoxel();
 		raycaster.setFromCamera(mouse2D, camera);
 		var intersects = raycaster.intersectObjects(scene.children);
@@ -465,6 +623,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		renderer.render(scene, camera);
 	};
-	
+    
 	animate();
 });

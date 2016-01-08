@@ -9,7 +9,42 @@ document.addEventListener('DOMContentLoaded', function() {
 		cbPattern, cbType,
 		cbTexture = {},
 		zoomFactor = 1,
-		zoomIncFactor = 0.01;
+		zoomIncFactor = 0.01,
+        numberOfFloorCubes = 0,
+        bspByTypes = {};
+
+    var setBsp = function (p, t, bsp) {
+        if (typeof bspByTypes[p] === 'undefined') {
+            bspByTypes[p] = {};
+            bspByTypes[p][t] = null;
+        } else {
+            if (typeof bspByTypes[p][t] === 'undefined') {
+                bspByTypes[p][t] = null;
+            }
+        }
+        
+        if (bsp) {
+            bspByTypes[p][t] = bsp;
+        }
+    };
+    
+    var getBsp = function (p, t) {
+        setBsp(p, t);
+        return bspByTypes[p][t];
+    };
+    
+    var mergeMeshe = function (mesh, p, t) {
+        var bsp = new ThreeBSP(mesh),
+            targetBsp = getBsp(p, t),
+            mergedBsp;
+        
+        if (targetBsp === null) {
+            setBsp(p, t, bsp);
+        } else {
+            mergedBsp = targetBsp.union(bsp);
+            setBsp(p, t, mergedBsp);
+        }
+    };
 		
 	var setCubeType = function (cPattern, cType) {
 		//document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
@@ -114,11 +149,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var mouse2D = new THREE.Vector2(),
 		raycaster = new THREE.Raycaster(),
-		ambientLight = new THREE.AmbientLight(0x606060),
+		ambientLight = new THREE.AmbientLight(0xa0a0a0),
 		directionalLight = new THREE.DirectionalLight(0xffffff);
+        //hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 	scene.add(ambientLight);
 	directionalLight.position.set(1, 1, -1).normalize();
 	scene.add(directionalLight);
+    //hemiLight.color.setHSL(0.6, 1, 0.6);
+    //hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+    //hemiLight.position.set(0, 500, 0);
+    //scene.add(hemiLight);
 	
 	var stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -173,15 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
 			case '3'.charCodeAt(0):
 				setCubeType('wall', 0);
-				break;
-            case '4'.charCodeAt(0):
-				setCubeType('wall', 1);
-				break;
-            case '5'.charCodeAt(0):
-				setCubeType('wall', 2);
-				break;
-            case '6'.charCodeAt(0):
-				setCubeType('wall', 3);
 				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
@@ -326,11 +357,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		//console.log(distance);
 	};
 	
-	var printPNG = function () {
+	var savePNG = function () {
 		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
 	};
 	
-	var printJSON = function () {
+	var saveJSON = function () {
 		var children = scene.children,
 			voxels = [],
 			child;
@@ -360,52 +391,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		window.open(dataUri, 'jsonwindow');
 	};
 	
-	var saveJSON = function () {
-		var children = scene.children,
-			voxels = [],
-			child;
-
-		for (var i = 0; i < children.length; i++) {
-			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
-				continue;
-			}
-			if (child.geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}
-			if (child === rollOverMesh) {
-				continue;
-			}
-			
-			voxels.push({
-				x: (child.position.x - 5) / 10,
-				y: (child.position.y - 5) / 10,
-				z: (child.position.z - 5) / 10,
-				p: child.material._cubePattern,
-				t: child.material._cubeType
-			});
-		}
-		
-		var dataUri = JSON.stringify(voxels);
-		var xhr = new XMLHttpRequest();
-		var params = 'filename=' + encodeURIComponent(Date.now().valueOf()) + '&content=' + dataUri;
-		xhr.open('POST', '/api/savejson', true);
-		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-		//xhr.setRequestHeader('content-length', params.length);
-		//xhr.setRequestHeader('connection', 'close');
-		xhr.responseType = 'json';
-		xhr.onload = function (e) {
-			if (this.status == 200) {
-				console.log(this.response.message);
-			}
-		};
-		xhr.send(params);
-	};
-	
 	var buttons = document.querySelectorAll('.iofunctions button');
-	buttons[0].addEventListener('click', printPNG, false);
-	buttons[1].addEventListener('click', printJSON, false);
-	buttons[2].addEventListener('click', saveJSON, false);
+	buttons[0].addEventListener('click', savePNG, false);
+	buttons[1].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
 		e.preventDefault()
@@ -427,11 +415,29 @@ document.addEventListener('DOMContentLoaded', function() {
 			reader.readAsDataURL(file);
 		}
 	};
+    
+    var checkVoxDiffer = function(vox1, vox2) {
+        var dX = vox2.x - vox1.x,
+            dY = vox2.y - vox1.y,
+            dZ = vox2.z - vox1.z,
+            score = Math.abs(dX) + Math.abs(dY) + Math.abs(dZ);
+
+        return {
+            'dX': dX,
+            'dY': dY,
+            'dZ': dZ,
+            'score': score
+        };
+    };
 	
 	var loadJSON = function (mapJSON) {
 		var children = scene.children.slice(0);
 		
 		for (var i = 0; i < children.length; i++) {
+			if (children[i].name === 'floorplan') {
+				scene.remove(children[i]);
+				continue;
+			}
 			if (children[i] instanceof THREE.Mesh === false) {
 				continue;
 			}
@@ -446,17 +452,156 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		
 		var voxels = JSON.parse(mapJSON),
-			voxel, mesh;
-		for (var i = 0; i < voxels.length; i++) {
+            numberOfFloorCubes = voxels.length,
+            structuredVoxels = {},
+            scaleFactor = 10,
+			voxel, box, mesh, dObj;
+
+        // group by height(y) include column(x) include row(z)
+        for (var i = 0; i < numberOfFloorCubes; i++) {
             voxel = voxels[i];
-			mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
-			mesh.position.x = voxel.x * 10 + 5;
-			mesh.position.y = voxel.y * 10 + 5;
-			mesh.position.z = voxel.z * 10 + 5;
-			mesh.matrixAutoUpdate = true;
-			mesh.updateMatrix();
-			scene.add(mesh);
+            
+            if (typeof structuredVoxels[voxel.p] === 'undefined') {
+                structuredVoxels[voxel.p] = {};
+            }
+            
+            /*if (typeof structuredVoxels[voxel.p][voxel.t] === 'undefined') {
+                structuredVoxels[voxel.p][voxel.t] = [];
+            }
+            
+            structuredVoxels[voxel.p][voxel.t].push(voxel);*/
+            
+            if (typeof structuredVoxels[voxel.p][voxel.t] === 'undefined') {
+                structuredVoxels[voxel.p][voxel.t] = {};
+            }
+            
+            if (typeof structuredVoxels[voxel.p][voxel.t][voxel.y] === 'undefined') {
+                structuredVoxels[voxel.p][voxel.t][voxel.y] = {};
+            }
+            
+            if (typeof structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x] === 'undefined') {
+                structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x] = [];
+            }
+
+            structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x].push(voxel);
+        }
+        
+        voxels = [];
+        for (var p in structuredVoxels) {
+            for (var t in structuredVoxels[p]) {
+                for (var y in structuredVoxels[p][t]) {
+                    for (var x in structuredVoxels[p][t][y]) {
+                        structuredVoxels[p][t][y][x].sort(function (a, b) {
+                            if (a.z < b.z) {
+                                return -1;
+                            } else if (a.z > b.z) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                        voxels = voxels.concat(structuredVoxels[p][t][y][x]);
+                    }
+                }
+            }
+        }
+        
+        var rawBoxStructure = function () {
+            return {
+                size: {
+                    x: 10,
+                    y: 10,
+                    z: 10
+                },
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }
+            }
+        };
+        
+		for (var i = 0; i < numberOfFloorCubes; i++) {
+            voxel = voxels[i];
+            
+            if (i === 0) {
+                box = rawBoxStructure();
+                box.position.x = voxel.x * scaleFactor + (scaleFactor / 2);
+                box.position.y = voxel.y * scaleFactor + (scaleFactor / 2);
+                box.position.z = voxel.z * scaleFactor + (scaleFactor / 2);
+                box.__p = voxel.p;
+                box.__t = voxel.t;
+                continue;
+            }
+            
+            dObj = checkVoxDiffer(voxels[i - 1], voxel);
+            
+            if (box.__p === voxel.p && box.__t === voxel.t && dObj.score === 1 && Math.abs(dObj.dZ) === 1) {
+                /*if (dObj.dX !== 0) {
+                    mesh.scale.x += Math.abs(dObj.dX);
+                    mesh.position.x += dObj.dX * scaleFactor;
+                }
+                if (dObj.dY !== 0) {
+                    mesh.scale.y += Math.abs(dObj.dY);
+                    mesh.position.y += dObj.dY * scaleFactor;
+                }*/
+                if (dObj.dZ !== 0) {
+                    box.size.z += Math.abs(dObj.dZ) * scaleFactor;
+                    box.position.z += (dObj.dZ * scaleFactor) / 2;
+                }
+            } else {
+                if (box.__p === 'wall') {
+                    box.size.y = 200;
+                    box.position.y = 110;
+                }
+                
+                mesh = new THREE.Mesh(new THREE.BoxGeometry(box.size.x, box.size.y, box.size.z));
+                mesh.position.x = box.position.x;
+                mesh.position.y = box.position.y;
+                mesh.position.z = box.position.z;
+                mesh.__p = box.__p;
+                mesh.__t = box.__t;
+                
+                mergeMeshe(mesh, mesh.__p, mesh.__t);
+                
+                box = rawBoxStructure();
+                box.position.x = voxel.x * scaleFactor + (scaleFactor / 2);
+                box.position.y = voxel.y * scaleFactor + (scaleFactor / 2);
+                box.position.z = voxel.z * scaleFactor + (scaleFactor / 2);
+                box.__p = voxel.p;
+                box.__t = voxel.t;
+            }
 		}
+
+        for (var p in bspByTypes) {
+            for (var t in bspByTypes[p]) {
+                var tempMesh = getBsp(p, t).toMesh(cubeMaterials[p][t]);
+                if (tempMesh.material.map) {
+                    tempMesh.material.map.wrapS = THREE.RepeatWrapping;
+                    tempMesh.material.map.wrapT = THREE.RepeatWrapping;
+                    tempMesh.material.map.repeat.x = 2;
+                    tempMesh.material.map.repeat.y = 2;
+                }
+                //tempMesh.material.map.needsUpdate = true;
+                scene.add(tempMesh);
+            }
+        }
+        /*var tm = getBsp('floor', 0).toMesh(cubeMaterials['floor'][0]);
+        tm.material.map.wrapS = THREE.RepeatWrapping;
+        tm.material.map.wrapT = THREE.RepeatWrapping;
+        tm.material.map.repeat.x = 100 / 32;
+        tm.material.map.repeat.y = 100 / 32;
+        tm.material.map.needsUpdate = true;
+        scene.add(tm);*/
+        /*setMergedGeo(meshesByTypes);
+        setGroup(mergedGeos);
+        console.log(groups);
+        
+        for (var p in groups) {
+            for (var t in groups[p]) {
+                scene.add(groups[p][t]);
+            }
+        }*/
 	};
     
 	document.addEventListener('dragover', onDragOver, false);
@@ -470,12 +615,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	var render = function () {
-		//var mouse3D = projector.unprojectVector(mouse2D.clone(), camera);
-		//var mouse3D = mouse2D.clone();
-		//mouse3D.unproject(camera);
-		//ray.direction = mouse3D.subSelf(camera.position).normalize();
-		//ray.direction = mouse3D.sub(camera.position).normalize();
-		//var intersects = ray.intersectScene(scene);
 		putDelVoxel();
 		raycaster.setFromCamera(mouse2D, camera);
 		var intersects = raycaster.intersectObjects(scene.children);
@@ -492,6 +631,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		renderer.render(scene, camera);
 	};
-	
+    
 	animate();
 });
