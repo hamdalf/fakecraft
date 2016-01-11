@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Office Desk Editor</title>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="stylesheet" href="/styles/html5doctor.css" >
+	<link rel="stylesheet" href="/styles/officedeskeditor.css" >
+	<script src="/scripts/threejs/three72.min.js"></script>
+	<script src="/scripts/threejs/examples/js/renderers/Projector.js"></script>
+	<script src="/scripts/threejs/examples/js/controls/TrackballControls.js"></script>
+	<script src="/scripts/threejs/Detector.js"></script>
+	<script src="/scripts/threejs/RequestAnimationFrame.js"></script>
+	<script src="/scripts/threejs/Stats.js"></script>
+	<script src="/scripts/threex/threex.windowresize.js"></script>
+    <script src="/scripts/csg/csg.js"></script>
+    <script src="/scripts/csg/ThreeCSG.js"></script>
+	<script src="/scripts/officeflooreditor.pattern.js"></script>
+	<script src="/scripts/officeflooroptimizer.js"></script>
+</head>
+<body>
+	<div id="container">
+		<header>
+			<h1>Office Desk Editor</h1>
+			<p>powered by <a href="http://github.com/mrdoob/three.js" target="_blank">three.js</a> &amp; <a href="https://get.webgl.org/" target="_blank">WebGL</a></p>
+			<ul class="status">
+				<dt>Current box color</dt>
+				<dd class="boxcolor"></dd>
+			</ul>
+		</header>
+		<footer>
+			<dl class="keymap">
+				<dt>ctrl</dt>
+				<dd>Add voxel</dd>
+				<dt>alt</dt>
+				<dd>Remove voxel</dd>
+				<dt>i/k keys</dt>
+				<dd>Translate in y</dd>
+				<dt>A/S/D + mouse</dt>
+				<dd>Camera move</dd>
+				<dt>0-9</dt>
+				<dd>Change color</dd>
+				<dt>Drag &amp; Drop json file</dt>
+				<dd>Load map file</dd>
+			</dl>
+			<ul class="iofunctions">
+				<li><button>save .png</button></li>
+				<li><button>save .json</button></li>
+                <li><button>test cube</button></li>
+			</ul>
+		</footer>
+	</div>
+</body>
+</html>
