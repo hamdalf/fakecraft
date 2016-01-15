@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	camera.position.z = 800;
 	camera.lookAt(new THREE.Vector3(0, 200, 0));
 	
-	controls = new THREE.TrackballControls(camera);
+	controls = new THREE.TrackballControls(camera, renderer.domElement);
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 3.6;
 	controls.panSpeed = 2;
@@ -512,10 +512,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	buttons[1].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
-		e.preventDefault()
+        console.log(e);
+		e.preventDefault();
 	};
 	
 	var onDrop = function (e) {
+        console.log(e);
 		event.preventDefault();
 		var file, reader;
 		
@@ -596,8 +598,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 	};
     
+    var loadJSONMap = function (floor) {
+        var fileName = encodeURIComponent('optimized_floor' + floor);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/json/' + fileName, true);
+        xhr.responseType = 'json';
+        xhr.onload = function (e) {
+			if (this.status == 200) {
+                createMap(this.response);
+			}
+		};
+		xhr.send();
+    };
+    
+    var createMap = function (json) {
+         var children = scene.children.slice(0);
+		
+		for (var i = 0; i < children.length; i++) {
+			if (children[i].name === 'map') {
+				scene.remove(children[i]);
+				continue;
+			}
+			if (children[i] instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (children[i].geometry instanceof THREE.BoxGeometry === false) {
+				continue;
+			}
+			if (children[i] === rollOverMesh) {
+				continue;
+			}
+			
+			scene.remove(children[i]);
+		}
+        
+        var geometries = json.d,
+            numGeo = geometries.length;
+        for (var i = 0; i < numGeo; i++) {
+            console.log(geometries[i]);
+        }
+    };
+    
 	document.addEventListener('dragover', onDragOver, false);
 	document.addEventListener('drop', onDrop, false);
+    document.querySelector('dd.floor select').addEventListener('change', function(e) {
+        var options = e.target.children;
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].selected === true) {
+                loadJSONMap(options[i].value);
+            }
+        }
+    }, false);
 	
 	var animate = function () {
 		TimerId = requestAnimationFrame(animate);
@@ -625,4 +676,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
     
 	animate();
+    var floorOptions = document.querySelector('dd.floor select').options;
+    for (var i = 0; i < floorOptions.length; i++) {
+        if (floorOptions[i].selected === true) {
+            loadJSONMap(floorOptions[i].value);
+            break;
+        }
+    }
 });

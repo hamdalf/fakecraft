@@ -1,3 +1,5 @@
+/* global = */
+/* global ; */
 var TimerId, controls;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,38 +13,152 @@ document.addEventListener('DOMContentLoaded', function() {
 		zoomFactor = 1,
 		zoomIncFactor = 0.01,
         numberOfFloorCubes = 0,
-        bspByTypes = {};
-
-    var setBsp = function (p, t, bsp) {
-        if (typeof bspByTypes[p] === 'undefined') {
-            bspByTypes[p] = {};
-            bspByTypes[p][t] = null;
+        meshesByTypes = {},
+        groups = {},
+        mergedGeos = {};
+        
+    var addMesh = function (m) {
+        if (typeof meshesByTypes[m.__p] === 'undefined') {
+            meshesByTypes[m.__p] = {};
+            meshesByTypes[m.__p][m.__t] = [];
         } else {
-            if (typeof bspByTypes[p][t] === 'undefined') {
-                bspByTypes[p][t] = null;
+            if (typeof meshesByTypes[m.__p][m.__t] === 'undefined') {
+                meshesByTypes[m.__p][m.__t] = [];
             }
         }
         
-        if (bsp) {
-            bspByTypes[p][t] = bsp;
-        }
+        meshesByTypes[m.__p][m.__t].push(m);
     };
-    
-    var getBsp = function (p, t) {
-        setBsp(p, t);
-        return bspByTypes[p][t];
-    };
-    
-    var mergeMeshe = function (mesh, p, t) {
-        var bsp = new ThreeBSP(mesh),
-            targetBsp = getBsp(p, t),
-            mergedBsp;
         
-        if (targetBsp === null) {
-            setBsp(p, t, bsp);
-        } else {
-            mergedBsp = targetBsp.union(bsp);
-            setBsp(p, t, mergedBsp);
+    var setGroup = function (mgs) {
+        for (var p in mgs) {
+            groups[p] = {};
+            for (var t in mgs[p]) {
+                groups[p][t] = new THREE.Mesh(mgs[p][t], cubeMaterials[p][t]);
+                groups[p][t].name = 'floorplan';
+            }
+        }
+
+        //mgs[i].computeFaceNormals();
+    };
+    
+    var setMergedGeo = function (ms) {
+        var tempCounter, tempArray, triangles, tempGeometry, tempVector, tG,
+            positions, normals, colors, uvs, faces,
+            attrIndex, attrLocalIndex;
+            //tempNormals;
+        
+        for (var p in ms) {
+            for (var t in ms[p]) {
+                if (typeof mergedGeos[p] === 'undefined') {
+                    mergedGeos[p] = {};
+                }
+                
+                if (typeof mergedGeos[p][t] === 'undefined') {
+                    mergedGeos[p][t] = new THREE.BufferGeometry();
+                }
+                
+                tempArray = ms[p][t];
+                tempCounter = tempArray.length;
+                triangles = 12 * tempCounter;   // 12 triangles per cube (6 quads)
+                
+                for (var i = 0; i < tempCounter; i++) {
+                    
+                    if (i === 0) {
+                        mergedGeos[p][t].addAttribute('position', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('normal', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('color', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
+                        mergedGeos[p][t].addAttribute('uv', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 2), 2).setDynamic( true ));
+                        //mergedGeos[p][t].faces = [];
+                        mergedGeos[p][t].faces = new Float32Array(triangles);
+                        //mergedGeos[p][t].dynamic = true;
+                        //mergedGeos[p][t].attributes.position.needsUpdate = true;
+                        // also same settings may be needed for each properties
+                        // 
+                        positions = mergedGeos[p][t].attributes.position.array;
+                        normals = mergedGeos[p][t].attributes.normal.array;
+                        colors = mergedGeos[p][t].attributes.color.array;
+                        uvs = mergedGeos[p][t].attributes.uv.array;
+                        mergedGeos[p][t].clearGroups();
+                        faces = mergedGeos[p][t].faces;
+                        //tempNormals = [];
+                    }
+                    
+                    tempArray[i].updateMatrix();
+                    tempArray[i].updateMatrixWorld();
+                    tG = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
+                    tempGeometry = tempArray[i].geometry.__directGeometry;
+                    
+                    
+                    if (i === 0) {
+                        console.log(tempArray[i]);
+                        console.log(tG);
+                    }
+                    
+                    attrIndex = i * 108;
+                    for (var j = attrIndex; j < attrIndex + 107; j += 3) {
+                        attrLocalIndex = Math.floor((j - (108 * i)) / 3);
+                        tempVector = tempGeometry.vertices[attrLocalIndex].clone();
+                        tempVector.applyMatrix4(tempArray[i].matrixWorld);
+                        positions[j] = tempVector.x;
+                        positions[j + 1] = tempVector.y;
+                        positions[j + 2] = tempVector.z;
+                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
+                        normals[j + 1] = tempGeometry.normals[attrLocalIndex].y;
+                        normals[j + 2] = tempGeometry.normals[attrLocalIndex].z;
+                        colors[j] = tempGeometry.colors[attrLocalIndex].r;
+                        colors[j + 1] = tempGeometry.colors[attrLocalIndex].g;
+                        colors[j + 2] = tempGeometry.colors[attrLocalIndex].b;
+                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
+                        //tempNormals.push(new THREE.Vector3(normals[j], normals[j + 1], normals[j + 2]));
+                    }
+                    
+                    attrIndex = i * 72;
+                    for (var j = attrIndex; j < attrIndex + 72; j += 2) {
+                        attrLocalIndex = Math.floor((j - (72 * i)) / 2);
+                        uvs[j] = tG.attributes.uv.array[attrLocalIndex].x;
+                        uvs[j + 1] = tG.attributes.uv.array[attrLocalIndex].y;
+                    }
+                    
+                    attrIndex = i * 6 * 6;
+                    for (var j = attrIndex; j < attrIndex + 36; j += 6) {
+                        mergedGeos[p][t].addGroup(j, 6, 0); // one boxMaterial has 6 groups. material is only 1 (0)
+                    }
+                    
+                    attrIndex = i * 12;
+                    for (var j = attrIndex; j < attrIndex + 12; j += 3) {
+                        //var a = j, b = j + 1, c = j + 2;
+                        
+                        //var vertexNormals = normals !== undefined ? [ tempNormals[ a ].clone(), tempNormals[ b ].clone(), tempNormals[ c ].clone() ] : [];
+                        //var vertexColors = colors !== undefined ? [ scope.colors[ a ].clone(), scope.colors[ b ].clone(), scope.colors[ c ].clone() ] : [];
+
+                        faces[j] = new THREE.Face3(j, j+1, j+2, [], []);
+
+                        //if ( uvs !== undefined ) {
+
+                            //scope.faceVertexUvs[ 0 ].push( [ tempUVs[ a ].clone(), tempUVs[ b ].clone(), tempUVs[ c ].clone() ] );
+
+                        //}
+
+                        //if ( uvs2 !== undefined ) {
+
+                            //scope.faceVertexUvs[ 1 ].push( [ tempUVs2[ a ].clone(), tempUVs2[ b ].clone(), tempUVs2[ c ].clone() ] );
+
+                        //}
+                    }
+
+                    // floor use same geometry 'box'. So, don't need merge geometry.
+                    //tempGeometry = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
+                    //mergedGeos[p][t].merge(tempGeometry);
+                }
+
+                mergedGeos[p][t].computeBoundingSphere();
+                mergedGeos[p][t].computeBoundingBox();
+                
+                
+                
+                console.log(mergedGeos[p][t]);
+            }
         }
     };
 		
@@ -95,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	camera.position.z = 800;
 	camera.lookAt(new THREE.Vector3(0, 200, 0));
 	
-	controls = new THREE.TrackballControls(camera, renderer.domElement);
+	controls = new THREE.TrackballControls(camera);
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 3.6;
 	controls.panSpeed = 2;
@@ -357,11 +473,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		//console.log(distance);
 	};
 	
-	var printPNG = function () {
+	var savePNG = function () {
 		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
 	};
 	
-	var printJSON = function () {
+	var saveJSON = function () {
 		var children = scene.children,
 			voxels = [],
 			child;
@@ -371,77 +487,29 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (child instanceof THREE.Mesh === false) {
 				continue;
 			}
-			/*if (child.geometry instanceof THREE.BoxGeometry === false) {
+			if (child.geometry instanceof THREE.BoxGeometry === false) {
 				continue;
-			}*/
+			}
 			if (child === rollOverMesh) {
 				continue;
 			}
-            if (child.name !== 'map') {
-                continue;
-            }
 			
 			voxels.push({
+				x: (child.position.x - 5) / 10,
+				y: (child.position.y - 5) / 10,
+				z: (child.position.z - 5) / 10,
 				p: child.material._cubePattern,
-				t: child.material._cubeType,
-                g: child.geometry.toJSON()
+				t: child.material._cubeType
 			});
 		}
 		
 		var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(voxels);
 		window.open(dataUri, 'jsonwindow');
 	};
-    
-    var saveJSON = function () {
-		var children = scene.children,
-			voxels = [],
-			child;
-
-		for (var i = 0; i < children.length; i++) {
-			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
-				continue;
-			}
-			/*if (child.geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}*/
-			if (child === rollOverMesh) {
-				continue;
-			}
-            if (child.name !== 'map') {
-                continue;
-            }
-			
-			voxels.push({
-				p: child.material._cubePattern,
-				t: child.material._cubeType,
-                g: child.geometry.toJSON()
-			});
-		}
-		
-		var dataUri = JSON.stringify(voxels);
-		var xhr = new XMLHttpRequest();
-        var fileName = encodeURIComponent('optimized_' + Date.now().valueOf());
-		var params = 'filename=' + fileName + '&content=' + dataUri;
-		xhr.open('POST', '/api/json', true);
-		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-		//xhr.setRequestHeader('content-length', params.length);
-		//xhr.setRequestHeader('connection', 'close');
-		xhr.responseType = 'json';
-		xhr.onload = function (e) {
-			if (this.status == 200) {
-				//console.log(this.response.message);
-                alert('JSON \'' + fileName + '.json\' saved');
-			}
-		};
-		xhr.send(params);
-	};
 	
 	var buttons = document.querySelectorAll('.iofunctions button');
-	buttons[0].addEventListener('click', printPNG, false);
-	buttons[1].addEventListener('click', printJSON, false);
-    buttons[2].addEventListener('click', saveJSON, false);
-    
+	buttons[0].addEventListener('click', savePNG, false);
+	buttons[1].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
 		e.preventDefault()
@@ -463,20 +531,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			reader.readAsDataURL(file);
 		}
 	};
-    
-    var checkVoxDiffer = function(vox1, vox2) {
-        var dX = vox2.x - vox1.x,
-            dY = vox2.y - vox1.y,
-            dZ = vox2.z - vox1.z,
-            score = Math.abs(dX) + Math.abs(dY) + Math.abs(dZ);
-
-        return {
-            'dX': dX,
-            'dY': dY,
-            'dZ': dZ,
-            'score': score
-        };
-    };
 	
 	var loadJSON = function (mapJSON) {
 		var children = scene.children.slice(0);
@@ -500,144 +554,44 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		
 		var voxels = JSON.parse(mapJSON),
-            numberOfFloorCubes = voxels.length,
-            structuredVoxels = {},
-            scaleFactor = 10,
-			voxel, box, mesh, dObj;
-
-        // group by height(y) include column(x) include row(z)
-        for (var i = 0; i < numberOfFloorCubes; i++) {
-            voxel = voxels[i];
+			voxel, mesh;
             
-            if (typeof structuredVoxels[voxel.p] === 'undefined') {
-                structuredVoxels[voxel.p] = {};
-            }
-            
-            /*if (typeof structuredVoxels[voxel.p][voxel.t] === 'undefined') {
-                structuredVoxels[voxel.p][voxel.t] = [];
-            }
-            
-            structuredVoxels[voxel.p][voxel.t].push(voxel);*/
-            
-            if (typeof structuredVoxels[voxel.p][voxel.t] === 'undefined') {
-                structuredVoxels[voxel.p][voxel.t] = {};
-            }
-            
-            if (typeof structuredVoxels[voxel.p][voxel.t][voxel.y] === 'undefined') {
-                structuredVoxels[voxel.p][voxel.t][voxel.y] = {};
-            }
-            
-            if (typeof structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x] === 'undefined') {
-                structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x] = [];
-            }
-
-            structuredVoxels[voxel.p][voxel.t][voxel.y][voxel.x].push(voxel);
-        }
-        
-        voxels = [];
-        for (var p in structuredVoxels) {
-            for (var t in structuredVoxels[p]) {
-                for (var y in structuredVoxels[p][t]) {
-                    for (var x in structuredVoxels[p][t][y]) {
-                        structuredVoxels[p][t][y][x].sort(function (a, b) {
-                            if (a.z < b.z) {
-                                return -1;
-                            } else if (a.z > b.z) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                        voxels = voxels.concat(structuredVoxels[p][t][y][x]);
-                    }
-                }
-            }
-        }
-        
-        var rawBoxStructure = function () {
-            return {
-                size: {
-                    x: 10,
-                    y: 10,
-                    z: 10
-                },
-                position: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                }
-            }
-        };
-        
+        numberOfFloorCubes = voxels.length;
+		
 		for (var i = 0; i < numberOfFloorCubes; i++) {
-            voxel = voxels[i];
-            
-            if (i === 0) {
-                box = rawBoxStructure();
-                box.position.x = voxel.x * scaleFactor + (scaleFactor / 2);
-                box.position.y = voxel.y * scaleFactor + (scaleFactor / 2);
-                box.position.z = voxel.z * scaleFactor + (scaleFactor / 2);
-                box.__p = voxel.p;
-                box.__t = voxel.t;
-                continue;
-            }
-            
-            dObj = checkVoxDiffer(voxels[i - 1], voxel);
-            
-            if (box.__p === voxel.p && box.__t === voxel.t && dObj.score === 1 && Math.abs(dObj.dZ) === 1) {
-                /*if (dObj.dX !== 0) {
-                    mesh.scale.x += Math.abs(dObj.dX);
-                    mesh.position.x += dObj.dX * scaleFactor;
-                }
-                if (dObj.dY !== 0) {
-                    mesh.scale.y += Math.abs(dObj.dY);
-                    mesh.position.y += dObj.dY * scaleFactor;
-                }*/
-                if (dObj.dZ !== 0) {
-                    box.size.z += Math.abs(dObj.dZ) * scaleFactor;
-                    box.position.z += (dObj.dZ * scaleFactor) / 2;
-                }
-            } else {
-                if (box.__p === 'wall') {
-                    box.size.y = 200;
-                    box.position.y = 110;
-                }
-                
-                //if (box.__p === 'floor') {
-                //    mesh = new THREE.Mesh(new THREE.BoxGeometry(box.size.x, box.size.y, box.size.z, 1, 1, Math.floor(box.size.z / 10)));
-                //} else {
-                    mesh = new THREE.Mesh(new THREE.BoxGeometry(box.size.x, box.size.y, box.size.z));
-                //}
-                
-                mesh.position.x = box.position.x;
-                mesh.position.y = box.position.y;
-                mesh.position.z = box.position.z;
-                mesh.__p = box.__p;
-                mesh.__t = box.__t;
-                
-                mergeMeshe(mesh, mesh.__p, mesh.__t);
-                
-                box = rawBoxStructure();
-                box.position.x = voxel.x * scaleFactor + (scaleFactor / 2);
-                box.position.y = voxel.y * scaleFactor + (scaleFactor / 2);
-                box.position.z = voxel.z * scaleFactor + (scaleFactor / 2);
-                box.__p = voxel.p;
-                box.__t = voxel.t;
-            }
+			voxel = voxels[i];
+			if (voxel.p == 'wall') {
+				for (var h = voxel.y; h < voxel.y + 20; h++) {
+					mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
+					mesh.position.x = voxel.x * 10 + 5;
+					mesh.position.y = h * 10 + 5;
+					mesh.position.z = voxel.z * 10 + 5;
+                    mesh.matrixAutoUpdate = true;
+			        //mesh.updateMatrix();
+                    mesh.__p = voxel.p;
+                    mesh.__t = voxel.t;
+                    addMesh(mesh);
+				}
+			} else {
+				mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
+				mesh.position.x = voxel.x * 10 + 5;
+				mesh.position.y = voxel.y * 10 + 5;
+				mesh.position.z = voxel.z * 10 + 5;
+                mesh.matrixAutoUpdate = true;
+			    //mesh.updateMatrix();
+                mesh.__p = voxel.p;
+                mesh.__t = voxel.t;
+                addMesh(mesh);
+			}
 		}
 
-        for (var p in bspByTypes) {
-            for (var t in bspByTypes[p]) {
-                var tempMesh = getBsp(p, t).toMesh(cubeMaterials[p][t]);
-                /*if (tempMesh.material.map) {
-                    tempMesh.material.map.wrapS = THREE.RepeatWrapping;
-                    tempMesh.material.map.wrapT = THREE.RepeatWrapping;
-                    tempMesh.material.map.repeat.x = 1;
-                    //tempMesh.material.map.repeat.y = tempMesh.geometry.parameters.depth / 10;
-                }*/
-                tempMesh.name = 'map';
-                //tempMesh.material.map.needsUpdate = true;
-                scene.add(tempMesh);
+        setMergedGeo(meshesByTypes);
+        setGroup(mergedGeos);
+        console.log(groups);
+        
+        for (var p in groups) {
+            for (var t in groups[p]) {
+                scene.add(groups[p][t]);
             }
         }
 	};

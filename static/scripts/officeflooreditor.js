@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	camera.position.z = 800;
 	camera.lookAt(new THREE.Vector3(0, 200, 0));
 	
-	controls = new THREE.TrackballControls(camera);
+	controls = new THREE.TrackballControls(camera, renderer.domElement);
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 3.6;
 	controls.panSpeed = 2;
@@ -388,15 +388,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		var dataUri = JSON.stringify(voxels);
 		var xhr = new XMLHttpRequest();
-		var params = 'filename=' + encodeURIComponent(Date.now().valueOf()) + '&content=' + dataUri;
-		xhr.open('POST', '/api/savejson', true);
+        var fileName = encodeURIComponent(Date.now().valueOf());
+		var params = 'filename=' + fileName + '&content=' + dataUri;
+		xhr.open('POST', '/api/json', true);
 		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
 		//xhr.setRequestHeader('content-length', params.length);
 		//xhr.setRequestHeader('connection', 'close');
 		xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-				console.log(this.response.message);
+				//console.log(this.response.message);
+                alert('JSON \'' + fileName + '.json\' saved');
 			}
 		};
 		xhr.send(params);

@@ -49,6 +49,9 @@ header .status dt {
   line-height: 20px;
   margin: 0 5px 0 0;
 }
+header .status dd {
+  float: left;
+}
 header .status .boxcolor {
   display: inline-block;
   width: 20px;
