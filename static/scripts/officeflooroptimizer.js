@@ -415,6 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			voxels.push({
 				p: child.material._cubePattern,
 				t: child.material._cubeType,
+                x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
                 g: child.geometry.toJSON()
 			});
 		}

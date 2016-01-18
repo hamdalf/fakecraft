@@ -7,14 +7,14 @@ router.route('/json').all(function(req, res, next) {
 	console.log('save json start to use');
 	next();
 }).get(function(req, res) {
-	res.json('Please use POST method fot saving json');
+	console.log('Please use POST method fot saving json');
 }).post(function(req, res) {
 	var content = req.body.content,
 		filename = req.body.filename;
 		
 	fs.writeFile(path.join(__dirname, '../saves/officemap/') + filename + '.json', content, function(ex) {
 		if (ex) {
-			return console.log(ex);
+			console.log(ex);
 		}
 		res.json({message: 'File saved!'});
 	});
@@ -26,11 +26,15 @@ router.route('/json/:filename').all(function(req, res, next) {
 }).get(function(req, res) {
     fs.readFile(path.join(__dirname, '../saves/officemap/') + req.params.filename + '.json', function (ex, data) {
         if (ex) {
-            return console.log(ex);
+            console.log(ex);
         }
-        res.json({"d":data.toString()});
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        });
+        res.write(data);
+        res.end();
     });
 }).post(function(req, res) {
-    res.json('Please use GET method fot loading json');
+    console.log('Please use GET method fot loading json');
 });
 module.exports = router;

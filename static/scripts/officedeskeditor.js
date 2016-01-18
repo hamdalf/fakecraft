@@ -632,10 +632,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			scene.remove(children[i]);
 		}
         
-        var geometries = json.d,
-            numGeo = geometries.length;
+        var geometries = json,
+            numGeo = geometries.length,
+            mesh, geo;
         for (var i = 0; i < numGeo; i++) {
-            console.log(geometries[i]);
+            geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
+            mesh = new THREE.Mesh(geo.geometry, cubeMaterials[geometries[i].p][geometries[i].t]);
+            mesh.position.x = geometries[i].x;
+			mesh.position.y = geometries[i].y;
+			mesh.position.z = geometries[i].z;
+            mesh.name = 'map';
+            scene.add(mesh);
+            console.log(mesh);
         }
     };
     
