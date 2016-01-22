@@ -7,194 +7,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		Detector.addGetWebGLMessage();
 	}
 	
-	var voxelPosition = new THREE.Vector3(),
+	var rollOverPosition = new THREE.Vector3(),
+        rollOverMesh,
 		cbPattern, cbType,
 		cbTexture = {},
 		zoomFactor = 1,
-		zoomIncFactor = 0.01,
-        numberOfFloorCubes = 0,
-        meshesByTypes = {},
-        groups = {},
-        mergedGeos = {};
+		zoomIncFactor = 0.01;
         
-    var addMesh = function (m) {
-        if (typeof meshesByTypes[m.__p] === 'undefined') {
-            meshesByTypes[m.__p] = {};
-            meshesByTypes[m.__p][m.__t] = [];
-        } else {
-            if (typeof meshesByTypes[m.__p][m.__t] === 'undefined') {
-                meshesByTypes[m.__p][m.__t] = [];
-            }
-        }
-        
-        meshesByTypes[m.__p][m.__t].push(m);
-    };
-        
-    var setGroup = function (mgs) {
-        for (var p in mgs) {
-            groups[p] = {};
-            for (var t in mgs[p]) {
-                groups[p][t] = new THREE.Mesh(mgs[p][t], cubeMaterials[p][t]);
-                groups[p][t].name = 'floorplan';
-            }
-        }
-
-        //mgs[i].computeFaceNormals();
-    };
-    
-    var setMergedGeo = function (ms) {
-        var tempCounter, tempArray, triangles, tempGeometry, tempVector, tG,
-            positions, normals, colors, uvs, faces,
-            attrIndex, attrLocalIndex;
-            //tempNormals;
-        
-        for (var p in ms) {
-            for (var t in ms[p]) {
-                if (typeof mergedGeos[p] === 'undefined') {
-                    mergedGeos[p] = {};
-                }
-                
-                if (typeof mergedGeos[p][t] === 'undefined') {
-                    mergedGeos[p][t] = new THREE.BufferGeometry();
-                }
-                
-                tempArray = ms[p][t];
-                tempCounter = tempArray.length;
-                triangles = 12 * tempCounter;   // 12 triangles per cube (6 quads)
-                
-                for (var i = 0; i < tempCounter; i++) {
-                    
-                    if (i === 0) {
-                        mergedGeos[p][t].addAttribute('position', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
-                        mergedGeos[p][t].addAttribute('normal', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
-                        mergedGeos[p][t].addAttribute('color', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 3), 3).setDynamic( true ));
-                        mergedGeos[p][t].addAttribute('uv', new THREE.BufferAttribute(new Float32Array(triangles * 3 * 2), 2).setDynamic( true ));
-                        //mergedGeos[p][t].faces = [];
-                        mergedGeos[p][t].faces = new Float32Array(triangles);
-                        //mergedGeos[p][t].dynamic = true;
-                        //mergedGeos[p][t].attributes.position.needsUpdate = true;
-                        // also same settings may be needed for each properties
-                        // 
-                        positions = mergedGeos[p][t].attributes.position.array;
-                        normals = mergedGeos[p][t].attributes.normal.array;
-                        colors = mergedGeos[p][t].attributes.color.array;
-                        uvs = mergedGeos[p][t].attributes.uv.array;
-                        mergedGeos[p][t].clearGroups();
-                        faces = mergedGeos[p][t].faces;
-                        //tempNormals = [];
-                    }
-                    
-                    tempArray[i].updateMatrix();
-                    tempArray[i].updateMatrixWorld();
-                    tG = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
-                    tempGeometry = tempArray[i].geometry.__directGeometry;
-                    
-                    
-                    if (i === 0) {
-                        console.log(tempArray[i]);
-                        console.log(tG);
-                    }
-                    
-                    attrIndex = i * 108;
-                    for (var j = attrIndex; j < attrIndex + 107; j += 3) {
-                        attrLocalIndex = Math.floor((j - (108 * i)) / 3);
-                        tempVector = tempGeometry.vertices[attrLocalIndex].clone();
-                        tempVector.applyMatrix4(tempArray[i].matrixWorld);
-                        positions[j] = tempVector.x;
-                        positions[j + 1] = tempVector.y;
-                        positions[j + 2] = tempVector.z;
-                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
-                        normals[j + 1] = tempGeometry.normals[attrLocalIndex].y;
-                        normals[j + 2] = tempGeometry.normals[attrLocalIndex].z;
-                        colors[j] = tempGeometry.colors[attrLocalIndex].r;
-                        colors[j + 1] = tempGeometry.colors[attrLocalIndex].g;
-                        colors[j + 2] = tempGeometry.colors[attrLocalIndex].b;
-                        normals[j] = tempGeometry.normals[attrLocalIndex].x;
-                        //tempNormals.push(new THREE.Vector3(normals[j], normals[j + 1], normals[j + 2]));
-                    }
-                    
-                    attrIndex = i * 72;
-                    for (var j = attrIndex; j < attrIndex + 72; j += 2) {
-                        attrLocalIndex = Math.floor((j - (72 * i)) / 2);
-                        uvs[j] = tG.attributes.uv.array[attrLocalIndex].x;
-                        uvs[j + 1] = tG.attributes.uv.array[attrLocalIndex].y;
-                    }
-                    
-                    attrIndex = i * 6 * 6;
-                    for (var j = attrIndex; j < attrIndex + 36; j += 6) {
-                        mergedGeos[p][t].addGroup(j, 6, 0); // one boxMaterial has 6 groups. material is only 1 (0)
-                    }
-                    
-                    attrIndex = i * 12;
-                    for (var j = attrIndex; j < attrIndex + 12; j += 3) {
-                        //var a = j, b = j + 1, c = j + 2;
-                        
-                        //var vertexNormals = normals !== undefined ? [ tempNormals[ a ].clone(), tempNormals[ b ].clone(), tempNormals[ c ].clone() ] : [];
-                        //var vertexColors = colors !== undefined ? [ scope.colors[ a ].clone(), scope.colors[ b ].clone(), scope.colors[ c ].clone() ] : [];
-
-                        faces[j] = new THREE.Face3(j, j+1, j+2, [], []);
-
-                        //if ( uvs !== undefined ) {
-
-                            //scope.faceVertexUvs[ 0 ].push( [ tempUVs[ a ].clone(), tempUVs[ b ].clone(), tempUVs[ c ].clone() ] );
-
-                        //}
-
-                        //if ( uvs2 !== undefined ) {
-
-                            //scope.faceVertexUvs[ 1 ].push( [ tempUVs2[ a ].clone(), tempUVs2[ b ].clone(), tempUVs2[ c ].clone() ] );
-
-                        //}
-                    }
-
-                    // floor use same geometry 'box'. So, don't need merge geometry.
-                    //tempGeometry = new THREE.BufferGeometry().fromGeometry(tempArray[i].geometry);
-                    //mergedGeos[p][t].merge(tempGeometry);
-                }
-
-                mergedGeos[p][t].computeBoundingSphere();
-                mergedGeos[p][t].computeBoundingBox();
-                
-                
-                
-                console.log(mergedGeos[p][t]);
-            }
+    var setRollOver = function (geo, mat, rType) {
+        rollOverMesh = new THREE.Mesh(geo, mat);
+        switch (rType) {
+            case 'desk':
+                rollOverMesh._w = 160;
+                rollOverMesh._h = 72;
+                rollOverMesh._d = 80;
+                rollOverMesh._r = false;
+                rollOverMesh.position.set(80, 36, 40);
+                rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                break;
         }
     };
-		
-	var setCubeType = function (cPattern, cType) {
-		//document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
-		//rollOverMesh.material.color = cubeColors[cType];
-		cbPattern = cPattern;
-		cbType = cType;
-		var selectedTexture = cubePattern[cPattern][cType],
-			newTexture = {};
-		for (var k in rollOverTexture) {
-			newTexture[k] = rollOverTexture[k];
-		}
-		
-		for (var k in selectedTexture) {
-			newTexture[k] = selectedTexture[k];
-			cbTexture[k] = selectedTexture[k];
-		}
-
-		var rollOverMaterial = new THREE.MeshPhongMaterial(newTexture);
-		if (!rollOverMesh) {
-			rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-		} else {
-			rollOverMesh.material = rollOverMaterial;
-		}
-	};
-	
-	// roll-over helper
-	var rollOverGeo = new THREE.BoxGeometry(10, 10, 10),
-		rollOverTexture = {
-			opacity: 0.6,
-			transparent: true
-		},
-		rollOverMesh;
-		
-	setCubeType('floor', 0);
 	
 	var container = document.querySelector('#container'),
 		renderer = new THREE.WebGLRenderer({
@@ -224,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	THREEx.WindowResize(renderer, camera);
 	
 	var scene = new THREE.Scene();
-	scene.add(rollOverMesh);
 	
 	// cubes
 	var cubeGeo = new THREE.BoxGeometry(10, 10, 10),
@@ -241,12 +72,43 @@ document.addEventListener('DOMContentLoaded', function() {
 			for (var m in cubePattern[k][l]) {
 				newTexture[m] = cubePattern[k][l][m];
 			}
-			tempCube = new THREE.MeshPhongMaterial(newTexture);
+			//tempCube = new THREE.MeshPhongMaterial(newTexture);
+            tempCube = new THREE.MeshLambertMaterial(newTexture);
 			tempCube._cubePattern = k;
 			tempCube._cubeType = l;
 			cubeMaterials[k][l] = tempCube;
 		}
 	}
+    
+    // desk deometry
+    var deskGeo;
+    var fileName = encodeURIComponent('geometry_desk');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/json/' + fileName, true);
+    xhr.responseType = 'json';
+    xhr.onload = function (e) {
+        if (this.status == 200) {
+            var geometries = this.response;
+            deskGeo = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+            var mat = cubeMaterials['desk'][0].clone();
+            mat.opacity = 0.6;
+			mat.transparent = true;
+            setRollOver(deskGeo.geometry, mat, 'desk');
+            scene.add(rollOverMesh);
+        }
+    };
+    xhr.send();
+    
+    var rotateDesk = function () {
+        if (rollOverMesh._r === false) {
+            //rollOverMesh.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+            rollOverMesh.rotation.y += Math.PI / 2;
+            rollOverMesh._r = true;
+        } else {
+            rollOverMesh.rotation.y -= Math.PI / 2;
+            rollOverMesh._r = false;
+        }
+    };
 	
 	// picking
 	var projector = new THREE.Projector();
@@ -286,64 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		mouse2D.x = (e.clientX / window.innerWidth) * 2 - 1;
 		mouse2D.y = - (e.clientY / window.innerHeight) * 2 + 1;
 	};
-
-	var translateCubes = function (dx, dy, dz) {
-		var children = scene.children,
-			child;
-			
-		for (var i = 0; i < children.length; i++) {
-			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
-				continue;
-			}
-			if (child.geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}
-			if (child === rollOverMesh) {
-				continue;
-			}
-			child.position.x += dx * 10;
-			child.position.y += dy * 10;
-			child.position.z += dz * 10;
-			
-			child.updateMatrix();
-		}
-	};
 	
 	var isCtrlDown = false,
-		isAltDown = false,
-		isADown = false,
-		isSDown = false,
-		isDDown = false;
+		isAltDown = false;
 		
 	var onDocumentKeyDown = function (e) {
 		switch (e.keyCode) {
-			case '0'.charCodeAt(0):
-				setCubeType('floor', 0);
-				break;
-			case '1'.charCodeAt(0):
-				setCubeType('floor', 1);
-				break;
-			case '2'.charCodeAt(0):
-				setCubeType('floor', 2);
-				break;
-			case '3'.charCodeAt(0):
-				setCubeType('wall', 0);
-				break;
-			case 'A'.charCodeAt(0):
-				isADown = true;
-				break;
-			case 'S'.charCodeAt(0):
-				isSDown = true;
-				break;
-			case 'D'.charCodeAt(0):
-				isDDown = true;
-				break;
-			case 'I'.charCodeAt(0):
-				translateCubes(0, +1, 0);
-				break;
-			case 'K'.charCodeAt(0):
-				translateCubes(0, -1, 0);
+			case 'R'.charCodeAt(0):
+				rotateDesk();
 				break;
 			case 17:
 				isCtrlDown = true;
@@ -353,28 +165,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
 			case 38:
 				zoomInOut('in');
-				//controls.position0.setZ(controls.position0.z - 100);
-				//controls.reset();
 				break;
 			case 40:
 				zoomInOut('out');
-				//controls.position0.setZ(controls.position0.z + 100);
-				//controls.reset();
 				break;
 		}	
 	};
 	
 	var onDocumentKeyUp = function (e) {
 		switch (e.keyCode) {
-			case 'A'.charCodeAt(0):
-				isADown = false;
-				break;
-			case 'S'.charCodeAt(0):
-				isSDown = false;
-				break;
-			case 'D'.charCodeAt(0):
-				isDDown = false;
-				break;
 			case 17:
 				isCtrlDown = false;
 				break;
@@ -398,21 +197,33 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	};
 	
-	var setVoxelPosition = function (intersector) {
+	var setRollOverPosition = function (intersector) {
 		var normalMatrix = new THREE.Matrix3();
 		normalMatrix.getNormalMatrix(intersector.object.matrixWorld);
 		var rotatedNormal = new THREE.Vector3().copy(intersector.face.normal);
 		rotatedNormal.applyMatrix3(normalMatrix);
-		//var tmpVec = new THREE.Vector3().copy(intersector.face.normal),
-		//voxelPosition.add(intersector.point, intersector.object.matrixRotationWorld.multiplyVector3(tmpVec));
-		voxelPosition.addVectors(intersector.point, rotatedNormal);
-		voxelPosition.x = Math.floor(voxelPosition.x / 10) * 10 + 5;
-		voxelPosition.y = Math.floor(voxelPosition.y / 10) * 10 + 5;
-		voxelPosition.z = Math.floor(voxelPosition.z / 10) * 10 + 5;
+		rollOverPosition.addVectors(intersector.point, rotatedNormal);
+        
+        if (rollOverMesh) {
+            if (rollOverMesh._r) {
+                rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 2;
+                rollOverPosition.y = Math.floor((rollOverPosition.y + rollOverMesh._h) / 10) * 10 + 2;
+                rollOverPosition.y = Math.floor((rollOverPosition.y) / 10) * 10 - 1;
+                rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 7;
+            } else {//
+                //rollOverPosition.x = Math.floor((rollOverPosition.x - Math.floor(rollOverMesh._w / 2)) / 10) * 10 + 3.2;
+                //rollOverPosition.y = Math.floor((rollOverPosition.y + Math.floor(rollOverMesh._h / 2)) / 10) * 10 + 5;
+                //rollOverPosition.z = Math.floor((rollOverPosition.z - Math.floor(rollOverMesh._d / 2)) / 10) * 10 + 2;
+                rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 3.2;
+                rollOverPosition.y = Math.floor((rollOverPosition.y + rollOverMesh._h) / 10) * 10 + 2;
+                //rollOverPosition.y = Math.floor((rollOverPosition.y) / 10) * 10 - 1;
+                rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 2;
+            }
+        }
 	};
 	
 	var lastPutDelTime = Date.now();
-	var putDelVoxel = function () {
+	var putDelDesk = function () {
 		if (isCtrlDown === false && isAltDown === false) {
 			return;
 		}
@@ -429,17 +240,28 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 			
 			if (isAltDown) {
-				if (intersector.object != plane) {
-					scene.remove(intersector.object);
-				}
+                if (intersector.object._p) {
+                    if (intersector.object._p === 'desk') {
+                        scene.remove(intersector.object);
+                    }
+                }
 			} else if (isCtrlDown) {
-				setVoxelPosition(intersector);
-				
-				var voxel = new THREE.Mesh(cubeGeo, cubeMaterials[cbPattern][cbType]);
-				voxel.position.copy(voxelPosition);
-				voxel.matrixAutoUpdate = false;
-				voxel.updateMatrix();
-				scene.add(voxel);
+				setRollOverPosition(intersector);
+                var mat = cubeMaterials['desk'][0].clone();
+				var desk = new THREE.Mesh(deskGeo.geometry, mat);
+				desk.position.copy(rollOverPosition);
+                if (rollOverMesh._r === true) {
+                    desk.rotation.y += Math.PI / 2;
+                    desk._r = true;
+                } else {
+                    desk._r = false;
+                }
+				desk.matrixAutoUpdate = false;
+				desk.updateMatrix();
+                desk._p = 'desk';
+                desk._t = 0;
+                desk._deskID = null;
+				scene.add(desk);
 			}
 		}
 	};
@@ -473,51 +295,83 @@ document.addEventListener('DOMContentLoaded', function() {
 		//console.log(distance);
 	};
 	
-	var savePNG = function () {
+	var printPNG = function () {
 		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
 	};
-	
-	var saveJSON = function () {
-		var children = scene.children,
-			voxels = [],
+    
+    var printJSON = function () {
+        var children = scene.children,
+			desks = [],
 			child;
-
-		for (var i = 0; i < children.length; i++) {
+            
+        for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
-				continue;
-			}
-			if (child.geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}
-			if (child === rollOverMesh) {
+			if (child._p !== 'desk') {
 				continue;
 			}
 			
-			voxels.push({
-				x: (child.position.x - 5) / 10,
-				y: (child.position.y - 5) / 10,
-				z: (child.position.z - 5) / 10,
-				p: child.material._cubePattern,
-				t: child.material._cubeType
+			desks.push({
+				x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
+				p: child._p,
+				t: child._t,
+                r: child._r,
+                i: child._deskID
 			});
 		}
-		
-		var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(voxels);
+        
+        var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(desks);
 		window.open(dataUri, 'jsonwindow');
+    };
+	
+	var saveJSON = function () {
+		var children = scene.children,
+			desks = [],
+			child;
+            
+        for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child._p !== 'desk') {
+				continue;
+			}
+			
+			desks.push({
+				x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
+				p: child._p,
+				t: child._t,
+                r: child._r,
+                i: child._deskID
+			});
+		}
+        
+        var dataUri = JSON.stringify(desks);
+		var xhr = new XMLHttpRequest();
+        var fileName = encodeURIComponent('desk_floor' + getSelectedFloor() + '_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&content=' + dataUri;
+		xhr.open('POST', '/api/json', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                alert('JSON \'' + fileName + '.json\' saved');
+			}
+		};
+		xhr.send(params);
 	};
 	
 	var buttons = document.querySelectorAll('.iofunctions button');
-	buttons[0].addEventListener('click', savePNG, false);
-	buttons[1].addEventListener('click', saveJSON, false);
+	buttons[0].addEventListener('click', printPNG, false);
+	buttons[1].addEventListener('click', printJSON, false);
+    buttons[2].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
-        console.log(e);
 		e.preventDefault();
 	};
 	
 	var onDrop = function (e) {
-        console.log(e);
 		event.preventDefault();
 		var file, reader;
 		
@@ -534,68 +388,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	};
 	
-	var loadJSON = function (mapJSON) {
-		var children = scene.children.slice(0);
-		
-		for (var i = 0; i < children.length; i++) {
-			if (children[i].name === 'floorplan') {
-				scene.remove(children[i]);
-				continue;
+	var loadJSON = function (floor) {
+        var fileName = encodeURIComponent('desk_floor' + floor);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/json/' + fileName, true);
+        xhr.responseType = 'json';
+        xhr.onload = function (e) {
+			if (this.status == 200) {
+                createDesks(this.response);
 			}
-			if (children[i] instanceof THREE.Mesh === false) {
-				continue;
-			}
-			if (children[i].geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}
-			if (children[i] === rollOverMesh) {
-				continue;
-			}
-			
-			scene.remove(children[i]);
-		}
-		
-		var voxels = JSON.parse(mapJSON),
-			voxel, mesh;
-            
-        numberOfFloorCubes = voxels.length;
-		
-		for (var i = 0; i < numberOfFloorCubes; i++) {
-			voxel = voxels[i];
-			if (voxel.p == 'wall') {
-				for (var h = voxel.y; h < voxel.y + 20; h++) {
-					mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
-					mesh.position.x = voxel.x * 10 + 5;
-					mesh.position.y = h * 10 + 5;
-					mesh.position.z = voxel.z * 10 + 5;
-                    mesh.matrixAutoUpdate = true;
-			        //mesh.updateMatrix();
-                    mesh.__p = voxel.p;
-                    mesh.__t = voxel.t;
-                    addMesh(mesh);
-				}
-			} else {
-				mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
-				mesh.position.x = voxel.x * 10 + 5;
-				mesh.position.y = voxel.y * 10 + 5;
-				mesh.position.z = voxel.z * 10 + 5;
-                mesh.matrixAutoUpdate = true;
-			    //mesh.updateMatrix();
-                mesh.__p = voxel.p;
-                mesh.__t = voxel.t;
-                addMesh(mesh);
-			}
-		}
-
-        setMergedGeo(meshesByTypes);
-        setGroup(mergedGeos);
-        console.log(groups);
-        
-        for (var p in groups) {
-            for (var t in groups[p]) {
-                scene.add(groups[p][t]);
-            }
-        }
+		};
+		xhr.send();
 	};
     
     var loadJSONMap = function (floor) {
@@ -606,13 +409,24 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.onload = function (e) {
 			if (this.status == 200) {
                 createMap(this.response);
+                loadJSON(floor);
 			}
 		};
 		xhr.send();
     };
     
+    var getSelectedFloor = function() {
+        var floorOptions = document.querySelector('dd.floor select').options;
+        for (var i = 0; i < floorOptions.length; i++) {
+            if (floorOptions[i].selected === true) {
+                return floorOptions[i].value;
+                break;
+            }
+        }
+    };
+    
     var createMap = function (json) {
-         var children = scene.children.slice(0);
+        var children = scene.children.slice(0);
 		
 		for (var i = 0; i < children.length; i++) {
 			if (children[i].name === 'map') {
@@ -643,7 +457,39 @@ document.addEventListener('DOMContentLoaded', function() {
 			mesh.position.z = geometries[i].z;
             mesh.name = 'map';
             scene.add(mesh);
-            console.log(mesh);
+        }
+    };
+    
+    var createDesks = function(json) {
+        var children = scene.children.slice(0);
+        
+        for (var i = 0; i < children.length; i++) {
+			if (children[i]._p !== 'desk') {
+				continue;
+			}
+			
+			scene.remove(children[i]);
+		}
+        
+        var desks = json,
+            numDesk = desks.length,
+            mesh;
+        for (var i = 0; i < numDesk; i++) {
+            var mat = cubeMaterials['desk'][0].clone();
+            mesh = new THREE.Mesh(deskGeo.geometry, mat);
+            mesh.position.set(desks[i].x, desks[i].y, desks[i].z);
+            if (desks[i].r === true) {
+                mesh.rotation.y += Math.PI / 2;
+                mesh._r = true;
+            } else {
+                mesh._r = false;
+            }
+            mesh.matrixAutoUpdate = false;
+            mesh.updateMatrix();
+            mesh._p = desks[i].p;
+            mesh._t = desks[i].t;
+            mesh._deskID = desks[i].i;
+            scene.add(mesh);
         }
     };
     
@@ -666,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	var render = function () {
-		putDelVoxel();
+		putDelDesk();
 		raycaster.setFromCamera(mouse2D, camera);
 		var intersects = raycaster.intersectObjects(scene.children);
 
@@ -674,9 +520,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 
 			if (intersector) {
-				setVoxelPosition(intersector);
+				setRollOverPosition(intersector);
 				//rollOverMesh.position = voxelPosition;
-				rollOverMesh.position.copy(voxelPosition);
+                if (rollOverMesh) {
+				    rollOverMesh.position.copy(rollOverPosition);
+                }
 			}
 		}
 		
@@ -691,4 +539,86 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         }
     }
+    
+    var makeDesk = function() {
+        var group = new THREE.Mesh();
+        var topG = new THREE.BoxGeometry(160, 2, 80);
+        var mat = cubeMaterials['desk'][0];
+        var topM = new THREE.Mesh(topG, mat);
+        topM.position.y = 35;
+        var bsp1 = new ThreeBSP(topM);
+        //group.add(topM);
+        var rlG1 = new THREE.BoxGeometry(6, 70, 3);
+        var rlM1 = new THREE.Mesh(rlG1, mat);
+        rlM1.position.x = 76.8;
+        rlM1.position.y = -1;
+        rlM1.position.z = 38.2;
+        var bsp2 = new ThreeBSP(rlM1);
+        var tbsp = bsp1.union(bsp2);
+        //group.add(rlM1);
+        var rlG2 = new THREE.BoxGeometry(6, 3, 73.4);
+        var rlM2 = new THREE.Mesh(rlG2, mat);
+        rlM2.position.x = 76.8;
+        rlM2.position.y = 32.5;
+        //group.add(rlM2);
+        var bsp3 = new ThreeBSP(rlM2);
+        var tbsp2 = bsp3.union(tbsp);
+        var rlG3 = new THREE.BoxGeometry(6, 70, 3);
+        var rlM3 = new THREE.Mesh(rlG3, mat);
+        rlM3.position.x = 76.8;
+        rlM3.position.y = -1;
+        rlM3.position.z = -38.2;
+        //group.add(rlM3);
+        var bsp4 = new ThreeBSP(rlM3);
+        var tbsp3 = bsp4.union(tbsp2);
+        var rlG4 = new THREE.BoxGeometry(6, 70, 3);
+        var rlM4 = new THREE.Mesh(rlG4, mat);
+        rlM4.position.x = -76.8;
+        rlM4.position.y = -1;
+        rlM4.position.z = 38.2;
+        //group.add(rlM4);
+        var bsp5 = new ThreeBSP(rlM4);
+        var tbsp4 = bsp5.union(tbsp3);
+        var rlG5 = new THREE.BoxGeometry(6, 3, 73.4);
+        var rlM5 = new THREE.Mesh(rlG5, mat);
+        rlM5.position.x = -76.8;
+        rlM5.position.y = 32.5;
+        //group.add(rlM5);
+        var bsp6 = new ThreeBSP(rlM5);
+        var tbsp5 = bsp6.union(tbsp4);
+        var rlG6 = new THREE.BoxGeometry(6, 70, 3);
+        var rlM6 = new THREE.Mesh(rlG6, mat);
+        rlM6.position.x = -76.8;
+        rlM6.position.y = -1;
+        rlM6.position.z = -38.2;
+        //group.add(rlM6);
+        var bsp7 = new ThreeBSP(rlM6);
+        var tbsp6 = bsp7.union(tbsp5);
+        var fM = tbsp6.toMesh(mat);
+        group.position.x = 500;
+        group.position.y = 300;
+        group.position.z = 200;
+        scene.add(fM);
+        
+        var tObj = [{
+            g: fM.geometry.toJSON()
+        }];
+        
+        var dataUri = JSON.stringify(tObj);
+		var xhr = new XMLHttpRequest();
+        var fileName = encodeURIComponent('desk_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&content=' + dataUri;
+		xhr.open('POST', '/api/json', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		//xhr.setRequestHeader('content-length', params.length);
+		//xhr.setRequestHeader('connection', 'close');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+				//console.log(this.response.message);
+                alert('JSON \'' + fileName + '.json\' saved');
+			}
+		};
+		xhr.send(params);
+    };
 });

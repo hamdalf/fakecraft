@@ -34,5 +34,13 @@ var cubePattern = {
 			shading: THREE.FlatShading,
 			color: new THREE.Color().setRGB(0.8, 0.8, 0.8)
 		}
-	}
+	},
+    desk: {
+        0: {
+            shading: THREE.FlatShading,
+            color: new THREE.Color().setRGB(0.98, 0.90, 0.81)
+			//wireframe: true
+            //color: new THREE.Color().setRGB(0.89, 0, 0)
+        }
+    }
 };
