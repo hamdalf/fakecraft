@@ -1,0 +1,227 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: sans-serif, Arial;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#308ef2+0,ffffff+100 */
+  background: #000;
+  /* Old browsers */
+  background: -moz-linear-gradient(bottom, #060709 25%, #212328 50%, #424448 75%, #686a6d 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.25, #060709), color-stop(0.5, #212328), color-stop(0.75, #424448), color-stop(1, #686a6d));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(bottom, #060709 25%, #212328 50%, #424448 75%, #686a6d 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(bottom, #060709 25%, #212328 50%, #424448 75%, #686a6d 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(bottom, #060709 25%, #212328 50%, #424448 75%, #686a6d 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #060709 25%, #212328 50%, #424448 75%, #686a6d 100%);
+  /* W3C */
+}
+header {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: calc(100% - 20px);
+  z-index: 1;
+  padding: 0 10px 0 10px;
+}
+header h1 {
+  font-size: 20px;
+  line-height: 20px;
+  float: left;
+}
+header p {
+  display: inline-block;
+  margin: 9px 0 0 10px;
+  font-size: 10px;
+  line-height: 10px;
+}
+header .status {
+  float: right;
+  margin: 50px 0 0 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+header .status dt {
+  float: left;
+  line-height: 20px;
+  margin: 0 5px 0 0;
+}
+header .status dd {
+  float: left;
+}
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: calc(100% - 20px);
+  z-index: 1;
+  padding: 0 10px 0 10px;
+}
+footer .keymap {
+  list-style: none;
+}
+footer .keymap dt {
+  float: left;
+  border: 1px solid #000;
+  border-radius: 2px;
+  background-color: #fff;
+  color: #000;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 15px;
+  padding: 0 4px 0 4px;
+}
+footer .keymap dd {
+  float: left;
+  margin: 0 20px 0 5px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 19px;
+}
+footer .iofunctions {
+  float: right;
+  list-style: none;
+  margin: 0 0 0 0;
+}
+footer .iofunctions li {
+  list-style: none;
+  float: left;
+  margin: 0 5px 0 0;
+}
+footer .iofunctions li button {
+  font-size: 12px;
+  font-weight: 400;
+  border: 1px solid #000;
+  border-radius: 2px;
+  background-color: #f0f0f0;
+}
+footer .iofunctions::last-child {
+  margin: 0 0 0 0;
+}
+#floatPannel {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 100px;
+  width: 400px;
+  height: 700px;
+  background-color: rgba(10, 10, 10, 0.7);
+  border-radius: 5px;
+  overflow: hidden;
+  font-family: 'Open Sans Condensed';
+}
+#floatPannel #btnClose {
+  text-indent: -9999px;
+  background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: transparent;
+  border-style: none;
+  display: block;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+#floatPannel .innerPanel {
+  background: transparent;
+  margin: 25px auto 0 auto;
+  display: block;
+  width: 95%;
+  height: 95%;
+  overflow: hidden;
+}
+#floatPannel .innerPanel h3 {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.5em;
+  margin: 0 0 5px 0;
+}
+#floatPannel .innerPanel .list {
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  max-height: 90%;
+}
+#floatPannel .innerPanel .list.allow_scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#floatPannel .innerPanel .list.not_scroll {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+#floatPannel .innerPanel .list a {
+  color: #000;
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1.5em;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+  padding: 5px 0;
+}
+#floatPannel .innerPanel .list a img {
+  width: 25px;
+  height: 25px;
+  margin: 0 10px;
+  vertical-align: middle;
+}
+#floatPannel .innerPanel .list a .nick {
+  color: #0000ff;
+  margin: 0 0 0 10px;
+  font-weight: 600;
+}
+#floatPannel .innerPanel .list a:hover {
+  background-color: #E18728;
+}
+#floatPannel .innerPanel dl {
+  list-style: none;
+  padding: 10px 0;
+}
+#floatPannel .innerPanel dl dt {
+  list-style: none;
+  float: left;
+  line-height: 2em;
+}
+#floatPannel .innerPanel dl dt label {
+  font-weight: 600;
+  padding: 0 0 0 10px;
+}
+#floatPannel .innerPanel dl dt::after {
+  content: ':';
+  display: inline;
+  padding: 0 10px 0 0;
+}
+#floatPannel .innerPanel dl dd {
+  list-style: none;
+  line-height: 2em;
+}
+#floatPannel .innerPanel dl dd input[name=pictureUrl] {
+  width: 250px;
+}
+#floatPannel .flatbtn {
+  border-style: none;
+  border-radius: 3px;
+  color: #fff;
+  font-family: 'Open Sans Condensed';
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 0 10px;
+  margin: 0 5px 0 0;
+}
+#floatPannel .flatbtn.blue {
+  background-color: #3399CC;
+}
+#floatPannel .flatbtn.gray {
+  background-color: #a0a0a0;
+}
+#floatPannel .flatbtn.orange {
+  background-color: #ff6600;
+}

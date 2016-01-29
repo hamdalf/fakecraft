@@ -8,8 +8,9 @@ var mongoose = require('mongoose'),
 		email: String,
 		skype: String,
 		mobile: String,
-		floor: Number,
-		location: Number
+		floor: String,
+		location: String,
+        normalized: String
 	});
 	
 module.exports = mongoose.model('userlist', UserSchema);

@@ -33,7 +33,7 @@ router.route('/user').all(
 		next(); // make sure we go to the next routes and don't stop here
 	}
 ).get(function(req, res) {
-	User.find(function (err, users) {
+	User.find().sort('normalized').exec(function (err, users) {
 		if (err) {
 			res.send(err);
 		}
@@ -41,22 +41,63 @@ router.route('/user').all(
 	});
 }).post(function(req, res) {
 	var user = new User();
-	user.name = req.body.name;
-	user.nick = req.body.nick;
-	user.jobTitle = req.body.jobTitle;
-	user.pictureUrl = req.body.pictureUrl;
+	user.name = req.body.username;
+	user.nick = req.body.nickname;
+	user.jobTitle = req.body.jobtitle;
+	user.pictureUrl = req.body.pictureurl;
 	user.email = req.body.email;
 	user.skype = req.body.skype;
 	user.mobile = req.body.mobile;
 	user.floor = req.body.floor;
 	user.location = req.body.location;
+    user.normalized = req.body.username.toLowerCase()
 	
 	user.save(function (err) {
 		if (err) {
-			res.send(err);
+			console.log(err);
 		}
 		res.json({message: 'User created!'});
 	});
 });
+
+router.route('/user/:userid').all(function(req, res, next) {
+    console.log('user by id process started');
+	next();
+}).get(function(req, res) {
+    User.find({_id: req.params.userid}, function (err, users) {
+        if (err) {
+			res.send(err);
+		}
+		res.json(users);
+    });
+}).put(function(req, res) {
+    console.log(req);
+    var dataToBe = {
+		name: req.body.username,
+		nick: req.body.nickname,
+		jobTitle: req.body.jobtitle,
+		pictureUrl: req.body.pictureurl,
+		email: req.body.email,
+		skype: req.body.skype,
+		mobile: req.body.mobile,
+		floor: req.body.floor,
+		location: req.body.location,
+        normalized: req.body.username.toLowerCase()
+	};
+    User.update({_id: req.params.userid}, dataToBe, function (err, users) {
+        if (err) {
+			console.log(err);
+		}
+		res.json({message: 'User updated!'});
+    });
+}).delete(function(req, res) {
+    User.remove({_id: req.params.userid}, function(err) {
+        if (err) {
+			console.log(err);
+		}
+		res.json({message: 'User deleted!'});
+    });
+});
+
 
 module.exports = router;

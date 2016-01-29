@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				desk.updateMatrix();
                 desk._p = 'desk';
                 desk._t = 0;
-                desk._deskID = null;
+                desk._userID = null;
 				scene.add(desk);
 			}
 		}
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				p: child._p,
 				t: child._t,
                 r: child._r,
-                i: child._deskID
+                i: child._userID
 			});
 		}
         
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				p: child._p,
 				t: child._t,
                 r: child._r,
-                i: child._deskID
+                i: child._userID
 			});
 		}
         
@@ -488,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mesh.updateMatrix();
             mesh._p = desks[i].p;
             mesh._t = desks[i].t;
-            mesh._deskID = desks[i].i;
+            mesh._userID = desks[i].i;
             scene.add(mesh);
         }
     };

@@ -6,8 +6,10 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Google Fonts embed code : "Open Sans Condensed" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&subset=latin,latin-ext">
 	<link rel="stylesheet" href="/styles/html5doctor.css" >
-	<link rel="stylesheet" href="/styles/officedeskeditor.css" >
+	<link rel="stylesheet" href="/styles/officecollegueeditor.css" >
 	<script src="/scripts/threejs/three72.min.js"></script>
 	<script src="/scripts/threejs/examples/js/renderers/Projector.js"></script>
 	<script src="/scripts/threejs/examples/js/controls/TrackballControls.js"></script>
@@ -37,25 +39,69 @@
 		</header>
 		<footer>
 			<dl class="keymap">
-				<dt>ctrl</dt>
-				<dd>Add voxel</dd>
-				<dt>alt</dt>
-				<dd>Remove voxel</dd>
-				<dt>i/k keys</dt>
-				<dd>Translate in y</dd>
-				<dt>A/S/D + mouse</dt>
-				<dd>Camera move</dd>
-				<dt>0-9</dt>
-				<dd>Change color</dd>
-				<dt>Drag &amp; Drop json file</dt>
-				<dd>Load map file</dd>
+                <dt>mouse right button + drag</dt>
+				<dd>parallel move</dd>
+				<dt>mouse left button + drag</dt>
+				<dd>rotate map</dd>
+				<dt>mouse wheel up</dt>
+				<dd>Zoom In</dd>
+				<dt>mouse wheel down</dt>
+				<dd>Zoom Out</dd>
+                <dt>↑</dt>
+				<dd>Zoom In</dd>
+				<dt>↓</dt>
+				<dd>Zoom Out</dd>
 			</dl>
 			<ul class="iofunctions">
+                <li><button>user list</button></li>
 				<li><button>print .png</button></li>
 				<li><button>print .json</button></li>
 				<li><button>save .json</button></li>
 			</ul>
 		</footer>
+        <div id="floatPannel">
+            <button id="btnClose">Close</button>
+            <div id="userList" class="innerPanel">
+                <h3>User List</h3>
+                <ul class="list allow_scroll">
+                    <li></li>
+                </ul>
+                <button id="btnCreateUser" class="flatbtn blue">Create New Colleague</button>
+            </div>
+            <div id="userForm" class="innerPanel">
+                <h3>Edit User Information</h3>
+                <dl class="list not_scroll">
+                    <dt><label for="username">Name</label></dt>
+                    <dd><input type="text" name="username" /></dd>
+                    <dt><label for="nickname">Nick Name</label></dt>
+                    <dd><input type="text" name="nickname" /></dd>
+                    <dt><label for="role">Role</label></dt>
+                    <dd><input type="text" name="role" /></dd>
+                    <dt><label for="email">Email</label></dt>
+                    <dd><input type="text" name="email" /></dd>
+                    <dt><label for="skype">Skype</label></dt>
+                    <dd><input type="text" name="skype" /></dd>
+                    <dt><label for="mobile">Mobile</label></dt>
+                    <dd><input type="text" name="mobile" /></dd>
+                    <dt><label for="pictureUrl">Picture URL</label></dt>
+                    <dd><input type="text" name="pictureUrl" /></dd>
+                </dl>
+                <button id="btnCancel" class="flatbtn gray">Cancel</button>
+                <button id="btnDelete" class="flatbtn orange">Delete</button>
+                <button id="btnSave" class="flatbtn blue">Save</button>
+            </div>
+            <div id="deskInfo" class="innerPanel">
+                <h3>Desk Information</h3>
+                <dl class="list not_scroll">
+                    <dt><label>Desk ID</label></dt>
+                    <dd></dd>
+                    <dt><label>User</label></dt>
+                    <dd></dd>
+                </dl>
+                <button id="btnClear">Clear User</button>
+                <button id="btnAssign">Assign User</button>
+            </div>
+        </div>
 	</div>
 </body>
 </html>

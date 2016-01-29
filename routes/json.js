@@ -17,6 +17,7 @@ router.route('/json').all(function(req, res, next) {
 			console.log(ex);
 		}
 		res.json({message: 'File saved!'});
+        res.end();
 	});
 });
 
