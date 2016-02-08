@@ -18,27 +18,34 @@ var cubePattern = {
 	wall: {
 		0: {
 			shading: THREE.FlatShading,
-			color: new THREE.Color().setRGB(1, 1, 0.96)
+			color: new THREE.Color().setRGB(1, 1, 0.96),
+            opacity: 0.4,
+            transparent: true
 		},
         1: {
             shading: THREE.FlatShading,
 			color: new THREE.Color().setRGB(0.3, 0.5, 0.89),
-            opacity: 0.5,
+            opacity: 0.3,
 			transparent: true
         },
         2: {
 			shading: THREE.FlatShading,
-			color: new THREE.Color().setRGB(0.96, 0.21, 0.04)
+			color: new THREE.Color().setRGB(0.96, 0.21, 0.04),
+            opacity: 0.4,
+            transparent: true
 		},
         3: {
 			shading: THREE.FlatShading,
-			color: new THREE.Color().setRGB(0.8, 0.8, 0.8)
+			color: new THREE.Color().setRGB(0.8, 0.8, 0.8),
+            opacity: 0.4,
+            transparent: true
 		}
 	},
     desk: {
         0: {
             shading: THREE.FlatShading,
-            color: new THREE.Color().setRGB(0.98, 0.90, 0.81)
+            //color: new THREE.Color().setRGB(0.98, 0.90, 0.81)
+            color: new THREE.Color().setRGB(0.98, 0.98, 0.90)
 			//wireframe: true
             //color: new THREE.Color().setRGB(0.89, 0, 0)
         }

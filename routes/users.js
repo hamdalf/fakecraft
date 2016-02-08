@@ -71,7 +71,6 @@ router.route('/user/:userid').all(function(req, res, next) {
 		res.json(users);
     });
 }).put(function(req, res) {
-    console.log(req);
     var dataToBe = {
 		name: req.body.username,
 		nick: req.body.nickname,

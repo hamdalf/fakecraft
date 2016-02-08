@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
     
     var zoomFactor = 1,
-		zoomIncFactor = 0.01;
+		zoomIncFactor = 0.01,
+        deskObjs = {};
     
     var container = document.querySelector('#container'),
 		renderer = new THREE.WebGLRenderer({
@@ -37,26 +38,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // cubes
 	var cubeMaterials = {},
-		tempCube, newTexture;
+		tempMaterial, newTexture;
 	for (var k in cubePattern) {
 		if (!cubeMaterials[k]) {
 			cubeMaterials[k] = {};
 		}
 		for (var l in cubePattern[k]) {
-			newTexture = {
-				shading: THREE.FlatShading
-			};
+			newTexture = {};
 			for (var m in cubePattern[k][l]) {
 				newTexture[m] = cubePattern[k][l][m];
 			}
-			//tempCube = new THREE.MeshPhongMaterial(newTexture);
-            tempCube = new THREE.MeshLambertMaterial(newTexture);
-			tempCube._cubePattern = k;
-			tempCube._cubeType = l;
-			cubeMaterials[k][l] = tempCube;
+			//tempMaterial = new THREE.MeshPhongMaterial(newTexture);
+            tempMaterial = new THREE.MeshLambertMaterial(newTexture);
+			tempMaterial._p = k;
+			tempMaterial._t = l;
+			cubeMaterials[k][l] = tempMaterial;
 		}
 	}
-    
+
     // desk deometry
     var deskGeo, deskMesh;
     var fileName = encodeURIComponent('geometry_desk');
@@ -74,20 +73,74 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     xhr.send();
     
-    var mouse2D = new THREE.Vector2(),
-		raycaster = new THREE.Raycaster(),
-		ambientLight = new THREE.AmbientLight(0xa0a0a0),
-		directionalLight = new THREE.DirectionalLight(0xffffff);
-	scene.add(ambientLight);
-	directionalLight.position.set(1, 1, -1).normalize();
-	scene.add(directionalLight);
+    // Lights
+    var ambientLight = new THREE.AmbientLight(0xe0e0e0),
+		directionalLight = new THREE.DirectionalLight(0xffffff),
+        lightPositions = [
+            {x:2350,y:250,z:-750},
+            {x:2350,y:250,z:-350},
+            {x:2350,y:250,z:350},
+            {x:2350,y:250,z:750},
+            {x:1400,y:250,z:-750},
+            {x:1400,y:250,z:-350},
+            {x:1400,y:250,z:350},
+            {x:1400,y:250,z:750},
+            {x:600,y:250,z:-700},
+            {x:600,y:250,z:0},
+            {x:600,y:250,z:700},
+            {x:-200,y:250,z:-700},
+            {x:-200,y:250,z:0},
+            {x:-200,y:250,z:700},
+            {x:-1000,y:250,z:-700},
+            {x:-1000,y:250,z:0},
+            {x:-1000,y:250,z:700},
+            {x:-1800,y:250,z:-700},
+            {x:-1800,y:250,z:0},
+            {x:-1800,y:250,z:700}
+        ],
+        tempLight;
+        //spotLight1 = new THREE.SpotLight(0xffffff, 2, 0, Math.PI/2, 2, 1),  // hex, intensity, distance, angle, exponent, decay
+        //lightTarget1 = new THREE.Object3D();
+    scene.add(ambientLight);
+	//directionalLight.position.set(1, 1, -1).normalize();
+	//scene.add(directionalLight);
     
+    for (var i = 0; i < lightPositions.length; i++) {
+        tempLight = new THREE.PointLight(0xffffff, 0.2, 1600, 1); // hex, intensity, distance, decay
+        tempLight.position.set(lightPositions[i].x, lightPositions[i].y, lightPositions[i].z);
+        scene.add(tempLight);
+    }
+    
+    /*spotLight1.position.set(2300, 400, 0);
+    spotLight1.shadowCameraVisible = true;
+    spotLight1.shadowDarkness = 0.95;
+    spotLight1.castShadow = true;
+    scene.add(spotLight1);
+    lightTarget1.position.set(2300, 200, 0);
+    scene.add(lightTarget1);
+    spotLight1.target = lightTarget1;
+    
+    var spotLight2 = spotLight1.clone(),
+        lightTarget2 = lightTarget1.clone();
+    spotLight2.position.set(2300, 400, 800);
+    scene.add(spotLight2);
+    lightTarget2.position.set(2300, 0, 800);
+    scene.add(lightTarget2);
+    spotLight2.target = lightTarget2;*/
+    
+    
+
+    // stats
     var stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '5px';
 	stats.domElement.style.right = '5px';
 	container.appendChild(stats.domElement);
     
+    // Mouse, Raycaster
+    var mouse2D = new THREE.Vector2(),
+		raycaster = new THREE.Raycaster();
+        
     var onDocumentMouseMove = function (e) {
 		mouse2D.x = (e.clientX / window.innerWidth) * 2 - 1;
 		mouse2D.y = - (e.clientY / window.innerHeight) * 2 + 1;
@@ -95,13 +148,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var onDocumentMouseUp = function (e) {
         raycaster.setFromCamera(mouse2D, camera);
-        var intersects = raycaster.intersectObjects(scene.children);
+        var intersects = raycaster.intersectObjects(scene.children, true);
         if (intersects.length > 0) {
 			var intersector = getRealIntersector(intersects);
 
 			if (intersector) {
-                var desk = intersector.object;
-                selectDesk(desk);
+                intersector.select();
+                goToDeskInfo(intersector.desk._userID, intersector.desk.uuid);
 			} else {
                 /*if (typeof preChangedDeskId !== 'undefined') {
                     findDeskById(preChangedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
@@ -122,17 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		}	
 	};
     
-    var selectDesk = function (desk) {
-        if (desk.uuid !== selectedDeskId) {
-            if (typeof selectedDeskId !== 'undefined') {
-                findDeskById(selectedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
-            }
-        }
-        selectedDeskId = desk.uuid;
-        desk.material.color.setHex(0xdd4477);
-        goToDeskInfo(desk._userID, desk.uuid);
-    };
-    
     document.addEventListener('mousemove', onDocumentMouseMove, false);
     document.addEventListener('mouseup', onDocumentMouseUp, false);
     document.addEventListener('keydown', onDocumentKeyDown, false);
@@ -141,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		var intersector;
 		for (var i = 0; i < intersects.length; i++) {
 			intersector = intersects[i];
-			if (intersector.object._p === 'desk') {
-				return intersector;
+			if (intersector.object.name === 'desk') {
+                return findDeskById(intersector.object.uuid);
 			}
 		}
 	};
@@ -176,18 +218,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
         for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			if (child._p !== 'desk') {
+			if (child.name !== 'deskroot') {
 				continue;
 			}
 			
 			desks.push({
-				x: child.position.x,
-				y: child.position.y,
-				z: child.position.z,
-				p: child._p,
-				t: child._t,
-                r: child._r,
-                i: child._userID
+				x: child.desk.position.x,
+				y: child.desk.position.y,
+				z: child.desk.position.z,
+				p: child.desk._p,
+				t: child.desk._t,
+                r: child.desk._r,
+                i: child.desk._userID
 			});
 		}
         
@@ -202,18 +244,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
         for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			if (child._p !== 'desk') {
+			if (child.name !== 'deskroot') {
 				continue;
 			}
 			
 			desks.push({
-				x: child.position.x,
-				y: child.position.y,
-				z: child.position.z,
-				p: child._p,
-				t: child._t,
-                r: child._r,
-                i: child._userID
+				x: child.desk.position.x,
+				y: child.desk.position.y,
+				z: child.desk.position.z,
+				p: child.desk._p,
+				t: child.desk._t,
+                r: child.desk._r,
+                i: child.desk._userID
 			});
 		}
         
@@ -234,7 +276,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
     // for user list
-    var selectedDeskId;
+    var selectedDeskId, userData;
+    
+    var findUserDataById = function(id) {
+        var result = null;
+        
+        for (var i = 0; i < userData.length; i++) {
+            if (userData[i]._id === id) {
+                result = userData[i];
+            }
+        }
+        
+        return result;
+    };
+    
     var showUserList = function () {
         document.querySelector('#floatPannel').style.display = 'block';
         document.querySelector('#userList').style.display = 'block';
@@ -250,8 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.responseType = 'json';
         xhr.onload = function (e) {
 			if (this.status == 200) {
+                userData = this.response;
                 callback(this.response);
-                //drawUserList(this.response);
 			}
 		};
 		xhr.send();
@@ -261,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var tmpContainer = document.createDocumentFragment(),
             tmpLi, tmpA, tmpImg, tmpNick;
         for (var i = 0; i < json.length; i++) {
-            tmpImg = (json[i].pictureUrl) ? json[i].pictureUrl : 'images/colleagueeditor/ic_account_box_black_24px.svg';
+            tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined') ? json[i].pictureUrl : 'images/colleagueeditor/ic_account_box_black_24px.svg';
             tmpNick = (json[i].nick) ? '<span class="nick">(' + json[i].nick + ')</span>' : '';
             tmpLi = document.createElement('li');
             tmpA = document.createElement('a');
@@ -290,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#userForm input[name=skype]').value = '';
         document.querySelector('#userForm input[name=mobile]').value = '';
         document.querySelector('#userForm input[name=pictureUrl]').value = '';
+        document.querySelector('#userForm input[name=floor]').value = '';
         document.querySelector('#btnSave').setAttribute('data-id', '');
     };
     
@@ -297,12 +353,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', '/api/user/' + id, true);
         xhr.responseType = 'json';
-        xhr.onload = function (e) {
-			if (this.status == 200) {
-                callback(id, this.response);
-                //makeUserForm(this.response);
-			}
-		};
+        xhr.onload = function(id) {
+            return function (e) {
+                if (this.status == 200) {
+                    callback(id, this.response);
+                    //makeUserForm(this.response);
+                }
+            };
+		}(id);
 		xhr.send();
     };
     
@@ -320,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#userForm input[name=skype]').value = json[0].skype;
         document.querySelector('#userForm input[name=mobile]').value = json[0].mobile;
         document.querySelector('#userForm input[name=pictureUrl]').value = json[0].pictureUrl;
+        document.querySelector('#userForm input[name=floor]').value = json[0].floor;
         
         document.querySelector('#userForm h3').innerHTML = 'Edit User Information';
     };
@@ -364,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var closePanel = function () {
         if (typeof selectedDeskId !== 'undefined') {
-                findDeskById(selectedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
+                findDeskById(selectedDeskId).setMouseOut();
                 selectedDeskId = void(0);
         }
         document.querySelector('#floatPannel').style.display = 'none';
@@ -377,26 +436,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.querySelector('#btnSave').addEventListener('click', function (e) {
-        var xhr = new XMLHttpRequest(),
-            username = document.querySelector('#userForm input[name=username]').value,
-            nickname = document.querySelector('#userForm input[name=nickname]').value,
-            jobtitle = document.querySelector('#userForm input[name=role]').value,
-            email = document.querySelector('#userForm input[name=email]').value,
-            skype = document.querySelector('#userForm input[name=skype]').value,
-            mobile = document.querySelector('#userForm input[name=mobile]').value,
-            pictureurl = document.querySelector('#userForm input[name=pictureUrl]').value,
-            floor = null,
-            location = null,
-            params = 'username=' + username
-                     + '&nickname=' + nickname
-                     + '&jobtitle=' + jobtitle
-                     + '&email=' + email
-                     + '&skype=' + skype
-                     + '&mobile=' + mobile
-                     + '&pictureurl=' + pictureurl
-                     + '&floor=' + floor
-                     + '&location=' + location,
+        var objData = {
+                name: document.querySelector('#userForm input[name=username]').value,
+                nick: document.querySelector('#userForm input[name=nickname]').value,
+                jobTitle: document.querySelector('#userForm input[name=role]').value,
+                email: document.querySelector('#userForm input[name=email]').value,
+                skype: document.querySelector('#userForm input[name=skype]').value,
+                mobile: document.querySelector('#userForm input[name=mobile]').value,
+                pictureUrl: document.querySelector('#userForm input[name=pictureUrl]').value,
+                floor: document.querySelector('#userForm input[name=floor]').value,
+                location: null
+            },
             userId = document.querySelector('#btnSave').getAttribute('data-id');
+            
+        saveUserData(objData, userId, function() {
+            alert('User data saved');
+            goToUserList();
+        });
+    });
+    
+    var saveUserData = function (objData, uid, callback) {
+        var xhr = new XMLHttpRequest(),
+            params = 'username=' + objData.name
+                     + '&nickname=' + objData.nick
+                     + '&jobtitle=' + objData.jobTitle
+                     + '&email=' + objData.email
+                     + '&skype=' + objData.skype
+                     + '&mobile=' + objData.mobile
+                     + '&pictureurl=' + objData.pictureUrl
+                     + '&floor=' + objData.floor
+                     + '&location=' + objData.location,
+            userId = uid;
         if (userId) {
             xhr.open('PUT', '/api/user/' + userId, true);
             xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
@@ -408,18 +478,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-                alert('User \'' + username + '\' saved');
-                goToUserList();
+                callback();
 			}
 		};
 		xhr.send(params);
-    });
+    };
+    
+    var clearUser = function () {
+        findDeskById(selectedDeskId).clearUser();
+        goToDeskInfo(null, selectedDeskId);
+    };
     
     document.querySelector('#btnAssign').addEventListener('click', goToUserList);
+    document.querySelector('#btnClear').addEventListener('click', clearUser);
     
     var setUserIdToDesk = function (deskId, uid) {
-        findDeskById(deskId)._userID = uid;
-        closePanel();
+        //console.log(deskId, uid);
+        findDeskById(deskId).setUser(uid);
+        var user = findUserDataById(uid);
+        //console.log(uid, user);
+        user.floor = getSelectedFoor();
+        saveUserData(user, uid, function() {
+            closePanel();
+        });
     };
     
     var clickUserNameActionByContext = function (e) {
@@ -442,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-                alert('User \'' + username + '\' deleted');
+                alert('User deleted');
                 goToUserList();
 			}
 		};
@@ -520,6 +601,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			mesh.position.y = geometries[i].y;
 			mesh.position.z = geometries[i].z;
             mesh.name = 'map';
+            //mesh.receiveShadow = true;
+            //mesh.castShadow = false;
             scene.add(mesh);
         }
     };
@@ -528,73 +611,183 @@ document.addEventListener('DOMContentLoaded', function() {
         var children = scene.children.slice(0);
         
         for (var i = 0; i < children.length; i++) {
-			if (children[i]._p !== 'desk') {
+			if (children[i].name !== 'deskroot') {
 				continue;
 			}
 			
 			scene.remove(children[i]);
 		}
         
+        deskObjs = {};
+        
         var desks = json,
             numDesk = desks.length,
-            mesh;
+            objDesk;
         for (var i = 0; i < numDesk; i++) {
-            var mat = cubeMaterials['desk'][0].clone();
-            mesh = new THREE.Mesh(deskGeo.geometry, mat);
-            mesh.position.set(desks[i].x, desks[i].y, desks[i].z);
-            if (desks[i].r === true) {
-                mesh.rotation.y += Math.PI / 2;
-                mesh._r = true;
-            } else {
-                mesh._r = false;
-            }
-            mesh.matrixAutoUpdate = false;
-            mesh.updateMatrix();
-            mesh._p = desks[i].p;
-            mesh._t = desks[i].t;
-            mesh._userID = desks[i].i;
-            scene.add(mesh);
+            objDesk = new OfficeDesk(desks[i].p, desks[i].t);
+            objDesk.setPosition(desks[i].x, desks[i].y, desks[i].z);
+            objDesk.setRotation(desks[i].r);
+            objDesk.setUser(desks[i].i);
+            objDesk.update();
+            deskObjs[objDesk.desk.uuid] = objDesk;
+            scene.add(objDesk.root);
         }
     };
     
-    var preChangedDeskId;
-    var changeDeskColor = function(intersector) {
-        var desk = intersector.object;
-        if (desk.uuid === preChangedDeskId) {
-            return;
+    /**
+     * Desk Object
+     * .update
+     * .setPosition
+     * .setRotation
+     * .setUser
+     */
+    var OfficeDesk = function(p, t) {
+        this.root = new THREE.Object3D();
+        this.root.name = 'deskroot';
+        //this.root.castShadow = true;
+        //this.root.receiveShadow = false;
+        var mat = cubeMaterials['desk'][0].clone();
+        var desk = new THREE.Mesh(deskGeo.geometry, mat);
+        //desk.castShadow = true;
+        //desk.receiveShadow = false;
+        this.desk = desk;
+        this.desk.name = 'desk';
+        this.desk._p = p;
+        this.desk._t = t;
+        this.root.desk = desk;
+        this._objNamePanel = null;
+        this.update = function() {
+            if (this.desk._r === true) {
+                this.desk.rotation.y += Math.PI / 2;
+            }
+            this.desk.matrixAutoUpdate = false;
+            this.desk.updateMatrix();
+        };
+        this.root.add(this.desk);
+    };
+    
+    OfficeDesk.prototype.setPosition = function(x, y, z) {
+        this.desk.position.set(x, y, z);
+    };
+    
+    OfficeDesk.prototype.setRotation = function(r) {
+        this.desk._r = r;
+    };
+    
+    OfficeDesk.prototype.setUser = function(uid) {
+        this.desk._userID = uid;
+        var user = findUserDataById(uid);
+        if (user) {
+            this.setNamePanel(user.name);
         }
-        if (desk.uuid !== preChangedDeskId) {
+     };
+    
+    OfficeDesk.prototype.clearUser = function(uid) {
+        this.desk._userID = void(0);
+    };
+    
+    OfficeDesk.prototype.setMouseOver = function() {
+        if (this.desk.uuid === preChangedDeskId) {
+            return;
+        } else if (this.desk.uuid !== preChangedDeskId) {
             if (typeof preChangedDeskId !== 'undefined') {
                 if (preChangedDeskId !== selectedDeskId) {
-                    findDeskById(preChangedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
+                    findDeskById(preChangedDeskId).setMouseOut();
                 }
             }
         }
-        if (intersector.object.uuid !== selectedDeskId) {
-            preChangedDeskId = desk.uuid;
-            desk.material.color.setHex(0xe3983b);
+        if (this.desk.uuid !== selectedDeskId) {
+            preChangedDeskId = this.desk.uuid;
+            this.desk.material.color.setHex(0xe3983b);
         } else {
             preChangedDeskId = void(0);
         }
     };
     
+    OfficeDesk.prototype.setMouseOut = function() {
+        this.desk.material.color.setRGB(0.98, 0.98, 0.90);
+    };
+    
+    OfficeDesk.prototype.select = function() {
+        if (this.desk.uuid !== selectedDeskId) {
+            if (typeof selectedDeskId !== 'undefined') {
+                findDeskById(selectedDeskId).setMouseOut();
+            }
+        }
+        selectedDeskId = this.desk.uuid;
+        this.desk.material.color.setHex(0xdd4477);
+        //goToDeskInfo(this.desk._userID, this.desk.uuid);
+    };
+
+    OfficeDesk.prototype.setNamePanel = function(txt) {
+        if (this._objNamePanel) {
+            this.clearNamePanel();
+        }
+        var canvas = this.buildNameCanvas(txt),
+            texture = new THREE.Texture(canvas);
+        texture.needsUpdate	= true;
+        var material = new THREE.SpriteMaterial({
+                map: texture,
+                useScreenCoordinates: false
+            }),
+            sprite = new THREE.Sprite(material);
+        sprite.position.set(this.desk.position.x, this.desk.position.y + 50, this.desk.position.z);
+        sprite.scale.set(150, 150, 150);
+        //sprite.position.normalize();
+        this._objNamePanel = sprite;
+        this.root.add(this._objNamePanel);
+    };
+    
+    OfficeDesk.prototype.clearNamePanel = function() {
+        if (this._objNamePanel === null) {
+            return;
+        }
+        this.root.remove(this._objNamePanel);
+        this._objNamePanel = null;
+    };
+    
+    OfficeDesk.prototype.buildNameCanvas = function(txt) {
+        var canvas = document.createElement('canvas'),
+            context = canvas.getContext('2d'),
+            fontSize = 20,
+            fontFamily = 'Arial',
+            bgColor = 'rgba(0,0,255,0.3)',
+            fontColor = 'rgba(0,0,0,0.7)',
+            scale = 1.3,
+            fontH = fontSize,
+            fontW;
+        canvas.width = 256;
+        canvas.height = 256;
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.font = '600 ' + fontSize + 'px "' + fontFamily + '"';
+        fontW = context.measureText(txt).width;
+        context.fillStyle = bgColor;
+        context.fillRect(-fontW*scale/2,-fontH*scale/1.3,fontW*scale,fontH*scale);
+        context.fillStyle = fontColor;
+        context.fillText(txt, -fontW/2, 0);
+        
+        return canvas;
+    };
+
+    var preChangedDeskId;
+    
     var findDeskById = function(objId) {
-        var children = scene.children.slice(0);
-		
-		for (var i = 0; i < children.length; i++) {
-			if (children[i].uuid === objId) {
-				return children[i];
-			}
-		}
+        if (typeof deskObjs[objId] !== 'undefined') {
+            return deskObjs[objId];
+        }
+    };
+    
+    var getSelectedFoor = function() {
+        var floorOptions = document.querySelector('dd.floor select').options;
+        for (var i = 0; i < floorOptions.length; i++) {
+            if (floorOptions[i].selected === true) {
+                return floorOptions[i].value;
+            }
+        }
     };
     
     document.querySelector('dd.floor select').addEventListener('change', function(e) {
-        var options = e.target.children;
-        for (var i = 0; i < options.length; i++) {
-            if (options[i].selected === true) {
-                loadJSONMap(options[i].value);
-            }
-        }
+        loadJSONMap(getSelectedFoor());
     }, false);
     
     var animate = function () {
@@ -606,16 +799,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var render = function () {
         raycaster.setFromCamera(mouse2D, camera);
-        var intersects = raycaster.intersectObjects(scene.children);
+        var intersects = raycaster.intersectObjects(scene.children, true);
         if (intersects.length > 0) {
 			var intersector = getRealIntersector(intersects);
 
 			if (intersector) {
-    		    changeDeskColor(intersector);
+                intersector.setMouseOver();
 			} else {
                 if (typeof preChangedDeskId !== 'undefined') {
                     if (preChangedDeskId !== selectedDeskId) {
-                        findDeskById(preChangedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
+                        findDeskById(preChangedDeskId).setMouseOut();
                     }
                 }
                 preChangedDeskId = void(0);
@@ -625,11 +818,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
     
 	animate();
-    var floorOptions = document.querySelector('dd.floor select').options;
-    for (var i = 0; i < floorOptions.length; i++) {
-        if (floorOptions[i].selected === true) {
-            loadJSONMap(floorOptions[i].value);
-            break;
-        }
-    }
+    
+    callUserList(function(res) {
+        loadJSONMap(getSelectedFoor());
+    });
+    
 });
