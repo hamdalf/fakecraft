@@ -15,7 +15,7 @@
     <script src="/scripts/threejs/RequestAnimationFrame.js"></script>
     <script src="/scripts/threex/threex.windowresize.js"></script>
     <script src="/scripts/officeflooreditor.pattern.js"></script>
-    <script src="/scripts/officefider.js"></script>
+    <script src="/scripts/officefinder.js"></script>
 </head>
 <body>
     <header>
@@ -25,26 +25,52 @@
         </ul>
     </header>
     <div id="canvasContainer">
+        <p class="hint">Click Desk You Want To Be Closer</p>
         <ul class="floornav">
-            <li><a href="#" class="floor">19F</a></li>
-            <li><a href="#" class="floor split on">20F</a></li>
-            <li><a href="#" class="cam panleft">Pan-Left</a></li>
-            <li><a href="#" class="cam moveleft">Move-Left</a></li>
-            <li><a href="#" class="cam moveup">Move-Up</a></li>
-            <li><a href="#" class="cam movedown">Move-Down</a></li>
-            <li><a href="#" class="cam moveright">Move-Right</a></li>
-            <li><a href="#" class="cam panright">Pan-Right</a></li>
-            <li><a href="#" class="cam zoomin">Zoom-In</a></li>
-            <li><a href="#" class="cam zoomout">Zoom-Out</a></li>
+            <li class="li-floor19"><a href="#" class="floor">19F</a></li>
+            <li class="li-floor20 split"><a href="#" class="floor on">20F</a></li>
+            <li class="li-panleft"><a href="#" class="cam panleft">Pan-Left</a></li>
+            <li class="li-moveleft"><a href="#" class="cam moveleft">Move-Left</a></li>
+            <li class="li-moveup"><a href="#" class="cam moveup">Move-Up</a></li>
+            <li class="li-movedown"><a href="#" class="cam movedown">Move-Down</a></li>
+            <li class="li-moveright"><a href="#" class="cam moveright">Move-Right</a></li>
+            <li class="li-panright"><a href="#" class="cam panright">Pan-Right</a></li>
+            <li class="li-zoomin"><a href="#" class="cam zoomin">Zoom-In</a></li>
+            <li class="li-zoomout"><a href="#" class="cam zoomout">Zoom-Out</a></li>
         </ul>
+        <div class="userinfo">
+            <img class="pic" />
+            <h3>HOHOHO</h3>
+            <h4>Job Manager</h4>
+            <dl>
+                <dt class="email">Email</dt>
+                <dd class="email">ddfsdf</dd>
+                <dt class="skype">Skype</dt>
+                <dd class="skype">ddfsdf</dd>
+                <dt class="mobile">Mobile</dt>
+                <dd class="mobile">ddfsdf</dd>
+            </dl>
+        </div>
     </div>
     <nav>
         <div class="navWrapper">
-            <p>Please choose service</p>
-            <ul>
+            <p>
+                <a class="navback" href="#">back</a>
+                <span>Please choose service</span>
+            </p>
+            <ul class="menus">
                 <li><a href="#" class="navs menu1">Search people by name</a></li>
                 <li><a href="#" class="navs menu2">Find people on list</a></li>
                 <li><a href="#" class="navs menu3">Explore office</a></li>
+            </ul>
+            <div class="search">
+                <form id="searchForm" accept-charset="utf-8">
+                    <input type="text" name="s" id="s" autocomplete="off" />
+                </form>
+                <ul class="quickresult">
+                </ul>
+            </div>
+            <ul class="lists">
             </ul>
         </div>
     </nav>

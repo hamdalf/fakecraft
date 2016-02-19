@@ -126,6 +126,13 @@ footer {
     overflow: hidden;
     font-family: 'Open Sans Condensed';
     
+    &.dimmed {
+        top: 0;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+    }
+    
     #btnClose {
         text-indent: -9999px;
         background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
@@ -133,7 +140,7 @@ footer {
         background-repeat: no-repeat;
         background-size: cover;
         background-color: transparent;
-        border-style:none;
+        border-style: none;
         display: block;
         width: 20px;
         height: 20px;
@@ -193,6 +200,12 @@ footer {
                     color: #0000ff;
                     margin: 0 0 0 10px;
                     font-weight: 600;
+                }
+                
+                .floor {
+                    color: #a0a0a0;
+                    margin: 0 0 0 10px;
+                    font-weight: 400;
                 }
                 
                 &:hover {

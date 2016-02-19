@@ -131,11 +131,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
     // stats
-    var stats = new Stats();
+    /*var stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '5px';
 	stats.domElement.style.right = '5px';
-	container.appendChild(stats.domElement);
+	container.appendChild(stats.domElement);*/
     
     // Mouse, Raycaster
     var mouse2D = new THREE.Vector2(),
@@ -175,8 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}	
 	};
     
-    document.addEventListener('mousemove', onDocumentMouseMove, false);
-    document.addEventListener('mouseup', onDocumentMouseUp, false);
+    //document.addEventListener('mousemove', onDocumentMouseMove, false);
+    //document.addEventListener('mouseup', onDocumentMouseUp, false);
+    renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
+    renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
     document.addEventListener('keydown', onDocumentKeyDown, false);
     
     var getRealIntersector = function (intersects) {
@@ -314,13 +316,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var drawUserList = function (json) {
         var tmpContainer = document.createDocumentFragment(),
-            tmpLi, tmpA, tmpImg, tmpNick;
+            tmpLi, tmpA, tmpImg, tmpNick, tmpFloor;
         for (var i = 0; i < json.length; i++) {
             tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined') ? json[i].pictureUrl : 'images/colleagueeditor/ic_account_box_black_24px.svg';
             tmpNick = (json[i].nick) ? '<span class="nick">(' + json[i].nick + ')</span>' : '';
+            tmpFloor = (json[i].floor && json[i].floor !== 'null') ? '<span class="floor">' + json[i].floor + 'F</span>' : '';
             tmpLi = document.createElement('li');
             tmpA = document.createElement('a');
-            tmpA.innerHTML = '<img src="' + tmpImg + '">' + json[i].name + tmpNick;
+            tmpA.innerHTML = '<img src="' + tmpImg + '">' + json[i].name + tmpNick + tmpFloor;
             tmpA.setAttribute('href', '#');
             tmpA.setAttribute('data-id', json[i]._id);
             tmpA.addEventListener('click', clickUserNameActionByContext);
@@ -393,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     var goToDeskInfo = function (uid, deskMeshId) {
+        document.querySelector('#floatPannel').classList.add('dimmed');
         document.querySelector('#floatPannel').style.display = 'block';
         document.querySelector('#userForm').style.display = 'none';
         document.querySelector('#userList').style.display = 'none';
@@ -427,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedDeskId = void(0);
         }
         document.querySelector('#floatPannel').style.display = 'none';
+        document.querySelector('#floatPannel').classList.remove('dimmed');
     };
     
     document.querySelector('#btnClose').addEventListener('click', closePanel);
@@ -684,6 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     OfficeDesk.prototype.clearUser = function(uid) {
         this.desk._userID = void(0);
+        this.clearNamePanel();
     };
     
     OfficeDesk.prototype.setMouseOver = function() {
@@ -794,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		TimerId = requestAnimationFrame(animate);
 		controls.update();
 		render();
-		stats.update();
+		//stats.update();
 	};
 	
 	var render = function () {
