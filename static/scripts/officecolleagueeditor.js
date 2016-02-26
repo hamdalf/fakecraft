@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var tmpContainer = document.createDocumentFragment(),
             tmpLi, tmpA, tmpImg, tmpNick, tmpFloor;
         for (var i = 0; i < json.length; i++) {
-            tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined') ? json[i].pictureUrl : 'images/colleagueeditor/ic_account_box_black_24px.svg';
+            tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined' || json[i].pictureUrl === '' || json[i].pictureUrl === null) ? 'images/colleagueeditor/ic_account_box_black_24px.svg' : json[i].pictureUrl;
             tmpNick = (json[i].nick) ? '<span class="nick">(' + json[i].nick + ')</span>' : '';
             tmpFloor = (json[i].floor && json[i].floor !== 'null') ? '<span class="floor">' + json[i].floor + 'F</span>' : '';
             tmpLi = document.createElement('li');

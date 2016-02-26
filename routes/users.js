@@ -67,8 +67,9 @@ router.route('/user/:userid').all(function(req, res, next) {
     User.find({_id: req.params.userid}, function (err, users) {
         if (err) {
 			res.send(err);
-		}
-		res.json(users);
+		} else {
+		    res.json(users);
+        }
     });
 }).put(function(req, res) {
     var dataToBe = {

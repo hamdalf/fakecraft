@@ -4,15 +4,15 @@ document.addEventListener('DOMContentLoaded', function() {
         materials, geoDesk, meshDesk,
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
-        cameraAct, floorNow, userInfo;
+        cameraAct, floorNow, userInfo, planeNav;
 
-    var lightInit = false,
-        cameraInit = false;
+    var lightInit = false;
     
     var topNavs = document.querySelectorAll('.topnav a');
     topNavs[0].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        userInfo.hide();
         navigation.sceneDefault();
         navigation.show();
     });
@@ -260,15 +260,27 @@ document.addEventListener('DOMContentLoaded', function() {
         renderer.setSize(window.innerWidth, window.innerHeight);
 	    container3D.appendChild(renderer.domElement);
         
+        /**
+         * Camera
+         */
         camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 50, 1e7);
         //camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -500, 10000);
         //camera.fov == 30;
+
+        scene = new THREE.Scene();
+        scene.add(camera);
+        
+        planeNav = new PlaneNavigator();
+        scene.add(planeNav.root);
         
         THREEx.WindowResize(renderer, camera);
+        window.addEventListener('resize', function (e) {
+            planeNav.moveAtTheFrontOf(camera);
+        });
         
-        scene = new THREE.Scene();
-        
-        // Materials
+        /**
+         * Global Materials
+         */
         materials = {};
         var tmpTex, tmpMat;
         
@@ -322,13 +334,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 var intersector = getRealIntersector(intersects);
 
                 if (intersector) {
-                    intersector.select();
-                    cameraAct.closeToDesk(intersector);
+                    if (intersector.object.name === 'desk') {
+                        var desk = findDeskById(intersector.object.uuid);
+                        desk.select();
+                        cameraAct.closeToDesk(desk);
+                    } else if (intersector.object.name === 'btnUp') {
+                        cameraAct.hedgehop(400, 0, 0);
+                    } else if (intersector.object.name === 'btnDown') {
+                        cameraAct.hedgehop(-400, 0, 0);
+                    } else if (intersector.object.name === 'btnLeft') {
+                        cameraAct.hedgehop(0, 0, -400);
+                    } else if (intersector.object.name === 'btnRight') {
+                        cameraAct.hedgehop(0, 0, 400);
+                    }
                     //goToDeskInfo(intersector.desk._userID, intersector.desk.uuid);
                 }
             }
         };
-        document.addEventListener('click', onDocumentClick, false);
+        //document.addEventListener('click', onDocumentClick, false);
+        container3D.addEventListener('click', onDocumentClick, false);
     };
     
     var findUserDataById = function(id) {
@@ -347,9 +371,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		var intersector;
 		for (var i = 0; i < intersects.length; i++) {
 			intersector = intersects[i];
-			if (intersector.object.name === 'desk') {
-                return findDeskById(intersector.object.uuid);
-			}
+            if (intersector.object.name) {
+                switch (intersector.object.name) {
+                    case 'desk':
+                    case 'btnUp':
+                    case 'btnDown':
+                    case 'btnLeft':
+                    case 'btnRight':
+                        return intersector;
+                        break;
+                }
+            }
 		}
 	};
     
@@ -401,6 +433,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.totalAngle = Math.PI / 3;
                     break;
             }
+        }
+    };
+    
+    cameraAction.prototype.hedgehop = function(x, y, z) {
+        if (this.isMoving === false) {
+            //if (camera.position.y <= this.heightLimit) {
+                this.isMoving = true;
+                this.startPosition = camera.position.clone();
+                this.moveType = 'hedgehop';
+                var dx = x, dy = 0, dz = z;
+                this.finalPosition = new THREE.Vector3();
+                this.finalPosition.x = camera.position.x + dx;
+                this.finalPosition.y = this.heightLimit;
+                this.finalPosition.z = camera.position.z + dz;
+                this.speedDistanceX = Math.abs(dx / 500);
+                this.speedDistanceY = Math.abs(dy / 500);
+                this.speedDistanceZ = Math.abs(dz / 500);
+                this.spinPoint.x = this.spinPoint.x + dx;
+                this.spinPoint.y = 10;
+                this.spinPoint.z = this.spinPoint.z + dz;
+            //}
         }
     };
     
@@ -540,12 +593,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.moveType === 'closetodesk' && camera.position.y <= this.heightLimit) {
                 //tmpPosition.set(camera.position.x, camera.position.y, camera.position.z);
                 container3D.classList.add('hedgehop');
+                planeNav.show();
                 this.isMoving = false;
             } else if (this.moveType === 'hedgehop' && dx <= this.speedDistanceX * delta && dz <= this.speedDistanceZ * delta) {
                 tmpPosition.x = this.finalPosition.x;
                 tmpPosition.y = this.finalPosition.y;
                 tmpPosition.z = this.finalPosition.z;
                 container3D.classList.add('hedgehop');
+                planeNav.show();
                 this.isMoving = false;
             } else if (this.moveType === 'backwardtopoint' && ((dx <= this.speedDistanceX * delta && dz <= this.speedDistanceZ * delta) || distanceFromMap >= this.heightMax)) {
                 this.isMoving = false;
@@ -575,29 +630,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'rotateleft': // see left, move right
                 var positionNow = camera.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -angleAtOnce);
-                camera.position.set(positionNow.x, positionNow.y, positionNow.z);
-                camera.lookAt(this.spinPoint);
+                //camera.position.set(positionNow.x, positionNow.y, positionNow.z);
+                this.setPosition(positionNow.x, positionNow.y, positionNow.z);
+                //camera.lookAt(this.spinPoint);
+                this.lookAt(this.spinPoint);
                 break;
             case 'rotateright':  // see right, move left
                 var positionNow = camera.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), angleAtOnce);
-                camera.position.set(positionNow.x, positionNow.y, positionNow.z);
-                camera.lookAt(this.spinPoint);
+                //camera.position.set(positionNow.x, positionNow.y, positionNow.z);
+                this.setPosition(positionNow.x, positionNow.y, positionNow.z);
+                //camera.lookAt(this.spinPoint);
+                this.lookAt(this.spinPoint);
                 break;
             case 'closetodesk':
-                camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 break;
             case 'hedgehop':
-                camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 break;
             case 'forwardtopoint':
             case 'backwardtopoint':
-                camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
-                camera.lookAt(this.spinPoint);
+                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+                //camera.lookAt(this.spinPoint);
+                this.lookAt(this.spinPoint);
                 break;
         }
         
         if (this.isMoving === false) {
-            console.log(this.moveType,camera.position.y, distanceFromMap);
             if (this.moveType === 'pedestalleft' || this.moveType === 'pedestalright' || this.moveType === 'pedestalup' || this.moveType === 'pedestaldown') {
                 var dx = camera.position.x - this.startPosition.x;
                 var dy = camera.position.y - this.startPosition.y;
@@ -626,12 +688,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 container3D.classList.remove('hedgehop');
             } else {
                 container3D.classList.add('hedgehop');
+                planeNav.show();
             }
             
             if (distanceFromMap < this.heightMax) {
                 container3D.classList.remove('stratosphere');
             } else {
                 container3D.classList.add('stratosphere');
+                planeNav.hide();
             }
         }
     };
@@ -644,8 +708,19 @@ document.addEventListener('DOMContentLoaded', function() {
             this.spinPoint.y = y;
             this.spinPoint.z = z;
         }
-        camera.lookAt(this.spinPoint);
+        //camera.lookAt(this.spinPoint);
+        this.lookAt(this.spinPoint);
         camera.updateProjectionMatrix();
+    };
+    
+    cameraAction.prototype.setPosition = function (x, y, z) {
+        camera.position.set(x, y, z);
+        planeNav.moveAtTheFrontOf(camera);
+    };
+    
+    cameraAction.prototype.lookAt = function (obj) {
+        camera.lookAt(obj);
+        planeNav.moveAtTheFrontOf(camera);
     };
     
     cameraAct = new cameraAction();
@@ -761,7 +836,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (intersects.length > 0) {
 			var intersector = getRealIntersector(intersects);
             if (intersector) {
-                intersector.setMouseOver();
+                if (intersector.object.name === 'desk') {
+                    findDeskById(intersector.object.uuid).setMouseOver();
+                }
 			} else {
                 if (typeof preChangedDeskId !== 'undefined') {
                     if (preChangedDeskId !== selectedDeskId) {
@@ -774,6 +851,104 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         renderer.render(scene, camera);
+    };
+    
+    /**
+     * Plane Navigator
+     */
+    var PlaneNavigator = function () {
+        this.root = new THREE.Object3D();
+        this.background = new THREE.Mesh(new THREE.PlaneGeometry(55, 35), new THREE.MeshBasicMaterial({
+			color: 0x000000,
+            transparent: true,
+            opacity: 0.3
+		}));
+        this.background.rotateOnAxis(new THREE.Vector3(1, 0, 0), - Math.PI / 2);
+        this.background.translateZ(-0.1);
+        this.root.add(this.background);
+        var btnShape = new THREE.Shape();
+        btnShape.moveTo(0, 0);
+        btnShape.lineTo(-8, -4);
+        btnShape.lineTo(8, -4);
+        btnShape.lineTo(0, 0);
+        var btnGeo = new THREE.ShapeGeometry(btnShape);
+        this.btnUp = new THREE.Mesh(btnGeo, new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide
+        }));
+        this.btnUp.name = 'btnUp';
+        this.btnUp.rotateOnAxis(new THREE.Vector3(1, 0, 0), - Math.PI / 2);
+        this.btnUp.rotateOnAxis(new THREE.Vector3(0, 0, 1), - Math.PI / 2);
+        this.btnUp.translateY(25);
+        this.root.add(this.btnUp);
+        this.btnDown = new THREE.Mesh(btnGeo, new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide
+        }));
+        this.btnDown.name = 'btnDown';
+        this.btnDown.rotateOnAxis(new THREE.Vector3(1, 0, 0), - Math.PI / 2);
+        this.btnDown.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+        this.btnDown.translateY(25);
+        this.root.add(this.btnDown);
+        this.btnLeft = new THREE.Mesh(btnGeo, new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide
+        }));
+        this.btnLeft.name = 'btnLeft';
+        this.btnLeft.rotateOnAxis(new THREE.Vector3(1, 0, 0), - Math.PI / 2);
+        //this.btnDown.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+        this.btnLeft.translateY(15);
+        this.root.add(this.btnLeft);
+        this.btnRight = new THREE.Mesh(btnGeo, new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide
+        }));
+        this.btnRight.name = 'btnRight';
+        this.btnRight.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+        //this.btnDown.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+        this.btnRight.translateY(15);
+        this.root.add(this.btnRight);
+        var lineGeo1 = new THREE.Geometry();
+        lineGeo1.vertices.push(
+            new THREE.Vector3(-21, 0, 0),
+            new THREE.Vector3(21, 0, 0)
+        );
+        this.lineUpDown = new THREE.Line(lineGeo1, new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8
+        }));
+        this.root.add(this.lineUpDown);
+        var lineGeo2 = new THREE.Geometry();
+        lineGeo2.vertices.push(
+            new THREE.Vector3(0, 0, 12),
+            new THREE.Vector3(0, 0, -12)
+        );
+        this.lineLeftRight = new THREE.Line(lineGeo2, new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8
+        }));
+        this.root.add(this.lineLeftRight);
+    };
+    
+    PlaneNavigator.prototype.moveAtTheFrontOf = function (obj) {
+        var tmpCameraClone = new THREE.Object3D();
+        tmpCameraClone.rotation.copy(obj.rotation);
+        tmpCameraClone.position.set(obj.position.x, obj.position.y, obj.position.z);
+        tmpCameraClone.translateZ(-500);
+        tmpCameraClone.translateX(window.innerWidth / 13);
+        tmpCameraClone.translateY(-(window.innerHeight / 11));
+        this.root.position.copy(tmpCameraClone.position);
+        this.root.updateMatrix();
+    };
+    
+    PlaneNavigator.prototype.show = function () {
+        this.root.visible = true;
+    };
+    
+    PlaneNavigator.prototype.hide = function () {
+        this.root.visible = false;
     };
     
     /**
@@ -931,10 +1106,16 @@ document.addEventListener('DOMContentLoaded', function() {
         this.email = document.querySelector('.userinfo dd.email');
         this.skype = document.querySelector('.userinfo dd.skype');
         this.mobile = document.querySelector('.userinfo dd.mobile');
+        this.btnClose = document.querySelector('.userinfo .btnClose');
+        
+        this.btnClose.addEventListener('click', function(t) {
+            return function (e) {
+                t.hide();
+            };
+        }(this));
     };
     
     UserInfo.prototype.set = function (data) {
-        console.log(data);
         if (data.pictureUrl) {
             this.img.setAttribute('src', data.pictureUrl);
         } else {
@@ -948,13 +1129,14 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             this.job.innerHTML = '...';
         }
+        var preferredName = (data.nick) ? data.nick : data.name;
         if (data.email) {
-            this.email.innerHTML = data.email;
+            this.email.innerHTML = '<a href="mailto:' + data.email + '?subject=Hallo%2C%20' + preferredName + '&amp;body=sent%20by%20Office%20Finder">' + data.email + '</a>';
         } else {
             this.email.innerHTML = '...';
         }
         if (data.skype) {
-            this.skype.innerHTML = data.skype;
+            this.skype.innerHTML = '<a href="skype:' + data.skype + '?userinfo">' + data.skype + '</a>';
         } else {
             this.skype.innerHTML = '...';
         }
@@ -1023,13 +1205,23 @@ document.addEventListener('DOMContentLoaded', function() {
             animate();
         }
         
-        camera.position.x = -3000;
-        camera.position.y = 5000;
-        camera.position.z = -6500;
+        //camera.position.x = -3000;
+        //camera.position.y = 5000;
+        //camera.position.z = -6500;
+        cameraAct.setPosition(-3000, 5000, -6500);
         cameraAct.setSpinPoint(0, 0, 0);
         container3D.classList.remove('hedgehop');
         container3D.classList.add('stratosphere');
         container3D.style.display = 'block';
+        planeNav.hide();
+        
+        /*planeNav.position.copy(camera.position);
+        planeNav.rotation.copy(camera.rotation);
+        planeNav.updateMatrix();
+        planeNav.translateZ(-1000);
+        planeNav.translateY(-100);
+        planeNav.translateX(300);*/
+        planeNav.moveAtTheFrontOf(camera);
     };
     
     init();

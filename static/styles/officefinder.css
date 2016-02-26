@@ -247,8 +247,8 @@ nav .lists li a:hover {
   z-index: 1;
   list-style: none;
   display: block;
-  width: 630px;
-  margin-left: -330px;
+  width: 330px;
+  margin-left: -200px;
   background: rgba(0, 0, 0, 0.3);
   padding: 10px 30px;
 }
@@ -259,6 +259,18 @@ nav .lists li a:hover {
 }
 #canvasContainer .floornav li:last-child {
   margin-right: 0;
+}
+#canvasContainer .floornav li.li-moveleft {
+  display: none;
+}
+#canvasContainer .floornav li.li-moveup {
+  display: none;
+}
+#canvasContainer .floornav li.li-movedown {
+  display: none;
+}
+#canvasContainer .floornav li.li-moveright {
+  display: none;
 }
 #canvasContainer .floornav li.li-zoomin {
   display: none;
@@ -314,10 +326,22 @@ nav .lists li a:hover {
   background-image: url('../images/colleagueeditor/ic_rotate_left_white_24px.svg');
 }
 #canvasContainer.hedgehop .floornav {
-  width: 580px;
-  margin-left: -300px;
+  width: 330px;
+  margin-left: -200px;
 }
 #canvasContainer.hedgehop .floornav li.li-zoomin {
+  display: none;
+}
+#canvasContainer.hedgehop .floornav li.li-moveleft {
+  display: none;
+}
+#canvasContainer.hedgehop .floornav li.li-moveup {
+  display: none;
+}
+#canvasContainer.hedgehop .floornav li.li-movedown {
+  display: none;
+}
+#canvasContainer.hedgehop .floornav li.li-moveright {
   display: none;
 }
 #canvasContainer.stratosphere .floornav {
@@ -361,11 +385,30 @@ nav .lists li a:hover {
   padding: 20px;
 }
 #canvasContainer .userinfo img {
-  width: 48px;
-  height: 48px;
+  width: 100px;
+  height: 100px;
   border-radius: 10px;
   float: left;
   margin-right: 10px;
+  margin-left: -50px;
+  margin-top: -50px;
+  box-shadow: 2px 2px 5px #888888;
+}
+#canvasContainer .userinfo .btnClose {
+  text-indent: -9999px;
+  background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: transparent;
+  border-style: none;
+  display: block;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
 }
 #canvasContainer .userinfo h3 {
   font-size: 25px;
@@ -399,6 +442,13 @@ nav .lists li a:hover {
   font-size: 20px;
   line-height: 25px;
   font-weight: 500;
+}
+#canvasContainer .userinfo dl dd a {
+  color: #fff;
+  text-decoration: none;
+}
+#canvasContainer .userinfo dl dd a:hover {
+  color: #0000ff;
 }
 footer {
   position: fixed;
