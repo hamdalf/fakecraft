@@ -428,9 +428,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 case 'rotateleft': // see left, move right
                     this.totalAngle = Math.PI / 3;
+                    var crossingPoint = this.getCrossingPointOnPlane();
+                    crossingPoint.y = 10;
+                    this.spinPoint = crossingPoint;
                     break;
                 case 'rotateright':  // see right, move left
                     this.totalAngle = Math.PI / 3;
+                    var crossingPoint = this.getCrossingPointOnPlane();
+                    crossingPoint.y = 10;
+                    this.spinPoint = crossingPoint;
                     break;
             }
         }
@@ -560,10 +566,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (this.totalAngle) {
-            //var vs = this.startPosition.sub(scene.position).normalize();
-            //var vc = camera.position.clone().sub(scene.position).normalize();
-            var vs = this.startPosition;
+            var vs = this.startPosition.clone();
             var vc = camera.position.clone();
+            // angle is caculated on plane (y = 0)
+            vs.y = 0;
+            vc.y = 0;
             var dot = vs.dot(vc);
             var angleUntilNow = Math.acos(dot / (vs.length() * vc.length()));
             var angleAtOnce = this.speedAngle * delta;
@@ -629,17 +636,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 camera.translateY(-distanceAtOnce);
                 break;
             case 'rotateleft': // see left, move right
-                var positionNow = camera.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -angleAtOnce);
-                //camera.position.set(positionNow.x, positionNow.y, positionNow.z);
+                var positionNow = camera.position.clone();
+                var tx = positionNow.x - this.spinPoint.x;
+                var tz = positionNow.z - this.spinPoint.z;
+                positionNow.x = (tx * Math.cos(angleAtOnce)) - (tz * Math.sin(angleAtOnce));
+                positionNow.z = (tz * Math.cos(angleAtOnce)) + (tx * Math.sin(angleAtOnce));
+                positionNow.x += this.spinPoint.x;
+                positionNow.z += this.spinPoint.z;
                 this.setPosition(positionNow.x, positionNow.y, positionNow.z);
-                //camera.lookAt(this.spinPoint);
                 this.lookAt(this.spinPoint);
                 break;
             case 'rotateright':  // see right, move left
-                var positionNow = camera.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), angleAtOnce);
-                //camera.position.set(positionNow.x, positionNow.y, positionNow.z);
+                var positionNow = camera.position.clone();
+                var tx = positionNow.x - this.spinPoint.x;
+                var tz = positionNow.z - this.spinPoint.z;
+                positionNow.x = (tx * Math.cos(-angleAtOnce)) - (tz * Math.sin(-angleAtOnce));
+                positionNow.z = (tz * Math.cos(-angleAtOnce)) + (tx * Math.sin(-angleAtOnce));
+                positionNow.x += this.spinPoint.x;
+                positionNow.z += this.spinPoint.z;
                 this.setPosition(positionNow.x, positionNow.y, positionNow.z);
-                //camera.lookAt(this.spinPoint);
                 this.lookAt(this.spinPoint);
                 break;
             case 'closetodesk':
@@ -723,6 +738,24 @@ document.addEventListener('DOMContentLoaded', function() {
         planeNav.moveAtTheFrontOf(camera);
     };
     
+    cameraAction.prototype.getCrossingPointOnPlane = function () {
+        var centerPosition = new THREE.Vector2();
+        centerPosition.set(0, 0);
+        raycaster.setFromCamera(centerPosition, camera);
+        var intersects = raycaster.intersectObjects(scene.children, true),
+            point;
+        if (intersects.length > 0) {
+            for (var i = 0; i < intersects.length; i++) {
+                if (intersects[i].object.pattern) {
+                    if (intersects[i].object.pattern === 'floor') {
+                        point = intersects[i].point;
+                        return point;
+                    }
+                }
+            }
+        }
+    };
+    
     cameraAct = new cameraAction();
     
     var loadJSONMap = function (floor, callback) {
@@ -770,6 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			mesh.position.y = geometries[i].y;
 			mesh.position.z = geometries[i].z;
             mesh.name = 'map';
+            mesh.pattern = geometries[i].p;
             scene.add(mesh);
         }
     };
