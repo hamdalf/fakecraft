@@ -57,21 +57,36 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
     // desk deometry
-    var deskGeo, deskMesh;
-    var fileName = encodeURIComponent('geometry_desk');
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/json/' + fileName, true);
-    xhr.responseType = 'json';
-    xhr.onload = function (e) {
-        if (this.status == 200) {
-            var geometries = this.response;
-            deskGeo = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
-            deskMesh = new THREE.Mesh(deskGeo.geometry, cubeMaterials['desk'][0].clone());
-            deskMesh.position.set(80, 36, 40);
-            deskMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+    var totalDeskTypes = 2,
+        deskGeo = [];
+        //deskMesh = [];
+    var loadDeskGeos = function (idx) {
+        if (idx < totalDeskTypes) {
+            var fileName = encodeURIComponent('geometry_desk' + idx);
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/json/' + fileName, true);
+            xhr.responseType = 'json';
+            xhr.onload = function (e) {
+                if (this.status == 200) {
+                    var geometries = this.response;
+                    deskGeo[idx] = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+                    //deskMesh[idx] = new THREE.Mesh(deskGeo[idx].geometry.clone(), cubeMaterials['desk'][0].clone());
+                    //deskMesh.position.set(80, 36, 40);
+                    /*switch (idx) {
+                        case 0:
+                            deskMesh[idx].geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                            break;
+                        case 1:
+                            deskMesh[idx].geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                            break;
+                    }*/
+                    loadDeskGeos(idx + 1);
+                }
+            };
+            xhr.send();
         }
     };
-    xhr.send();
+    loadDeskGeos(0);
     
     // Lights
     var ambientLight = new THREE.AmbientLight(0xe0e0e0),
@@ -318,7 +333,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var tmpContainer = document.createDocumentFragment(),
             tmpLi, tmpA, tmpImg, tmpNick, tmpFloor;
         for (var i = 0; i < json.length; i++) {
-            tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined' || json[i].pictureUrl === '' || json[i].pictureUrl === null) ? 'images/colleagueeditor/ic_account_box_black_24px.svg' : json[i].pictureUrl;
+            if (json[i].dataType) {
+                if (json[i].dataType === '0') {
+                    tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined' || json[i].pictureUrl === '' || json[i].pictureUrl === null) ? 'images/colleagueeditor/ic_account_box_black_24px.svg' : json[i].pictureUrl;
+                } else {
+                    tmpImg = 'images/colleagueeditor/ic_place_black_24px.svg';
+                }
+            } else {
+                tmpImg = (typeof json[i].pictureUrl === 'undefined' || json[i].pictureUrl === 'undefined' || json[i].pictureUrl === '' || json[i].pictureUrl === null) ? 'images/colleagueeditor/ic_account_box_black_24px.svg' : json[i].pictureUrl;
+            }
+            
             tmpNick = (json[i].nick) ? '<span class="nick">(' + json[i].nick + ')</span>' : '';
             tmpFloor = (json[i].floor && json[i].floor !== 'null') ? '<span class="floor">' + json[i].floor + 'F</span>' : '';
             tmpLi = document.createElement('li');
@@ -341,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     var clearForm = function () {
+        document.querySelector('#userForm select[name=datatype]').selectedIndex = 0;
         document.querySelector('#userForm input[name=username]').value = '';
         document.querySelector('#userForm input[name=nickname]').value = '';
         document.querySelector('#userForm input[name=role]').value = '';
@@ -373,7 +398,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#userForm').style.display = 'block';
         document.querySelector('#btnDelete').style.display = 'inline-block';
         document.querySelector('#btnSave').setAttribute('data-id', id);
-                
+        
+        var dataType = (json[0].dataType) ? parseInt(json[0].dataType) : 0;
+        document.querySelector('#userForm select[name=datatype]').selectedIndex = dataType;
         document.querySelector('#userForm input[name=username]').value = json[0].name;
         document.querySelector('#userForm input[name=nickname]').value = json[0].nick;
         document.querySelector('#userForm input[name=role]').value = json[0].jobTitle;
@@ -441,7 +468,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.querySelector('#btnSave').addEventListener('click', function (e) {
+        var dataTypeOptions = document.querySelector('#userForm select[name=datatype]').options,
+            dataType = 0;
+        for (var i = 0; i < dataTypeOptions.length; i++) {
+            if (dataTypeOptions[i].selected === true) {
+                dataType = dataTypeOptions[i].value;
+            }
+        }
         var objData = {
+                dataType: dataType,
                 name: document.querySelector('#userForm input[name=username]').value,
                 nick: document.querySelector('#userForm input[name=nickname]').value,
                 jobTitle: document.querySelector('#userForm input[name=role]').value,
@@ -462,7 +497,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var saveUserData = function (objData, uid, callback) {
         var xhr = new XMLHttpRequest(),
-            params = 'username=' + objData.name
+            params = 'datatype=' + objData.dataType
+                     + '&username=' + objData.name
                      + '&nickname=' + objData.nick
                      + '&jobtitle=' + objData.jobTitle
                      + '&email=' + objData.email
@@ -652,9 +688,17 @@ document.addEventListener('DOMContentLoaded', function() {
         //this.root.castShadow = true;
         //this.root.receiveShadow = false;
         var mat = cubeMaterials['desk'][0].clone();
-        var desk = new THREE.Mesh(deskGeo.geometry, mat);
+        var desk = new THREE.Mesh(deskGeo[t].geometry.clone(), mat);
         //desk.castShadow = true;
         //desk.receiveShadow = false;
+        switch (t) {
+            case 0:
+                desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                break;
+            case 1:
+                desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                break;
+        }
         this.desk = desk;
         this.desk.name = 'desk';
         this.desk._p = p;

@@ -29,7 +29,7 @@ var express = require('express'),
 router.route('/user').all(
 	function(req, res, next) {
 		// do logging
-		console.log('userlist start to use');
+		console.log('userlist start to use - ', new Date().toString());
 		next(); // make sure we go to the next routes and don't stop here
 	}
 ).get(function(req, res) {
@@ -41,6 +41,7 @@ router.route('/user').all(
 	});
 }).post(function(req, res) {
 	var user = new User();
+    user.dataType = req.body.datatype;
 	user.name = req.body.username;
 	user.nick = req.body.nickname;
 	user.jobTitle = req.body.jobtitle;
@@ -61,7 +62,7 @@ router.route('/user').all(
 });
 
 router.route('/user/:userid').all(function(req, res, next) {
-    console.log('user by id process started');
+    console.log('user by id process started - ', new Date().toString());
 	next();
 }).get(function(req, res) {
     User.find({_id: req.params.userid}, function (err, users) {
@@ -73,6 +74,7 @@ router.route('/user/:userid').all(function(req, res, next) {
     });
 }).put(function(req, res) {
     var dataToBe = {
+        dataType: req.body.datatype,
 		name: req.body.username,
 		nick: req.body.nickname,
 		jobTitle: req.body.jobtitle,

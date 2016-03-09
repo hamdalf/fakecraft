@@ -1,6 +1,7 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema,
 	UserSchema = new Schema({
+        dataType: String,
 		name: String,
 		nick: String,
 		jobTitle: String,

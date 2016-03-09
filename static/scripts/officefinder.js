@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     var container3D, renderer, camera, scene,
-        materials, geoDesk, meshDesk,
+        materials,
+        geoDesk = [],
+        //meshDesk,
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
         cameraAct, floorNow, userInfo, planeNav;
@@ -161,6 +163,17 @@ document.addEventListener('DOMContentLoaded', function() {
         for (var i = 0; i < users.length; i++) {
             if (users[i].name.toLowerCase().search(keyword) > -1 || users[i].nick.toLowerCase().search(keyword) > -1) {
                 tr = document.createElement('li');
+                switch (users[i].dataType) {
+                    case '0':
+                        tr.classList.add('people');
+                        break;
+                    case '1':
+                        tr.classList.add('position');
+                        break;
+                    default:
+                        tr.classList.add('people');
+                        break;
+                }
                 ta = document.createElement('a');
                 ta.setAttribute('href', '#');
                 ta.setAttribute('data-id', users[i]._id);
@@ -215,6 +228,17 @@ document.addEventListener('DOMContentLoaded', function() {
         wrapper.innerHTML = '';
         for (var i = 0; i < users.length; i++) {
             tr = document.createElement('li');
+            switch (users[i].dataType) {
+                case '0':
+                    tr.classList.add('people');
+                    break;
+                case '1':
+                    tr.classList.add('position');
+                    break;
+                default:
+                    tr.classList.add('people');
+                    break;
+            }
             ta = document.createElement('a');
             ta.setAttribute('href', '#');
             ta.setAttribute('data-id', users[i]._id);
@@ -301,21 +325,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Geometry of Desk
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/json/geometry_desk', true);
-        //xhr.responseType = 'json';
-        xhr.responseType = 'text';
-        xhr.onload = function (e) {
-            if (this.status == 200) {
-                //var geometries = this.response;
-                var geometries = JSON.parse(this.responseText);
-                geoDesk = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
-                meshDesk = new THREE.Mesh(geoDesk.geometry, materials['desk'][0].clone());
-                meshDesk.position.set(80, 36, 40);
-                meshDesk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+        var totalDeskTypes = 2;
+        var loadDeskGeos = function (idx) {
+            if (idx < totalDeskTypes) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/api/json/geometry_desk' + idx, true);
+                //xhr.responseType = 'json';
+                xhr.responseType = 'text';
+                xhr.onload = function (e) {
+                    if (this.status == 200) {
+                        //var geometries = this.response;
+                        var geometries = JSON.parse(this.responseText);
+                        geoDesk[idx] = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+                        //meshDesk = new THREE.Mesh(geoDesk.geometry.clone(), materials['desk'][0].clone());
+                        //meshDesk.position.set(80, 36, 40);
+                        //meshDesk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                        loadDeskGeos(++idx);
+                    }
+                };
+                xhr.send();
             }
         };
-        xhr.send();
+        loadDeskGeos(0);
+        
         
         // Mouse, Raycaster
         mouse2D = new THREE.Vector2();
@@ -658,18 +690,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.lookAt(this.spinPoint);
                 break;
             case 'closetodesk':
-                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 break;
             case 'hedgehop':
-                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 break;
             case 'forwardtopoint':
             case 'backwardtopoint':
-                //camera.position.set(tmpPosition.x, tmpPosition.y, tmpPosition.z);
                 this.setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
-                //camera.lookAt(this.spinPoint);
                 this.lookAt(this.spinPoint);
                 break;
         }
@@ -992,7 +1020,15 @@ document.addEventListener('DOMContentLoaded', function() {
         this.root = new THREE.Object3D();
         this.root.name = 'deskroot';
         var mat = materials['desk'][0].clone();
-        var desk = new THREE.Mesh(geoDesk.geometry, mat);
+        var desk = new THREE.Mesh(geoDesk[t].geometry.clone(), mat);
+        switch (t) {
+            case 0:
+                desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                break;
+            case 1:
+                desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                break;
+        }
         this.desk = desk;
         this.desk.name = 'desk';
         this.desk._p = p;
@@ -1021,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.desk._userID = uid;
         var user = findUserDataById(uid);
         if (user) {
-            this.setNamePanel(user.name);
+            this.setNamePanel(user.name, user.dataType);
         }
     };
     
@@ -1065,11 +1101,11 @@ document.addEventListener('DOMContentLoaded', function() {
         //goToDeskInfo(this.desk._userID, this.desk.uuid);
     };
 
-    OfficeDesk.prototype.setNamePanel = function(txt) {
+    OfficeDesk.prototype.setNamePanel = function(txt, dataType) {
         if (this._objNamePanel) {
             this.clearNamePanel();
         }
-        var canvas = this.buildNameCanvas(txt),
+        var canvas = this.buildNameCanvas(txt, dataType),
             texture = new THREE.Texture(canvas);
         texture.needsUpdate	= true;
         var material = new THREE.SpriteMaterial({
@@ -1091,16 +1127,27 @@ document.addEventListener('DOMContentLoaded', function() {
         this._objNamePanel = null;
     };
     
-    OfficeDesk.prototype.buildNameCanvas = function(txt) {
+    OfficeDesk.prototype.buildNameCanvas = function(txt, dataType) {
         var canvas = document.createElement('canvas'),
             context = canvas.getContext('2d'),
             fontSize = 20,
             fontFamily = 'Arial',
-            bgColor = 'rgba(0,0,255,0.5)',
+            bgColor,
             fontColor = 'rgba(255,255,255,0.9)',
             scale = 1.3,
             fontH = fontSize,
             fontW;
+        switch (dataType) {
+            case '0':
+                bgColor = 'rgba(0,0,255,0.5)';
+                break;
+            case '1':
+                bgColor = 'rgba(20,137,44,0.5)';
+                break;
+            default:
+                bgColor = 'rgba(0,0,255,0.5)';
+                break;
+        }
         canvas.width = 256;
         canvas.height = 256;
         context.translate(canvas.width / 2, canvas.height / 2);
@@ -1141,28 +1188,66 @@ document.addEventListener('DOMContentLoaded', function() {
         this.skype = document.querySelector('.userinfo dd.skype');
         this.mobile = document.querySelector('.userinfo dd.mobile');
         this.btnClose = document.querySelector('.userinfo .btnClose');
+        this.emailLabel = document.querySelector('.userinfo dt.email');
+        this.skypeLabel = document.querySelector('.userinfo dt.skype');
+        this.mobileLabel = document.querySelector('.userinfo dt.mobile');
         
         this.btnClose.addEventListener('click', function(t) {
             return function (e) {
                 t.hide();
+                if (typeof selectedDeskId !== 'undefined') {
+                    if (findDeskById(selectedDeskId)) {
+                        findDeskById(selectedDeskId).setMouseOut();
+                        selectedDeskId = void(0);
+                    }
+                }
             };
         }(this));
     };
     
     UserInfo.prototype.set = function (data) {
-        if (data.pictureUrl) {
-            this.img.setAttribute('src', data.pictureUrl);
-        } else {
-            this.img.setAttribute('src', 'images/colleagueeditor/ic_account_box_white_24px.svg');
+        if (typeof data.dataType === 'undefined' || data.dataType === '0') {
+            if (data.pictureUrl) {
+                this.img.setAttribute('src', data.pictureUrl);
+            } else {
+                this.img.setAttribute('src', 'images/colleagueeditor/ic_account_box_white_24px.svg');
+            }
+            if (data.jobTitle) {
+                this.job.innerHTML = data.jobTitle;
+            } else {
+                this.job.innerHTML = '...';
+            }
+            this.img.style.boxShadow = '';
+            this.email.style.display = '';
+            this.skype.style.display = '';
+            this.mobile.style.display = '';
+            this.emailLabel.style.display = '';
+            this.skypeLabel.style.display = '';
+            this.mobileLabel.style.display = '';
+        } else if (data.dataType === '1') {
+            if (data.pictureUrl) {
+                this.img.setAttribute('src', data.pictureUrl);
+            } else {
+                this.img.setAttribute('src', 'images/colleagueeditor/ic_place_white_24px.svg');
+            }
+            if (data.jobTitle) {
+                this.job.innerHTML = data.jobTitle;
+            } else {
+                this.job.innerHTML = 'Meeting Room';
+            }
+            this.img.style.boxShadow = 'none';
+            this.email.style.display = 'none';
+            this.skype.style.display = 'none';
+            this.mobile.style.display = 'none';
+            this.emailLabel.style.display = 'none';
+            this.skypeLabel.style.display = 'none';
+            this.mobileLabel.style.display = 'none';
         }
+        
         var fullName = data.name;
         fullName += (data.nick) ? '<span>(' + data.nick + ')</span>' : '';
         this.fullname.innerHTML = fullName;
-        if (data.jobTitle) {
-            this.job.innerHTML = data.jobTitle;
-        } else {
-            this.job.innerHTML = '...';
-        }
+        
         var preferredName = (data.nick) ? data.nick : data.name;
         if (data.email) {
             this.email.innerHTML = '<a href="mailto:' + data.email + '?subject=Hallo%2C%20' + preferredName + '&amp;body=sent%20by%20Office%20Finder">' + data.email + '</a>';

@@ -15,17 +15,31 @@ document.addEventListener('DOMContentLoaded', function() {
 		zoomIncFactor = 0.01;
         
     var setRollOver = function (geo, mat, rType) {
+        scene.remove(rollOverMesh);
         rollOverMesh = new THREE.Mesh(geo, mat);
         switch (rType) {
-            case 'desk':
+            case 'desk0':
+                rollOverMesh._p = 'desk';
+                rollOverMesh._t = 0;
                 rollOverMesh._w = 160;
                 rollOverMesh._h = 72;
                 rollOverMesh._d = 80;
                 rollOverMesh._r = false;
-                rollOverMesh.position.set(80, 36, 40);
+                //rollOverMesh.position.set(80, 36, 40);
                 rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
                 break;
+            case 'desk1':
+                rollOverMesh._p = 'desk';
+                rollOverMesh._t = 1;
+                rollOverMesh._w = 200;
+                rollOverMesh._h = 72;
+                rollOverMesh._d = 100;
+                rollOverMesh._r = false;
+                //rollOverMesh.position.set(100, 36, 50);
+                rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                break;
         }
+        scene.add(rollOverMesh);
     };
 	
 	var container = document.querySelector('#container'),
@@ -81,23 +95,32 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
     
     // desk deometry
-    var deskGeo;
-    var fileName = encodeURIComponent('geometry_desk');
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/json/' + fileName, true);
-    xhr.responseType = 'json';
-    xhr.onload = function (e) {
-        if (this.status == 200) {
-            var geometries = this.response;
-            deskGeo = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+    var totalDeskTypes = 2,
+        deskGeo = [];
+    var loadDeskGeos = function (idx) {
+        if (idx >= totalDeskTypes) {
             var mat = cubeMaterials['desk'][0].clone();
             mat.opacity = 0.6;
-			mat.transparent = true;
-            setRollOver(deskGeo.geometry, mat, 'desk');
-            scene.add(rollOverMesh);
+            mat.transparent = true;
+            setRollOver(deskGeo[0].geometry.clone(), mat, 'desk0');
+            //scene.add(rollOverMesh);
+        } else {
+            var fileName = encodeURIComponent('geometry_desk' + idx),
+                xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/json/' + fileName, true);
+            xhr.responseType = 'json';
+            xhr.onload = function (e) {
+                if (this.status == 200) {
+                    var geometries = this.response;
+                    deskGeo[idx] = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+                    loadDeskGeos(idx + 1);
+                }
+            };
+            xhr.send();
         }
     };
-    xhr.send();
+    loadDeskGeos(0);
+    
     
     var rotateDesk = function () {
         if (rollOverMesh._r === false) {
@@ -154,6 +177,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 	var onDocumentKeyDown = function (e) {
 		switch (e.keyCode) {
+            case '0'.charCodeAt(0):
+                var mat = cubeMaterials['desk'][0].clone();
+                mat.opacity = 0.6;
+                mat.transparent = true;
+                setRollOver(deskGeo[0].geometry.clone(), mat, 'desk0');
+				break;
+			case '1'.charCodeAt(0):
+                var mat = cubeMaterials['desk'][0].clone();
+                mat.opacity = 0.6;
+                mat.transparent = true;
+                setRollOver(deskGeo[1].geometry.clone(), mat, 'desk1');
+				break;
 			case 'R'.charCodeAt(0):
 				rotateDesk();
 				break;
@@ -205,19 +240,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		rollOverPosition.addVectors(intersector.point, rotatedNormal);
         
         if (rollOverMesh) {
-            if (rollOverMesh._r) {
-                rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 2;
-                rollOverPosition.y = Math.floor((rollOverPosition.y + rollOverMesh._h) / 10) * 10 + 2;
-                rollOverPosition.y = Math.floor((rollOverPosition.y) / 10) * 10 - 1;
-                rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 7;
-            } else {//
-                //rollOverPosition.x = Math.floor((rollOverPosition.x - Math.floor(rollOverMesh._w / 2)) / 10) * 10 + 3.2;
-                //rollOverPosition.y = Math.floor((rollOverPosition.y + Math.floor(rollOverMesh._h / 2)) / 10) * 10 + 5;
-                //rollOverPosition.z = Math.floor((rollOverPosition.z - Math.floor(rollOverMesh._d / 2)) / 10) * 10 + 2;
-                rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 3.2;
-                rollOverPosition.y = Math.floor((rollOverPosition.y + rollOverMesh._h) / 10) * 10 + 2;
-                //rollOverPosition.y = Math.floor((rollOverPosition.y) / 10) * 10 - 1;
-                rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 2;
+            if (rollOverMesh._p === 'desk' && rollOverMesh._t === 0) {
+                if (rollOverMesh._r) {
+                    rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 2;
+                    rollOverPosition.y = Math.floor((rollOverPosition.y + (rollOverMesh._h)) / 10) * 10 + 1;
+                    rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 7;
+                } else {
+                    rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 3.2;
+                    //rollOverPosition.y = Math.floor((rollOverPosition.y + rollOverMesh._h) / 10) * 10 - 1;
+                    rollOverPosition.y = Math.floor((rollOverPosition.y + (rollOverMesh._h)) / 10) * 10 + 1;
+                    rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 2;
+                }
+            } else if (rollOverMesh._p === 'desk' && rollOverMesh._t === 1) {
+                rollOverPosition.y = Math.floor((rollOverPosition.y + (rollOverMesh._h)) / 10) * 10 + 1;
             }
         }
 	};
@@ -248,7 +283,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			} else if (isCtrlDown) {
 				setRollOverPosition(intersector);
                 var mat = cubeMaterials['desk'][0].clone();
-				var desk = new THREE.Mesh(deskGeo.geometry, mat);
+				var desk = new THREE.Mesh(deskGeo[rollOverMesh._t].geometry.clone(), mat);
+                switch (rollOverMesh._t) {
+                    case 0:
+                        desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                        break;
+                    case 1:
+                        desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                        break;
+                }
 				desk.position.copy(rollOverPosition);
                 if (rollOverMesh._r === true) {
                     desk.rotation.y += Math.PI / 2;
@@ -259,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				desk.matrixAutoUpdate = false;
 				desk.updateMatrix();
                 desk._p = 'desk';
-                desk._t = 0;
+                desk._t = rollOverMesh._t;
                 desk._userID = null;
 				scene.add(desk);
 			}
@@ -288,11 +331,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
 		}
 		
-		//console.log(zoomFactor);
 		//camera.fov = fov;
 		camera.fov *= zoomFactor;
 		camera.updateProjectionMatrix();
-		//console.log(distance);
 	};
 	
 	var printPNG = function () {
@@ -333,6 +374,10 @@ document.addEventListener('DOMContentLoaded', function() {
         for (var i = 0; i < children.length; i++) {
 			child = children[i];
 			if (child._p !== 'desk') {
+				continue;
+			}
+            
+            if (child === rollOverMesh) {
 				continue;
 			}
 			
@@ -467,7 +512,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (children[i]._p !== 'desk') {
 				continue;
 			}
-			
+			if (children[i] === rollOverMesh) {
+				continue;
+			}
 			scene.remove(children[i]);
 		}
         
@@ -476,8 +523,16 @@ document.addEventListener('DOMContentLoaded', function() {
             mesh;
         for (var i = 0; i < numDesk; i++) {
             var mat = cubeMaterials['desk'][0].clone();
-            mesh = new THREE.Mesh(deskGeo.geometry, mat);
+            mesh = new THREE.Mesh(deskGeo[desks[i].t].geometry.clone(), mat);
             mesh.position.set(desks[i].x, desks[i].y, desks[i].z);
+            switch (desks[i].t) {
+                case 0:
+                    mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                    break;
+                case 1:
+                    mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                    break;
+            }
             if (desks[i].r === true) {
                 mesh.rotation.y += Math.PI / 2;
                 mesh._r = true;
@@ -521,7 +576,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			if (intersector) {
 				setRollOverPosition(intersector);
-				//rollOverMesh.position = voxelPosition;
                 if (rollOverMesh) {
 				    rollOverMesh.position.copy(rollOverPosition);
                 }
@@ -607,6 +661,60 @@ document.addEventListener('DOMContentLoaded', function() {
         var dataUri = JSON.stringify(tObj);
 		var xhr = new XMLHttpRequest();
         var fileName = encodeURIComponent('desk_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&content=' + dataUri;
+		xhr.open('POST', '/api/json', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		//xhr.setRequestHeader('content-length', params.length);
+		//xhr.setRequestHeader('connection', 'close');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+				//console.log(this.response.message);
+                alert('JSON \'' + fileName + '.json\' saved');
+			}
+		};
+		xhr.send(params);
+    };
+    
+    /**
+     * Make a Discussion room's desk
+     */
+    var makeDicussionDesk = function () {
+        var material = cubeMaterials['desk'][0],
+            topCurve = new THREE.EllipseCurve(0, 0, 200, 100, 0, 2 * Math.PI, false, 0),
+            topPath = new THREE.Path(topCurve.getPoints(50)),
+            topShape = topPath.toShapes(),
+            topGeometry = new THREE.ExtrudeGeometry(topShape, {
+                amount: 2,
+                bevelEnabled: false,
+                steps: 2
+            }),
+            topMesh = new THREE.Mesh(topGeometry, material);
+        topMesh.rotation.x = Math.PI / 2;
+        topMesh.position.y = 74;
+        var bsp1 = new ThreeBSP(topMesh);
+        var midGeometry = new THREE.CylinderGeometry(20, 20, 70, 16),
+            midMesh = new THREE.Mesh(midGeometry, material);
+        midMesh.position.y = 37;
+        var bsp2 = new ThreeBSP(midMesh);
+        var unionBsp2 = bsp2.union(bsp1);
+        var botGeometry = new THREE.CylinderGeometry(40, 40, 2, 16),
+            botMesh = new THREE.Mesh(botGeometry, material);
+        botMesh.position.y = 0;
+        var bsp3 = new ThreeBSP(botMesh);
+        var unionBsp3 = bsp3.union(unionBsp2);
+        var finalMesh = unionBsp3.toMesh(material);
+        finalMesh.position.z = 500;
+        finalMesh.position.y = 10;
+        scene.add(finalMesh);
+        
+        var tObj = [{
+            g: finalMesh.geometry.toJSON()
+        }];
+        
+        var dataUri = JSON.stringify(tObj);
+		var xhr = new XMLHttpRequest();
+        var fileName = encodeURIComponent('desk2_' + Date.now().valueOf());
 		var params = 'filename=' + fileName + '&content=' + dataUri;
 		xhr.open('POST', '/api/json', true);
 		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');

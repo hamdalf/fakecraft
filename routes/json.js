@@ -22,7 +22,7 @@ router.route('/json').all(function(req, res, next) {
 });
 
 router.route('/json/:filename').all(function(req, res, next) {
-    console.log('load json start to use');
+    console.log('load json start to use - ', new Date().toString());
 	next();
 }).get(function(req, res) {
     fs.readFile(path.join(__dirname, '../saves/officemap/') + req.params.filename + '.json', function (ex, data) {
