@@ -22,7 +22,8 @@ mongoose.connection.on('disconnected', function () {
 
 // Load routers
 var userRouters = require('./routes/users'),
-    jsonRouters = require('./routes/json');
+    jsonRouters = require('./routes/json'),
+    passFinderRouters = require('./routes/passfinder');
 
 // specifies this directory is cleared for serving static files
 app.use(express.static(path.join(__dirname, "static")));
@@ -31,6 +32,7 @@ app.use(bodyParser.json());
 
 app.use('/api', userRouters);
 app.use('/api', jsonRouters);
+app.use('/api', passFinderRouters);
 
 var server = app.listen(3000, function () {
     var host = server.address().address;

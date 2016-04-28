@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
         //meshDesk,
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
-        cameraAct, floorNow, userInfo, planeNav;
+        cameraAct, floorNow, userInfo, planeNav,
+        startPoint, endPoint;
 
     var lightInit = false;
     
@@ -360,6 +361,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         
         var onDocumentClick = function (e) {
+            if (e.ctrlKey) {
+                return makePath(e);
+            }
+            
             raycaster.setFromCamera(mouse2D, camera);
             var intersects = raycaster.intersectObjects(scene.children, true);
             if (intersects.length > 0) {
@@ -383,8 +388,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         };
+        
+        var makePath = function (e) {
+            raycaster.setFromCamera(mouse2D, camera);
+            var intersects = raycaster.intersectObjects(scene.children, true);
+            
+            if (intersects.length > 0) {
+                var intersector = getMapIntersector(intersects);
+                
+                if (intersector) {
+                    if (!startPoint) {
+                        startPoint = new CanvasUnit(intersector.point.x, intersector.point.z);
+                    } else if (!endPoint) {
+                        endPoint = new CanvasUnit(intersector.point.x, intersector.point.z);
+                        var startArray = startPoint.toArray(),
+                            endArray = endPoint.toArray();
+                            //flipSArray = {x: 529 - startArray.x, y: 199 - startArray.y},
+                            //flipEArray = {x: 529 - endArray.x, y: 199 - endArray.y};
+                            console.log(startPoint, endPoint);
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', '/api/passfinder/' + floorNow + '/' + startArray.x + '/' + startArray.y + '/' + endArray.x + '/' + endArray.y, true);
+                        xhr.responseType = 'json';
+                        xhr.onload = function (e) {
+                            if (this.status == 200) {
+                                console.log(this.response);
+                                createRoute(this.response);
+                                startPoint = null;
+                                endPoint = null;
+                            }
+                        };
+                        xhr.send();
+                    }
+                }
+            }
+        };
         //document.addEventListener('click', onDocumentClick, false);
         container3D.addEventListener('click', onDocumentClick, false);
+        
+        if (OLC) {
+            OLC.setMap('array', 0, 529, 0, 199);
+            OLC.setMap('canvas', -2650, 2650, -1000, 1000);
+        }
     };
     
     var findUserDataById = function(id) {
@@ -416,6 +460,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 		}
 	};
+    
+    var getMapIntersector = function (intersects) {
+        var intersector;
+		for (var i = 0; i < intersects.length; i++) {
+			intersector = intersects[i];
+            if (intersector.object.name) {
+                switch (intersector.object.name) {
+                    case 'map':
+                        return intersector;
+                        break;
+                }
+            }
+		}
+    };
     
     var cameraAction = function () {
         this.isMoving = false;
@@ -879,6 +937,38 @@ document.addEventListener('DOMContentLoaded', function() {
             deskObjs[objDesk.desk.uuid] = objDesk;
             scene.add(objDesk.root);
         }
+    };
+    
+    var createRoute = function (node) {
+        var removeRoute = function (node, i) {
+            if (i >= node.length) {
+                return;
+            }
+            var theNode = node[i];
+            //cells[theNode.x][theNode.y].classList.remove('route');
+            removeRoute(node, i + 1);
+        };
+        
+        var addRoute = function (node, i) {
+            if (i >= node.length) {
+                return setTimeout(function () {
+                    removeRoute(node, 0);
+                }, 2000);
+            }
+
+            var theNode = node[i],
+                filpArray = new ArrayUnit(theNode.x, theNode.y),
+                posCanvas = filpArray.toCanvas();
+            var sphereGeo = new THREE.SphereGeometry( 10, 16, 16 ),
+                sphereMat = new THREE.MeshBasicMaterial( {color: 0xff6600} ),
+                sphere = new THREE.Mesh( sphereGeo, sphereMat );
+            sphere.position.x = posCanvas.x;
+            sphere.position.y = 50;
+            sphere.position.z = posCanvas.y;
+            scene.add(sphere);
+            addRoute(node, i + 1);
+        };
+        addRoute(node, 0);
     };
     
     var animate = function (nowMsec) {
