@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
         cameraAct, floorNow, userInfo, planeNav,
-        startPoint, endPoint;
+        startPoint, endPoint, routeMesh;
 
     var lightInit = false;
     
@@ -940,35 +940,31 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     var createRoute = function (node) {
-        var removeRoute = function (node, i) {
-            if (i >= node.length) {
-                return;
-            }
-            var theNode = node[i];
-            //cells[theNode.x][theNode.y].classList.remove('route');
-            removeRoute(node, i + 1);
-        };
-        
-        var addRoute = function (node, i) {
-            if (i >= node.length) {
-                return setTimeout(function () {
-                    removeRoute(node, 0);
-                }, 2000);
-            }
-
-            var theNode = node[i],
-                filpArray = new ArrayUnit(theNode.x, theNode.y),
-                posCanvas = filpArray.toCanvas();
-            var sphereGeo = new THREE.SphereGeometry( 10, 16, 16 ),
-                sphereMat = new THREE.MeshBasicMaterial( {color: 0xff6600} ),
-                sphere = new THREE.Mesh( sphereGeo, sphereMat );
-            sphere.position.x = posCanvas.x;
-            sphere.position.y = 50;
-            sphere.position.z = posCanvas.y;
-            scene.add(sphere);
-            addRoute(node, i + 1);
-        };
-        addRoute(node, 0);
+        if (routeMesh) {
+            scene.remove(routeMesh);
+        }
+        var nodes = [],
+            posArray, posCanvas;
+        for (var i = 0; i < node.length; i++) {
+            posArray = new ArrayUnit(node[i].x, node[i].y);
+            posCanvas = posArray.toCanvas();
+            nodes.push(new THREE.Vector3(posCanvas.x, 50, posCanvas.y));
+        }
+        var curve = new THREE.CatmullRomCurve3(nodes),
+            shape = new THREE.Shape([
+                new THREE.Vector2(-5, 2),
+                new THREE.Vector2(5, 2),
+                new THREE.Vector2(5, -2),
+                new THREE.Vector2(-5, -2)
+            ]),
+            curveGeo = new THREE.ExtrudeGeometry(shape, {
+                steps: 200,
+				bevelEnabled: false,
+				extrudePath: curve
+            }),
+            curveMat = new THREE.MeshBasicMaterial({color: 0xff6600});
+        routeMesh = new THREE.Mesh(curveGeo, curveMat);
+        scene.add(routeMesh);
     };
     
     var animate = function (nowMsec) {
