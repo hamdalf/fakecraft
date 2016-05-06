@@ -428,6 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (OLC) {
             OLC.setMap('array', 0, 529, 0, 199);
             OLC.setMap('canvas', -2650, 2650, -1000, 1000);
+            OLC.setMap('geo', 13.421239, 52.525558, 13.420551, 52.525279, 13.420463, 52.525734, 53, 20);
         }
     };
     
