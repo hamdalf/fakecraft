@@ -126,6 +126,6 @@ router.route('/passfinder/:floor/:x1/:y1/:x2/:y2').all(function(req, res, next) 
     
     res.json(path);
     res.end();
-})
+});
 
 module.exports = router;

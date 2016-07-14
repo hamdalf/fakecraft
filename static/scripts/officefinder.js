@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
         cameraAct, floorNow, userInfo, planeNav,
-        startPoint, endPoint, routeMesh;
+        startPoint, endPoint, routeMesh, pointMesh,
+        robotMeshs = {},
+        robotTrafficTimer;
 
     var lightInit = false;
     
@@ -257,6 +259,17 @@ document.addEventListener('DOMContentLoaded', function() {
         wrapper.appendChild(df);
     };
     
+    var OnClickGPSData = function (e) {
+        var longitude = document.querySelector('#longitude').value,
+            latitude = document.querySelector('#latitude').value,
+            geoLoc = new GeoUnit(longitude, latitude, 0),
+            canvasLoc = geoLoc.toCanvas();
+        console.log(geoLoc.longitude, geoLoc.latitude);
+        console.log(canvasLoc);
+        createPointByCanvasCoordinates(canvasLoc);
+    };
+    document.querySelector('#setgeo').addEventListener('click', OnClickGPSData);
+    
     // Initialization
     var init = function() {
         // user data
@@ -428,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (OLC) {
             OLC.setMap('array', 0, 529, 0, 199);
             OLC.setMap('canvas', -2650, 2650, -1000, 1000);
-            OLC.setMap('geo', 13.421239, 52.525558, 13.420551, 52.525279, 13.420463, 52.525734, 53, 20);
+            OLC.setMap('geo', 13.421238, 52.525556, 13.420783, 52.525176, 13.421007, 52.525659);
         }
     };
     
@@ -968,6 +981,56 @@ document.addEventListener('DOMContentLoaded', function() {
         scene.add(routeMesh);
     };
     
+    var createPointByCanvasCoordinates = function (cP) {
+        if (pointMesh) {
+            scene.remove(pointMesh);
+        }
+        var posCanvas = new THREE.Vector3(cP.x, 50, cP.y),
+            pGeo = new THREE.SphereGeometry(30, 32, 32),
+            pMat = new THREE.MeshBasicMaterial({color: 0xff3300});
+        pointMesh = new THREE.Mesh(pGeo, pMat);
+        pointMesh.position.copy(posCanvas);
+        scene.add(pointMesh);
+        console.debug('createPointByCanvasCoordinates done', cP);
+    };
+
+    var createRobotsByRobotList = function (rl) {
+        for (var k in robotMeshs) {
+            scene.remove(robotMeshs[k]);
+        }
+        var robotShape = new THREE.Shape();
+        robotShape.moveTo(0, 20);
+        robotShape.lineTo(-10, -20);
+        robotShape.lineTo(10, -20);
+        robotShape.lineTo(0, 20);
+        var extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 },
+            robotGeo = new THREE.ExtrudeGeometry(robotShape, extrudeSettings),
+            tempGeo, posArray, posCanvas;
+        robotGeo.rotateX(Math.PI / 2);
+        //robotGeo.translate(0, 0, 100);
+        //robotGeo.applyMatrix( new THREE.Matrix4().makeTranslation(x, y, z) );
+        for (var k in rl) {
+            //tempGeo = robotGeo.clone();
+            //tempGeo.center();
+            robotMeshs[k] = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({color:0x3b7fc4}));
+            posArray = new ArrayUnit(parseInt(rl[k].position.x), parseInt(rl[k].position.y));
+            posCanvas = posArray.toCanvas();
+            robotMeshs[k].position.copy(new THREE.Vector3(posCanvas.x, 50, posCanvas.y));
+            //robotMeshs[k].geometry.center();
+            switch (rl[k].direction) {
+                case 'x+':
+                    robotMeshs[k].rotateY(Math.PI / 2);
+                    break;
+                case 'x-':
+                    robotMeshs[k].rotateY(- Math.PI / 2);
+                    break;
+            }
+            scene.add(robotMeshs[k]);
+            //robotMeshs[k].geometry.center();
+            console.debug('A robot "' + k + '" was added on map');
+        }
+    };
+    
     var animate = function (nowMsec) {
         lastMsec = lastMsec || nowMsec;
         var deltaMsec = nowMsec - lastMsec;
@@ -1431,4 +1494,23 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     init();
+
+    var getRobotsStatus = function () {
+        if (robotTrafficTimer) {
+            clearTimeout(robotTrafficTimer);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/showmerobots/', true);
+        xhr.responseType = 'text';
+        xhr.onload = function (e) {
+			if (this.status == 200) {
+                var robots = JSON.parse(this.responseText);
+                createRobotsByRobotList(robots);
+                setTimeout(getRobotsStatus, 5000);
+			}
+		};
+		xhr.send();
+    };
+    setTimeout(getRobotsStatus, 5000);
 });

@@ -8,7 +8,10 @@ var express = require("express"),
     path = require("path"),
     mongoose = require("mongoose"),
     bodyParser = require("body-parser");
-    
+
+/*
+    Connect to MongoDB
+*/
 mongoose.connect('mongodb://localhost/officemap');
 mongoose.connection.on('error', function (ex) {
     console.log('database connection error: ' + ex.message);
@@ -20,10 +23,13 @@ mongoose.connection.on('disconnected', function () {
     console.log('officemap database connection closed');
 });
 
-// Load routers
+/*
+    Load routers
+*/
 var userRouters = require('./routes/users'),
     jsonRouters = require('./routes/json'),
-    passFinderRouters = require('./routes/passfinder');
+    passFinderRouters = require('./routes/passfinder'),
+    robotRouters = require('./routes/robot');
 
 // specifies this directory is cleared for serving static files
 app.use(express.static(path.join(__dirname, "static")));
@@ -33,6 +39,7 @@ app.use(bodyParser.json());
 app.use('/api', userRouters);
 app.use('/api', jsonRouters);
 app.use('/api', passFinderRouters);
+app.use('/api', robotRouters);
 
 var server = app.listen(3000, function () {
     var host = server.address().address;
