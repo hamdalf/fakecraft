@@ -37,7 +37,7 @@ RobotCenter.setPosition = function (id, floor, x, y, d) {
     }
 };
 
-router.route('/handsup/:id/:name').all(function(req, res, next) {
+router.route('/robot/handsup/:id/:name').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
     var aRobot = RobotCenter.addNewRobot(req.params.id, req.params.name);
@@ -45,7 +45,7 @@ router.route('/handsup/:id/:name').all(function(req, res, next) {
     res.end();
 });
 
-router.route('/bye/:id').all(function(req, res, next) {
+router.route('/robot/bye/:id').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
     var aRobot = RobotCenter.removeRobot(req.params.id);
@@ -53,7 +53,7 @@ router.route('/bye/:id').all(function(req, res, next) {
     res.end();
 });
 
-router.route('/tellmyposition/:id/:f/:x/:y/:d').all(function(req, res, next) {
+router.route('/robot/tellmyposition/:id/:f/:x/:y/:d').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
     var aRobot = RobotCenter.setPosition(req.params.id, req.params.f, req.params.x, req.params.y, req.params.d);
@@ -61,7 +61,7 @@ router.route('/tellmyposition/:id/:f/:x/:y/:d').all(function(req, res, next) {
     res.end();
 });
 
-router.route('/showmerobots/').all(function(req, res, next) {
+router.route('/robot/showmerobots/').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
     res.json(RobotCenter.robots);
