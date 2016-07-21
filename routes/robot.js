@@ -9,6 +9,7 @@ var RobotCenter = {
 RobotCenter.addNewRobot = function (id, name) {
     if (typeof this.robots[id] == 'undefined') {
         this.robots[id] = new Robot();
+        this.robots[id].id = id;
         this.robots[id].name = name;
     } else {
         this.robots[id].name = name;

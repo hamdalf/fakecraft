@@ -1,5 +1,5 @@
 var Robot = function() {
-    this.id = 0;
+    this.id = '';
     this.name = '';
     this.position = {
         x: 0,
