@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/showmerobots/', true);
+        xhr.open('GET', '/api/robot/showmerobots/', true);
         xhr.responseType = 'text';
         xhr.onload = function (e) {
 			if (this.status == 200) {
