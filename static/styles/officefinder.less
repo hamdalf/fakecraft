@@ -502,7 +502,7 @@ nav {
     .userinfo {
         display: none;
         width: 350px;
-        height: 150px;
+        height: 200px;
         position: absolute;
         bottom: 50%;
         right: 50px;
@@ -592,6 +592,40 @@ nav {
                 }
             }
         }
+
+        .robotBtns {
+            list-style: none;
+            margin: 20px 0 0 50px;
+
+            li {
+                list-style: none;
+                float: left;
+                margin: 0 0 0 10px;
+                
+                &:first-child {
+                    margin: 0;
+                }
+
+                button {
+                    display: inline-block;
+                    border-radius: 5px;
+                    background: #0072C6;
+                    font-family: 'Open Sans Condensed';
+                    font-size: 17px;
+                    line-height: 30px;
+                    color: #fff;
+                    text-align: center;
+                    border: none;
+                    padding: 0 20px;
+                    font-weight: 600;
+                    cursor: pointer;
+
+                    &:hover {
+                        background: #01C158;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -614,6 +648,7 @@ footer {
     }
     
     .geoinput {
+        display: none;
         list-style: none;
         margin-top: -30px;
         

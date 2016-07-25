@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         };
-        
+
         var makePath = function (e) {
             raycaster.setFromCamera(mouse2D, camera);
             var intersects = raycaster.intersectObjects(scene.children, true);
@@ -1341,9 +1341,11 @@ document.addEventListener('DOMContentLoaded', function() {
         this.emailLabel = document.querySelector('.userinfo dt.email');
         this.skypeLabel = document.querySelector('.userinfo dt.skype');
         this.mobileLabel = document.querySelector('.userinfo dt.mobile');
+        this.btnCallRobot = document.querySelector('.userinfo .btnCallRobot');
+        this.btnSendRobot = document.querySelector('.userinfo .btnSendRobot');
         
         this.btnClose.addEventListener('click', function(t) {
-            return function (e) {
+            return function(e) {
                 t.hide();
                 if (typeof selectedDeskId !== 'undefined') {
                     if (findDeskById(selectedDeskId)) {
@@ -1352,6 +1354,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             };
+        }(this));
+
+        this.btnSendRobot.addEventListener('click', function(t) {
+            return function(e) {
+                t.hide();
+                if (typeof selectedDeskId !== 'undefined') {
+                    var objSelected = findDeskById(selectedDeskId);
+                    if (objSelected) {
+                        sendRobot(objSelected.desk.position.x, objSelected.desk.position.z);
+                        findDeskById(selectedDeskId).setMouseOut();
+                        selectedDeskId = void(0);
+                    }
+                }
+            }
         }(this));
     };
     
@@ -1495,7 +1511,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     init();
 
-    var getRobotsStatus = function () {
+    var sendRobot = function(x, y) {
+        var startPoint = new CanvasUnit(x, y),
+            startArray = startPoint.toArray(),
+            xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/robot/sendarobot/' + floorNow + '/' + startArray.x + '/' + startArray.y, true);
+        xhr.responseType = 'text';
+        xhr.onload = function (e) {
+			if (this.status == 200) {
+                var robot = JSON.parse(this.responseText);
+                if (typeof robot.result != 'undefined') {
+                    if (robot.result == false) {
+                        alert('All robots are busy now. Please try later.');
+                    }
+                } else {
+                    console.log(robot);
+                }
+			}
+		};
+		xhr.send();
+    };
+
+    var getRobotsStatus = function() {
         if (robotTrafficTimer) {
             clearTimeout(robotTrafficTimer);
         }

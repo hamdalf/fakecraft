@@ -8,6 +8,7 @@ var Robot = function() {
     };
     this.direction = '';    // x+, x-, y+, y-
     this.isBusy = false;
+    this.routes = [];
 };
 
 module.exports = Robot;
