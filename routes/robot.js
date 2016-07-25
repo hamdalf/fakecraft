@@ -69,4 +69,10 @@ router.route('/robot/showmerobots/').all(function(req, res, next) {
     res.end();
 });
 
+router.route('/robot/messageforarobot/:id').all(function(req, res, next) {
+    next();
+}).get(function(req, res) {
+    res.json();
+});
+
 module.exports = router;
