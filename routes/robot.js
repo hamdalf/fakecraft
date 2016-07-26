@@ -116,7 +116,7 @@ router.route('/robot/bye/:id').all(function(req, res, next) {
 router.route('/robot/tellmyposition/:id/:f/:x/:y/:d').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
-    var aRobot = RobotCenter.setPosition(req.params.id, req.params.f, req.params.x, req.params.y, req.params.d);
+    var aRobot = RobotCenter.setPosition(req.params.id, parseInt(req.params.f), parseInt(req.params.x), parseInt(req.params.y), req.params.d);
     res.json(aRobot);
     res.end();
 });
@@ -164,14 +164,14 @@ router.route('/robot/messageforarobot/:id').all(function(req, res, next) {
 router.route('/robot/sendarobot/:floor/:x/:y').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
-    var floor = req.params.floor,
+    var floor = parseInt(req.params.floor),
         aRobot = RobotCenter.findIdleRobot(floor);
 
     if (aRobot == false) {
         res.json({result:false});
         res.end();
     } else {
-        aRobot = RobotCenter.moveRobot(aRobot.id, floor, req.params.x, req.params.y);
+        aRobot = RobotCenter.moveRobot(aRobot.id, floor, parseInt(req.params.x), parseInt(req.params.y));
         aRobot.result = true;
         res.json(aRobot);
         res.end();
