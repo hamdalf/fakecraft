@@ -72,6 +72,7 @@ RobotCenter.moveRobot = function(id, floor, x, y) {
             endPoint = aGraph.graph.grid[x][y];
 
         if (aGraph.graph.grid[x][y].weight == 0) {
+            console.log(x, y);
             var safePoint = aGraph.getNearestPoint(x, y);
             endPoint = aGraph.graph.grid[safePoint.x][safePoint.y];
             console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
@@ -123,14 +124,22 @@ router.route('/robot/tellmyposition/:id/:f/:x/:y/:d').all(function(req, res, nex
 router.route('/robot/showmerobots/').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
-    res.json(RobotCenter.robots);
+    var simplifiedResult = {};
+    for (var item in RobotCenter.robots) {
+        simplifiedResult[item] = {};
+        for (var attr in RobotCenter.robots[item]) {
+            if (attr != 'routes' && RobotCenter.robots[item].hasOwnProperty(attr)) simplifiedResult[item][attr] = RobotCenter.robots[item][attr];
+        }
+    }
+    res.json(simplifiedResult);
     res.end();
 });
 
 router.route('/robot/messageforarobot/:id').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
-    res.json();
+    var aRobot = RobotCenter.robots[req.params.id];
+    res.json(aRobot);
     res.end();
 });
 

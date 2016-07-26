@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         
         var onDocumentClick = function (e) {
-            if (e.ctrlKey) {
+            if (e.altKey) {
                 return makePath(e);
             }
             
@@ -953,17 +953,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    var createRoute = function (node) {
+    var createRoute = function (node, color) {
         if (routeMesh) {
             scene.remove(routeMesh);
         }
         var nodes = [],
+            lineColor = color? color : {color: 0xff6600},
             posArray, posCanvas;
+        console.log(node);
         for (var i = 0; i < node.length; i++) {
             posArray = new ArrayUnit(node[i].x, node[i].y);
             posCanvas = posArray.toCanvas();
             nodes.push(new THREE.Vector3(posCanvas.x, 50, posCanvas.y));
         }
+        console.log(nodes);
         var curve = new THREE.CatmullRomCurve3(nodes),
             shape = new THREE.Shape([
                 new THREE.Vector2(-5, 2),
@@ -976,7 +979,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				bevelEnabled: false,
 				extrudePath: curve
             }),
-            curveMat = new THREE.MeshBasicMaterial({color: 0xff6600});
+            curveMat = new THREE.MeshBasicMaterial(lineColor);
         routeMesh = new THREE.Mesh(curveGeo, curveMat);
         scene.add(routeMesh);
     };
@@ -1520,12 +1523,10 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.onload = function (e) {
 			if (this.status == 200) {
                 var robot = JSON.parse(this.responseText);
-                if (typeof robot.result != 'undefined') {
-                    if (robot.result == false) {
-                        alert('All robots are busy now. Please try later.');
-                    }
+                if (robot.result == false) {
+                    alert('All robots are busy now. Please try later.');
                 } else {
-                    console.log(robot);
+                    createRoute(robot.routes, {color: 0x0072c6});
                 }
 			}
 		};

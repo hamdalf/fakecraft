@@ -93,28 +93,35 @@ GraphSearch.prototype = {
         }
     },
     getNearestPoint: function(x1, y1) {
-        var x, y;
-        for (var layer = 0; layer < 20; i++) {
-            x = x1 - layer;
-            for (y = y1 - layer; y <= y1 + layer; y++) {
+        var x1 = parseInt(x1),
+            y1 = parseInt(y1),
+            x, y;
+        for (var l = 0; l < 20; l++) {
+            console.log(l);
+            x = x1 - l;
+            for (y = y1 - l; y <= y1 + l; y++) {
+                console.log('part1:',x, y, y1+l);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            y = y1 - layer;
-            for (x = x1 - layer + 1; x < x1 + layer; x++) {
+            y = y1 - l;
+            for (x = x1 - l + 1; x < x1 + l; x++) {
+                console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            y = y1 + layer;
-            for (x = x1 - layer + 1; x < x1 + layer; x++) {
+            y = y1 + l;
+            for (x = x1 - l + 1; x < x1 + l; x++) {
+                console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            x = x1 + layer;
-            for (y = y1 - layer; y <= y1 + layer; y++) {
+            x = x1 + l;
+            for (y = y1 - l; y <= y1 + l; y++) {
+                console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
