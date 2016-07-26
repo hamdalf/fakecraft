@@ -138,7 +138,25 @@ router.route('/robot/showmerobots/').all(function(req, res, next) {
 router.route('/robot/messageforarobot/:id').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
-    var aRobot = RobotCenter.robots[req.params.id];
+    var aRobot = {};
+    for (var attr in RobotCenter.robots[req.params.id]) {
+        if (RobotCenter.robots[req.params.id].hasOwnProperty(attr)) {
+            if (attr == 'routes') {
+                var routes = RobotCenter.robots[req.params.id]['routes'];
+                aRobot['routes'] = [];
+                for (var i = 0; i < routes.length; i++ ) {
+                    aRobot['routes'].push({
+                        x: routes[i].x,
+                        y: routes[i].y,
+                        weight: routes[i].weight,
+                        f: routes[i].f
+                    });
+                }
+            } else {
+                aRobot[attr] = RobotCenter.robots[req.params.id][attr];
+            }
+        }
+    }
     res.json(aRobot);
     res.end();
 });
