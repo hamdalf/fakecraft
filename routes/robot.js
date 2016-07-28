@@ -85,12 +85,22 @@ RobotCenter.moveRobot = function(id, floor, x, y) {
     }
 };
 
-RobotCenter.makeRobotIdle = function(id) {
+RobotCenter.removeRoute = function(id) {
     if (typeof this.robots[id] == 'undefined') {
         return false;
     } else {
         var aRobot = this.robots[id];
         aRobot.routes = [];
+
+        return aRobot;
+    }
+}
+
+RobotCenter.makeRobotIdle = function(id) {
+    if (typeof this.robots[id] == 'undefined') {
+        return false;
+    } else {
+        var aRobot = this.robots[id];
         aRobot.isBusy = false;
 
         return aRobot;
@@ -128,7 +138,11 @@ router.route('/robot/showmerobots/').all(function(req, res, next) {
     for (var item in RobotCenter.robots) {
         simplifiedResult[item] = {};
         for (var attr in RobotCenter.robots[item]) {
-            if (attr != 'routes' && RobotCenter.robots[item].hasOwnProperty(attr)) simplifiedResult[item][attr] = RobotCenter.robots[item][attr];
+            if (attr != 'routes' && RobotCenter.robots[item].hasOwnProperty(attr)) {
+                simplifiedResult[item][attr] = RobotCenter.robots[item][attr];
+            } else if (attr == 'routes') {
+                simplifiedResult[item][attr] = [];
+            }
         }
     }
     res.json(simplifiedResult);
@@ -176,6 +190,14 @@ router.route('/robot/sendarobot/:floor/:x/:y').all(function(req, res, next) {
         res.json(aRobot);
         res.end();
     }
+});
+
+router.route('/robot/eraseroute/:id').all(function(req, res, next) {
+    next();
+}).get(function(req, res) {
+    var aRobot = RobotCenter.removeRoute(req.params.id);
+    res.json(aRobot);
+    res.end();
 });
 
 router.route('/robot/freerobot/:id').all(function(req, res, next) {
