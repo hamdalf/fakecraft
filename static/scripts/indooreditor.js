@@ -1,6 +1,6 @@
 var TimerId, controls,
-    defaultWidth = 530,
-    defaultHeight = 200;
+    defaultWidth = 600,		// 605
+    defaultHeight = 350;	// 346
 
 document.addEventListener('DOMContentLoaded', function() {
 	if (!Detector.webgl) {
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		cbTexture = {},
 		zoomFactor = 1,
 		zoomIncFactor = 0.01,
-        planeObj;
+        planeObj, bgObj;
 		
 	var setCubeType = function (cPattern, cType) {
 		//document.querySelector('.boxcolor').style.backgroundColor = '#' + cubeColors[cType].getHexString();
@@ -104,32 +104,89 @@ document.addEventListener('DOMContentLoaded', function() {
 	var projector = new THREE.Projector();
 	
 	// grid
-    var setGrid = function (pW, pH) {
+    var setGrid = function (pW, pH, bI) {
         if (planeObj) {
             scene.remove(planeObj);
         }
 
         var planeW = pW,
             planeH = pH,
+			planeBG = (bI) ? '/images/indooreditor/' + bI : null,
             planeNumberW = 10,
-            pleneNumberH = 10;
-        planeObj = new THREE.Mesh(new THREE.PlaneGeometry(planeW * planeNumberW, planeH * pleneNumberH, planeW, planeH), new THREE.MeshBasicMaterial({
-            color: 0x777777,
-            wireframe: true
-        }));
+            pleneNumberH = 10,
+			planeMaterial;
+		if (bI) {
+			planeMaterial = new THREE.MeshBasicMaterial({
+				map: THREE.ImageUtils.loadTexture(planeBG),
+				wireframe: true
+			});
+			planeMaterial.map.needsUpdate = true;
+		} else {
+			planeMaterial = new THREE.MeshBasicMaterial({
+				color: 0x777777,
+				wireframe: true
+			});
+		}
+        planeObj = new THREE.Mesh(new THREE.PlaneGeometry(planeW * planeNumberW, planeH * pleneNumberH, planeW, planeH), planeMaterial);
+		planeObj.overdraw = true;
         planeObj.rotation.x = -(Math.PI * 90 / 180);
         scene.add(planeObj);
     };
+	// gb layer
+	var addBGLayer = function(pW, pH, pL, bI) {
+		if (bgObj) {
+			scene.remove(bgObj);
+		}
+
+		var planeW = pW,
+            planeH = pH,
+			planeBG = (bI) ? '/images/indooreditor/' + bI : null,
+            planeNumberW = 10,
+            pleneNumberH = 10,
+			planeMaterial;
+		if (bI) {
+			planeMaterial = new THREE.MeshBasicMaterial({
+				map: THREE.ImageUtils.loadTexture(planeBG),
+				wireframe: true
+			});
+			planeMaterial.map.needsUpdate = true;
+		} else {
+			planeMaterial = new THREE.MeshBasicMaterial({
+				color: 0x777777,
+				wireframe: true
+			});
+		}
+        bgObj = new THREE.Mesh(new THREE.PlaneGeometry(planeW * planeNumberW, planeH * pleneNumberH, planeW, planeH), planeMaterial);
+		bgObj.overdraw = true;
+        bgObj.rotation.x = -(Math.PI * 90 / 180);
+		bgObj.position.y = pL * 10;
+        scene.add(bgObj);
+	};
     setGrid(defaultWidth, defaultHeight);
     var sizeSetter = document.querySelectorAll('.size input');
     sizeSetter[0].value = defaultWidth;
     sizeSetter[1].value = defaultHeight;
+	var bgSetter = document.querySelectorAll('.bgimg input');
     document.querySelector('.size button').addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('hoho');
-        setGrid(sizeSetter[0].value, sizeSetter[1].value);
+		if (parseInt(bgSetter[0].value) == 0) {
+        	setGrid(sizeSetter[0].value, sizeSetter[1].value, bgSetter[1].value);
+		} else {
+			addBGLayer(sizeSetter[0].value, sizeSetter[1].value, bgSetter[0].value, bgSetter[1].value);
+		}
     }, false);
+
+	// BG image
+	document.querySelector('.bgimg button').addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+		if (parseInt(bgSetter[0].value) == 0) {
+			setGrid(sizeSetter[0].value, sizeSetter[1].value, bgSetter[0].value);
+		} else {
+			addBGLayer(sizeSetter[0].value, sizeSetter[1].value, bgSetter[0].value, bgSetter[1].value);
+		}
+	});
 	
 	var mouse2D = new THREE.Vector2(),
 		raycaster = new THREE.Raycaster(),
@@ -295,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 			
 			if (isAltDown) {
-				if (intersector.object != plane) {
+				if (intersector.object != planeObj) {
 					scene.remove(intersector.object);
 				}
 			} else if (isCtrlDown) {
@@ -373,7 +430,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		window.open(dataUri, 'jsonwindow');
 	};
 	
-	var saveJSON = function () {
+	var saveJSON = function (e) {
+		e.preventDefault();
+        e.stopPropagation();
+		
 		var children = scene.children,
 			voxels = [],
 			child;
@@ -403,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var xhr = new XMLHttpRequest();
         var fileName = encodeURIComponent(Date.now().valueOf());
 		var params = 'filename=' + fileName + '&content=' + dataUri;
-		xhr.open('POST', '/api/json', true);
+		xhr.open('POST', '/api/json2', true);
 		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
 		//xhr.setRequestHeader('content-length', params.length);
 		//xhr.setRequestHeader('connection', 'close');
@@ -417,10 +477,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		xhr.send(params);
 	};
 	
-	var buttons = document.querySelectorAll('.iofunctions button');
-	buttons[0].addEventListener('click', printPNG, false);
-	buttons[1].addEventListener('click', printJSON, false);
-	buttons[2].addEventListener('click', saveJSON, false);
+	var printButtons = document.querySelectorAll('.print a');
+	printButtons[0].addEventListener('click', printPNG, false);
+	printButtons[1].addEventListener('click', printJSON, false);
+
+	var saveButtons = document.querySelectorAll('.save a');
+	saveButtons[0].addEventListener('click', saveJSON, false);
 	
 	var onDragOver = function (e) {
 		e.preventDefault()

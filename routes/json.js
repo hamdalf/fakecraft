@@ -38,4 +38,24 @@ router.route('/json/:filename').all(function(req, res, next) {
 }).post(function(req, res) {
     console.log('Please use GET method fot loading json');
 });
+
+router.route('/json2').all(function(req, res, next) {
+	console.log('save json start to use');
+	next();
+}).get(function(req, res) {
+	console.log('Please use POST method fot saving json');
+}).post(function(req, res) {
+	var content = req.body.content,
+		filename = req.body.filename;
+		
+	fs.writeFile(path.join(__dirname, '../saves/indoor/') + filename + '.json', content, function(ex) {
+		if (ex) {
+			console.log(ex);
+		}
+		res.json({message: 'File saved!'});
+        res.end();
+	});
+});
+
+
 module.exports = router;

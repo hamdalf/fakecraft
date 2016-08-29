@@ -134,6 +134,7 @@ dl.grp.size dd input[type=text] {
   font-size: 70%;
   width: 30px;
   height: calc(40px - 10px);
+  line-height: calc(40px - 10px);
   box-sizing: border-box;
   border: none;
   background-color: transparent;
@@ -165,6 +166,94 @@ dl.grp.size:hover dd input[type=text] {
 }
 ul.grp.size:hover dd button,
 dl.grp.size:hover dd button {
+  background-color: #007acc;
+}
+ul.grp.bgimg dt,
+dl.grp.bgimg dt {
+  float: left;
+  list-style: none;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px 0 20px;
+  font-size: 70%;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+ul.grp.bgimg dt::after,
+dl.grp.bgimg dt::after {
+  content: ":";
+  display: inline-block;
+}
+ul.grp.bgimg dd,
+dl.grp.bgimg dd {
+  float: left;
+  list-style: none;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 20px 0 5px;
+}
+ul.grp.bgimg dd input[type=text],
+dl.grp.bgimg dd input[type=text] {
+  display: inline-block;
+  font-size: 70%;
+  height: calc(40px - 10px);
+  line-height: calc(40px - 10px);
+  box-sizing: border-box;
+  border: none;
+  background-color: transparent;
+  color: #fff;
+  -o-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -webkit-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+ul.grp.bgimg dd input[type=text]:focus,
+dl.grp.bgimg dd input[type=text]:focus {
+  outline: none;
+}
+ul.grp.bgimg dd input#layer,
+dl.grp.bgimg dd input#layer {
+  width: 20px;
+}
+ul.grp.bgimg dd input#bgimg,
+dl.grp.bgimg dd input#bgimg {
+  width: 50px;
+}
+ul.grp.bgimg dd button,
+dl.grp.bgimg dd button {
+  display: inline-block;
+  font-size: 70%;
+  box-shadow: none;
+  border: none;
+  height: calc(40px - 10px);
+  text-transform: uppercase;
+  background-color: rgba(0, 122, 204, 0.3);
+  color: #fff;
+}
+ul.grp.bgimg dd button:focus,
+dl.grp.bgimg dd button:focus {
+  outline: none;
+}
+ul.grp.bgimg:hover dd input[type=text],
+dl.grp.bgimg:hover dd input[type=text] {
+  background-color: #fff;
+  color: #000;
+}
+ul.grp.bgimg:hover dd input#layer,
+dl.grp.bgimg:hover dd input#layer {
+  width: 20px;
+}
+ul.grp.bgimg:hover dd input#bgimg,
+dl.grp.bgimg:hover dd input#bgimg {
+  width: 150px;
+}
+ul.grp.bgimg:hover dd button,
+dl.grp.bgimg:hover dd button {
   background-color: #007acc;
 }
 footer {

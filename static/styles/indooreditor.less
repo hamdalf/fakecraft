@@ -144,6 +144,7 @@ ul, dl {
                     font-size: 70%;
                     width: 30px;
                     height: calc(~'@{nav-menu-height} - 10px');
+                    line-height: calc(~'@{nav-menu-height} - 10px');
                     box-sizing: border-box;
                     border: none;
                     background-color: transparent;
@@ -175,6 +176,100 @@ ul, dl {
                     input[type=text] {
                         background-color: #fff;
                         color: #000;
+                    }
+
+                    button {
+                        background-color: rgba(0, 122, 204, 1);
+                    }
+                }
+            }
+        }
+
+        &.bgimg {
+            dt {
+                float: left;
+                list-style: none;
+                display: inline-block;
+                height: @nav-menu-height;
+                line-height: @nav-menu-height;
+                padding: 0 5px 0 20px;
+                font-size: 70%;
+                color: rgba(255, 255, 255, 1);
+                font-weight: 600;
+                text-decoration: none;
+                text-transform: uppercase;
+
+                &::after {
+                    content: ":";
+                    display: inline-block;
+                }
+            }
+
+            dd {
+                float: left;
+                list-style: none;
+                display: inline-block;
+                height: @nav-menu-height;
+                line-height: @nav-menu-height;
+                padding: 0 20px 0 5px;
+
+                input[type=text] {
+                    display: inline-block;
+                    font-size: 70%;
+                    height: calc(~'@{nav-menu-height} - 10px');
+                    line-height: calc(~'@{nav-menu-height} - 10px');
+                    box-sizing: border-box;
+                    border: none;
+                    background-color: transparent;
+                    color: #fff;
+                    -o-transition: all .2s ease-in-out;
+                    -ms-transition: all .2s ease-in-out;
+                    -moz-transition: all .2s ease-in-out;
+                    -webkit-transition: all .2s ease-in-out;
+                    transition: all .2s ease-in-out;
+                    
+                    &:focus {
+                        outline: none;
+                    }
+                }
+
+                input#layer {
+                    width: 20px;
+                }
+
+                input#bgimg {
+                    width: 50px;
+                }
+
+                button {
+                    display: inline-block;
+                    font-size: 70%;
+                    box-shadow: none;
+                    border: none;
+                    height: calc(~'@{nav-menu-height} - 10px');
+                    text-transform: uppercase;
+                    background-color: rgba(0, 122, 204, 0.3);
+                    color: #fff;
+
+                    &:focus {
+                        outline: none;
+                    }
+                }
+            }
+
+            &:hover {
+                dd {
+                    input[type=text] {
+                        background-color: #fff;
+                        color: #000;
+                    }
+
+                    input#layer {
+                        width: 20px;
+                    }
+
+                    input#bgimg {
+                        width: 150px;
                     }
 
                     button {

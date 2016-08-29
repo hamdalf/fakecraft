@@ -1,0 +1,18 @@
+<html>
+<body>
+<script>
+    var cnt = 0;
+    document.write('[');
+    for (var x = -300; x < 300; x++) {
+        for (var z = -175; z < 175; z++) {
+            if (cnt > 0) {
+                document.write(',');
+            }
+            document.write('{"x":' + x + ',"y":0,"z":' + z + ',"p":"floor","t":"0"}');
+            cnt++;
+        }
+    }
+    document.write(']');
+</script>
+</body>
+</html>
