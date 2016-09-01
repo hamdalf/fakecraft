@@ -1,6 +1,7 @@
 var TimerId, controls,
     defaultWidth = 600,		// 605
-    defaultHeight = 350;	// 346
+    defaultHeight = 350,	// 346
+	lastSavedFileName;
 
 document.addEventListener('DOMContentLoaded', function() {
 	if (!Detector.webgl) {
@@ -471,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		xhr.onload = function (e) {
 			if (this.status == 200) {
 				//console.log(this.response.message);
+				lastSavedFileName = fileName;
                 alert('JSON \'' + fileName + '.json\' saved');
 			}
 		};
@@ -483,6 +485,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	var saveButtons = document.querySelectorAll('.save a');
 	saveButtons[0].addEventListener('click', saveJSON, false);
+	saveButtons[1].addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+
+		if (!lastSavedFileName) {
+
+		} else {
+			document.location.href = '/indooroptimizer.html?f=' + lastSavedFileName;
+		}
+	}, false);
 	
 	var onDragOver = function (e) {
 		e.preventDefault()
