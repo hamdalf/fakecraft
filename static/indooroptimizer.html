@@ -1,68 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Indoor Editor</title>
+	<title>Indoor Optimizer</title>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Google Fonts embed code : "Open Sans Condensed" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&subset=latin,latin-ext">
 	<link rel="stylesheet" href="/styles/html5doctor.css" >
-	<link rel="stylesheet" href="/styles/indooreditor.css" >
+	<link rel="stylesheet" href="/styles/indooroptimizer.css" >
 	<script src="/scripts/threejs/three72.min.js"></script>
 	<script src="/scripts/threejs/examples/js/renderers/Projector.js"></script>
 	<script src="/scripts/threejs/examples/js/controls/TrackballControls.js"></script>
 	<script src="/scripts/threejs/Detector.js"></script>
 	<script src="/scripts/threejs/RequestAnimationFrame.js"></script>
 	<script src="/scripts/threex/threex.windowresize.js"></script>
+    <script src="/scripts/csg/csg.js"></script>
+    <script src="/scripts/csg/ThreeCSG.js"></script>
 	<script src="/scripts/officeflooreditor.pattern.js"></script>
-	<script src="/scripts/indooreditor.js"></script>
+	<script src="/scripts/indooroptimizer.js"></script>
 </head>
 <body>
 	<div id="container">
 		<nav>
-			<h1>Indoor Editor</h1>
+			<h1>Indoor Optimizer</h1>
 			<ul class="grp mode">
 				<li class="on"><a href="indooreditor.html">Edit floor</a></li>
                 <li><a href="indoorobjecteditor.html">Edit desks</a></li>
 			</ul>
-            <dl class="grp size">
-                <dt>Size</dt>
-                <dd><input type="text" name="width" id="width" value="" placeholder="WIDTH" /> x <input type="text" name="height" id="height" value="" placeholder="HEIGHT" /> <button>Apply</button></dd>
-            </dl>
-			<dl class="grp bgimg">
-				<dt>BG</dt>
-				<dd><input type="text" name="layer" id="layer" value="" placeholder="LAYER" />: <input type="text" name="bgimg" id="bgimg" value="" placeholder="NONE" /><button>Apply</button></dd>
-			</dl>
-            <ul class="grp print">
-				<li class="on"><a href="/print/png">Print png</a></li>
-                <li><a href="/print/json">Print json</a></li>
-			</ul>
             <ul class="grp save">
-				<li class="on"><a href="/save/quick">Quick Save</a></li>
-                <li><a href="/save/optimized">Optimized Save</a></li>
+				<li class="on"><a href="/save/quick">Save Optimized</a></li>
 			</ul>
 		</nav>
-		<footer>
-			<dl class="keymap">
-				<dt>ctrl</dt>
-				<dd>Add voxel</dd>
-				<dt>alt</dt>
-				<dd>Remove voxel</dd>
-				<dt>i/k keys</dt>
-				<dd>Translate in y</dd>
-				<dt>A/S/D + mouse</dt>
-				<dd>Camera move</dd>
-				<dt>0-9</dt>
-				<dd>Change color</dd>
-				<dt>Drag &amp; Drop json file</dt>
-				<dd>Load map file</dd>
-			</dl>
-			<ul class="iofunctions">
-				<li><button>print .png</button></li>
-				<li><button>print .json</button></li>
-				<li><button>save .json</button></li>
-			</ul>
-		</footer>
 	</div>
 </body>
 </html>

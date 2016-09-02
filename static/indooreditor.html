@@ -6,6 +6,8 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Google Fonts embed code : "Open Sans Condensed" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&subset=latin,latin-ext">
 	<link rel="stylesheet" href="/styles/html5doctor.css" >
 	<link rel="stylesheet" href="/styles/indooreditor.css" >
 	<script src="/scripts/threejs/three72.min.js"></script>
@@ -24,6 +26,9 @@
 			<ul class="grp mode">
 				<li class="on"><a href="indooreditor.html">Edit floor</a></li>
                 <li><a href="indoorobjecteditor.html">Edit desks</a></li>
+			</ul>
+			<ul class="grp load">
+				<li class="on"><a href="/files">Load</a></li>
 			</ul>
             <dl class="grp size">
                 <dt>Size</dt>
@@ -63,6 +68,15 @@
 				<li><button>save .json</button></li>
 			</ul>
 		</footer>
+		<div id="dimmedbg">
+			<div class="popupWrapper">
+				<p>
+					<a class="popupclose" href="#">close</a>
+				</p>
+				<ul class="lists">
+				</ul>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

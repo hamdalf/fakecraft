@@ -1,0 +1,108 @@
+@version: "0.0.1";
+@nav-menu-height: 40px;
+
+html {
+    height: 100%;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#308ef2+0,ffffff+100 */
+	background: #1D478B; /* Old browsers */
+	background: -moz-linear-gradient(bottom, #1D478B 15%, #00B2EF 66%, #C3D940 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.15,#1D478B), color-stop(0.66,#00B2EF), color-stop(1,#C3D940)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(bottom, #1D478B 15%, #00B2EF 66%, #C3D940 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(bottom, #1D478B 15%, #00B2EF 66%, #C3D940 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(bottom, #1D478B 15%, #00B2EF 66%, #C3D940 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #1D478B 15%, #00B2EF 66%, #C3D940 100%); /* W3C */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: calc(~'100% - 10px');
+    height: @nav-menu-height;
+    padding: 0 10px 0 0;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+
+    h1 {
+        padding: 0 20px 0 20px;
+        line-height: @nav-menu-height;
+        //display: inline-block;
+        float: left;
+        background: rgba(33, 34, 38, 1);
+    }
+}
+
+ul, dl {
+    &.grp {
+        display: block;
+        background-color: transparent;
+        float: left;
+        height: @nav-menu-height;
+        overflow: hidden;
+        list-style: none;
+        -o-transition: all .2s ease-in-out;
+        -ms-transition: all .2s ease-in-out;
+        -moz-transition: all .2s ease-in-out;
+        -webkit-transition: all .2s ease-in-out;
+        transition: all .2s ease-in-out;
+        
+
+        &:hover {
+            background-color: rgba(180, 180, 180, 0.8);
+        }
+
+        li {
+            display: block;
+            width: 100%;
+            height: @nav-menu-height;
+            line-height: @nav-menu-height;
+            padding: 0 20px;
+            list-style: none;
+
+            a {
+                font-size: 70%;
+                color: rgba(0, 0, 0, 1);
+                text-decoration: none;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            &.on {
+                a {
+                    color: rgba(255, 255, 255, 1);
+                    font-weight: 600;
+                }
+            }
+
+            &:hover {
+                background-color: rgba(0, 122, 204, 1);
+
+                a {
+                    color: rgba(255, 255, 255, 1);
+                }
+            }
+        }
+
+        &.mode {
+            &:hover {
+                height: 200%;
+            }
+        }
+
+        &.save {
+            &:hover {
+                //height: 200%;
+            }
+        }
+    }
+}

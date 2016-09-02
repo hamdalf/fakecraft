@@ -492,9 +492,73 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (!lastSavedFileName) {
 
 		} else {
-			document.location.href = '/indooroptimizer.html?f=' + lastSavedFileName;
+			document.location.href = '/indooroptimizer.html?f=' + lastSavedFileName.replace('.json', '');
 		}
 	}, false);
+
+	var loadButtons = document.querySelectorAll('.load a');
+	loadButtons[0].addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/files/indoor', true);
+		xhr.responseType = 'text';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                var files = JSON.parse(this.responseText),
+					wrapper = document.querySelector('.lists'),
+					tr;
+				wrapper.innerHTML = '';
+				for (var i = 0; i < files.length; i++) {
+					tr = document.createElement('li');
+					ta = document.createElement('a');
+					ta.setAttribute('href', files[i]);
+					ta.innerHTML = files[i];
+					ta.addEventListener('click', function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						onFileNameClick(e);
+					});
+					tr.appendChild(ta);
+					wrapper.appendChild(tr);
+					navigation.show();
+				}
+			}
+		};
+		xhr.send();
+	}, false);
+
+	var onFileNameClick = function(e) {
+		var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
+        
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/file/indoor/' + fileName.replace('.json', ''), true);
+		xhr.responseType = 'text';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                loadJSON(this.responseText);
+			}
+		};
+		xhr.send();
+	};
+
+	var navigation = {
+        element: document.querySelector('#dimmedbg')
+    };
+    navigation.show = function () {
+        this.element.style.display = 'block';
+    };
+    navigation.hide = function () {
+        this.element.style.display = 'none';
+    };
+
+	var popupCloasBtn = document.querySelector('.popupclose');
+    popupCloasBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        navigation.hide();
+    });
 	
 	var onDragOver = function (e) {
 		e.preventDefault()

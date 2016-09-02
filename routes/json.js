@@ -57,5 +57,54 @@ router.route('/json2').all(function(req, res, next) {
 	});
 });
 
+router.route('/files/:position').all(function(req, res, next) {
+	console.log('load file list start to use');
+	next();
+}).get(function(req, res) {
+	var folder;
+
+	switch (req.params.position) {
+		case 'indoor':
+			folder = path.join(__dirname, '../saves/indoor/');
+			break;
+		case 'office':
+			folder = path.join(__dirname, '../saves/officemap/');
+			break;
+	}
+
+	var files = fs.readdirSync(folder);
+	res.json(files);
+}).post(function(req, res) {
+    console.log('Please use GET method for file list');
+});
+
+router.route('/file/:position/:filename').all(function(req, res, next) {
+    console.log('load file start to use - ', new Date().toString());
+	next();
+}).get(function(req, res) {
+	var folder;
+
+	switch (req.params.position) {
+		case 'indoor':
+			folder = path.join(__dirname, '../saves/indoor/');
+			break;
+		case 'office':
+			folder = path.join(__dirname, '../saves/officemap/');
+			break;
+	}
+
+    fs.readFile(folder + req.params.filename + '.json', function (ex, data) {
+        if (ex) {
+            console.log(ex);
+        }
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        });
+        res.write(data);
+        res.end();
+    });
+}).post(function(req, res) {
+    console.log('Please use GET method fot loading json');
+});
 
 module.exports = router;

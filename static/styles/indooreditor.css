@@ -259,3 +259,61 @@ dl.grp.bgimg:hover dd button {
 footer {
   display: none;
 }
+#dimmedbg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: none;
+}
+#dimmedbg .popupclose {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  text-indent: -9999px;
+  background-image: url('../images/colleagueeditor/ic_arrow_back_white_24px.svg');
+  background-position: 0 0;
+  background-size: contain;
+  background-color: transparent;
+}
+#dimmedbg .popupWrapper {
+  width: 500px;
+  height: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -200px;
+  margin-left: -250px;
+}
+#dimmedbg .lists {
+  display: block;
+  width: 470px;
+  height: 30vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 50px auto 0 auto;
+  border: 2px solid #ffffff;
+  background-color: #fff;
+  list-style: none;
+}
+#dimmedbg .lists li a {
+  display: block;
+  width: calc(100% - 50px);
+  padding-left: 50px;
+  font-family: 'Open Sans Condensed';
+  color: #000;
+  font-size: 30px;
+  text-align: left;
+  text-decoration: none;
+  line-height: 40px;
+  background-position: 0 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+#dimmedbg .lists li a:hover {
+  background-color: #4a95c7;
+  color: #fff;
+}
