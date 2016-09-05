@@ -78,6 +78,35 @@ router.route('/files/:position').all(function(req, res, next) {
     console.log('Please use GET method for file list');
 });
 
+router.route('/file').all(function(req, res, next) {
+    console.log('save file start to use - ', new Date().toString());
+	next();
+}).get(function(req, res) {
+	console.log('Please use POST method fot saving json');
+}).post(function(req, res) {
+	var content = req.body.content,
+		position = req.body.position,
+		filename = req.body.filename,
+		folder;
+
+	switch (position) {
+		case 'indoor':
+			folder = path.join(__dirname, '../saves/indoor/');
+			break;
+		case 'office':
+			folder = path.join(__dirname, '../saves/officemap/');
+			break;
+	}
+		
+	fs.writeFile(folder + filename + '.json', content, function(ex) {
+		if (ex) {
+			console.log(ex);
+		}
+		res.json({message: 'File saved!'});
+        res.end();
+	});
+});
+
 router.route('/file/:position/:filename').all(function(req, res, next) {
     console.log('load file start to use - ', new Date().toString());
 	next();

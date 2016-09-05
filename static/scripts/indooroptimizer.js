@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         e.stopPropagation();
 
-
+		saveJSON();
     }, false);
 
 	var loadFile = function() {
@@ -536,6 +536,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 scene.add(tempMesh);
             }
         }
+	};
+
+	var saveJSON = function () {
+		var children = scene.children,
+			voxels = [],
+			child;
+
+		for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child instanceof THREE.Mesh === false) {
+				continue;
+			}
+			/*if (child.geometry instanceof THREE.BoxGeometry === false) {
+				continue;
+			}*/
+			if (child === rollOverMesh) {
+				continue;
+			}
+            if (child.name !== 'map') {
+                continue;
+            }
+			
+			voxels.push({
+				p: child.material._cubePattern,
+				t: child.material._cubeType,
+                x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
+                g: child.geometry.toJSON()
+			});
+		}
+		
+		var dataUri = JSON.stringify(voxels);
+		var xhr = new XMLHttpRequest();
+        var fileName = encodeURIComponent('optimized_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&position=indoor&content=' + dataUri;
+		xhr.open('POST', '/api/file', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		//xhr.setRequestHeader('content-length', params.length);
+		//xhr.setRequestHeader('connection', 'close');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+				//console.log(this.response.message);
+                alert('JSON \'' + fileName + '.json\' saved');
+			}
+		};
+		xhr.send(params);
 	};
 	
 	var animate = function () {

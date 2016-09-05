@@ -24,6 +24,10 @@ body {
   overflow: hidden;
   font-family: 'Open Sans Condensed', sans-serif, Arial;
 }
+input[type=text],
+button {
+  font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
 nav {
   position: fixed;
   top: 0;
@@ -106,7 +110,7 @@ dl.grp.size dt {
   list-style: none;
   display: inline-block;
   height: 40px;
-  line-height: 40px;
+  line-height: 42px;
   padding: 0 5px 0 20px;
   font-size: 70%;
   color: #ffffff;
@@ -174,7 +178,7 @@ dl.grp.bgimg dt {
   list-style: none;
   display: inline-block;
   height: 40px;
-  line-height: 40px;
+  line-height: 42px;
   padding: 0 5px 0 20px;
   font-size: 70%;
   color: #ffffff;

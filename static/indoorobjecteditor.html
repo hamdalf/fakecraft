@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Indoor Object Editor</title>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Google Fonts embed code : "Open Sans Condensed" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&subset=latin,latin-ext">
+	<link rel="stylesheet" href="/styles/html5doctor.css" >
+	<link rel="stylesheet" href="/styles/indoorobjecteditor.css" >
+	<script src="/scripts/threejs/three72.min.js"></script>
+	<script src="/scripts/threejs/examples/js/renderers/Projector.js"></script>
+	<script src="/scripts/threejs/examples/js/controls/TrackballControls.js"></script>
+	<script src="/scripts/threejs/Detector.js"></script>
+	<script src="/scripts/threejs/RequestAnimationFrame.js"></script>
+	<script src="/scripts/threex/threex.windowresize.js"></script>
+	<script src="/scripts/csg/csg.js"></script>
+    <script src="/scripts/csg/ThreeCSG.js"></script>
+	<script src="/scripts/officeflooreditor.pattern.js"></script>
+	<script src="/scripts/indoorobjecteditor.js"></script>
+</head>
+<body>
+	<div id="container">
+		<nav>
+			<h1>Indoor Editor</h1>
+			<ul class="grp mode">
+                <li class="on"><a href="indoorobjecteditor.html">Edit desks</a></li>
+				<li><a href="indooreditor.html">Edit floor</a></li>
+			</ul>
+			<ul class="grp load">
+				<li class="on"><a href="/files">Load</a></li>
+			</ul>
+            <dl class="grp size">
+                <dt>Size</dt>
+                <dd><input type="text" name="width" id="width" value="" placeholder="WIDTH" /> x <input type="text" name="height" id="height" value="" placeholder="HEIGHT" /> <button>Apply</button></dd>
+            </dl>
+			<dl class="grp bgimg">
+				<dt>BG</dt>
+				<dd><input type="text" name="layer" id="layer" value="" placeholder="LAYER" />: <input type="text" name="bgimg" id="bgimg" value="" placeholder="NONE" /><button>Apply</button></dd>
+			</dl>
+			<ul class="grp desk2series">
+				<li class="on"><a href="/desk/2/2">2x2</a></li>
+				<li><a href="/desk/2/3">2x3</a></li>
+				<li><a href="/desk/2/4">2x4</a></li>
+				<li><a href="/desk/2/5">2x5</a></li>
+				<li><a href="/desk/2/6">2x6</a></li>
+			</ul>
+			<ul class="grp desk3series">
+				<li class="on"><a href="/desk/3/3">3x3</a></li>
+				<li><a href="/desk/3/4">3x4</a></li>
+				<li><a href="/desk/3/5">3x5</a></li>
+				<li><a href="/desk/3/6">3x6</a></li>
+				<li><a href="/desk/3/7">3x7</a></li>
+				<li><a href="/desk/3/8">3x8</a></li>
+			</ul>
+			<ul class="grp desk4series">
+				<li class="on"><a href="/desk/4/4">4x4</a></li>
+				<li><a href="/desk/4/5">4x5</a></li>
+				<li><a href="/desk/4/6">4x6</a></li>
+				<li><a href="/desk/4/7">4x7</a></li>
+				<li><a href="/desk/4/8">4x8</a></li>
+				<li><a href="/desk/4/9">4x9</a></li>
+				<li><a href="/desk/4/10">4x10</a></li>
+			</ul>
+			<ul class="grp desk5series">
+				<li class="on"><a href="/desk/5/5">5x5</a></li>
+				<li><a href="/desk/5/6">5x6</a></li>
+				<li><a href="/desk/5/7">5x7</a></li>
+				<li><a href="/desk/5/8">5x8</a></li>
+				<li><a href="/desk/5/9">5x9</a></li>
+				<li><a href="/desk/5/10">5x10</a></li>
+			</ul>
+			<ul class="grp desk6series">
+				<li class="on"><a href="/desk/6/6">6x6</a></li>
+				<li><a href="/desk/6/7">6x7</a></li>
+				<li><a href="/desk/6/8">6x8</a></li>
+				<li><a href="/desk/6/9">6x9</a></li>
+				<li><a href="/desk/6/10">6x10</a></li>
+			</ul>
+			<ul class="grp desk8series">
+				<li class="on"><a href="/desk/8/9">8x9</a></li>
+				<li><a href="/desk/8/10">8x10</a></li>
+				<li><a href="/desk/10/15">10x15</a></li>
+				<li><a href="/desk/12/18">12x18</a></li>
+			</ul>
+            <ul class="grp print">
+				<li class="on"><a href="/print/png">Print png</a></li>
+                <li><a href="/print/json">Print json</a></li>
+			</ul>
+            <ul class="grp save">
+				<li class="on"><a href="/save/quick">Save</a></li>
+			</ul>
+		</nav>
+		<footer>
+			<dl class="keymap">
+				<dt>ctrl</dt>
+				<dd>Add voxel</dd>
+				<dt>alt</dt>
+				<dd>Remove voxel</dd>
+				<dt>i/k keys</dt>
+				<dd>Translate in y</dd>
+				<dt>A/S/D + mouse</dt>
+				<dd>Camera move</dd>
+				<dt>0-9</dt>
+				<dd>Change color</dd>
+				<dt>Drag &amp; Drop json file</dt>
+				<dd>Load map file</dd>
+			</dl>
+		</footer>
+		<div id="dimmedbg">
+			<div class="popupWrapper">
+				<p>
+					<a class="popupclose" href="#">close</a>
+				</p>
+				<ul class="lists">
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

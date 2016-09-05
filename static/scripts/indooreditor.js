@@ -397,11 +397,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		//console.log(distance);
 	};
 	
-	var printPNG = function () {
+	var printPNG = function (e) {
+		e.preventDefault();
+        e.stopPropagation();
+
 		window.open(renderer.domElement.toDataURL('image/png'), 'pngwindow');	
 	};
 	
-	var printJSON = function () {
+	var printJSON = function (e) {
+		e.preventDefault();
+        e.stopPropagation();
+		
 		var children = scene.children,
 			voxels = [],
 			child;
@@ -531,6 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	var onFileNameClick = function(e) {
 		var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
+		lastSavedFileName = fileName.replace('.json', '');
         
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', '/api/file/indoor/' + fileName.replace('.json', ''), true);
