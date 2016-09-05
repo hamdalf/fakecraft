@@ -136,4 +136,25 @@ router.route('/file/:position/:filename').all(function(req, res, next) {
     console.log('Please use GET method fot loading json');
 });
 
+router.route('/images/:position').all(function(req, res, next) {
+	console.log('load file list start to use');
+	next();
+}).get(function(req, res) {
+	var folder;
+
+	switch (req.params.position) {
+		case 'indoor':
+			folder = path.join(__dirname, '../static/images/indooreditor/');
+			break;
+		case 'office':
+			folder = path.join(__dirname, '../static/iamges/officeeditor/');
+			break;
+	}
+
+	var files = fs.readdirSync(folder);
+	res.json(files);
+}).post(function(req, res) {
+    console.log('Please use GET method for file list');
+});
+
 module.exports = router;

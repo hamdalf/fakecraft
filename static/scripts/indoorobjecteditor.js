@@ -1,4 +1,6 @@
 var TimerId, controls,
+	defaultWidth = 600,		// 605
+    defaultHeight = 350,	// 346
 	lastSavedFileName;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -24,8 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rollOverMesh._h = 72;
                 rollOverMesh._d = 100;
                 rollOverMesh._r = false;
-                //rollOverMesh.position.set(100, 36, 50);
-                rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -70, 0));
+                rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
                 break;
             default:
                 var typeArr = rType.split('x');
@@ -34,10 +35,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 rollOverMesh._h = 10;
                 rollOverMesh._d = parseInt(typeArr[1]) * 50;
                 rollOverMesh._r = false;
-                rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -5, -40));
+				rollOverMesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -5, 0));
                 break;
         }
         scene.add(rollOverMesh);
+		document.querySelector('footer .now').innerHTML = rType;
     };
 	
 	var container = document.querySelector('#container'),
@@ -92,31 +94,40 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
     // desk deometry
-    var totalDeskTypes = 2,
-        deskGeo = [];
+	var objectType = ['desk', '2x2',  '2x3', '2x4', '2x5', '2x6', '3x3', '3x4', '3x5', '3x6', '3x7', '3x8',
+					'4x4', '4x5', '4x6', '4x7', '4x8', '4x9', '4x10', '5x5', '5x6', '5x7', '5x8', '5x9', '5x10',
+					'6x6', '6x7', '6x8', '6x9', '6x10', '8x9', '8x10', '10x15', '12x18'];
+    var deskGeo = {};
     var loadDeskGeos = function (idx) {
-        if (idx >= totalDeskTypes) {
-            var mat = cubeMaterials['desk'][0].clone();
-            mat.opacity = 0.6;
-            mat.transparent = true;
-            setRollOver(deskGeo[0].geometry.clone(), mat, 'desk0');
-            //scene.add(rollOverMesh);
-        } else {
-            var fileName = encodeURIComponent('geometry_desk' + idx),
-                xhr = new XMLHttpRequest();
-            xhr.open('GET', '/api/json/' + fileName, true);
-            xhr.responseType = 'json';
-            xhr.onload = function (e) {
-                if (this.status == 200) {
-                    var geometries = this.response;
-                    deskGeo[idx] = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
-                    loadDeskGeos(idx + 1);
-                }
-            };
-            xhr.send();
-        }
+		if (idx >= objectType.length) {
+			setRollOver(deskGeo[objectType[1]].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x2');
+			return;
+		}
+		var rType = objectType[idx],
+			fileName = encodeURIComponent('desk_' + rType),
+			xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/file/indoor/' + fileName, true);
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+				var geometries = this.response;
+				deskGeo[rType] = THREE.JSONLoader.prototype.parse(geometries[0].g.data);
+				loadDeskGeos(idx + 1);
+			}
+		};
+		xhr.send();
     };
     loadDeskGeos(0);
+
+	var rotateDesk = function () {
+        if (rollOverMesh._r === false) {
+            rollOverMesh.rotation.y += Math.PI / 2;
+            rollOverMesh._r = true;
+        } else {
+            rollOverMesh.rotation.y -= Math.PI / 2;
+            rollOverMesh._r = false;
+        }
+    };
 	
 	// picking
 	var projector = new THREE.Projector();
@@ -250,27 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 	var onDocumentKeyDown = function (e) {
 		switch (e.keyCode) {
-			case '0'.charCodeAt(0):
-				setCubeType('floor', 0);
-				break;
-			case '1'.charCodeAt(0):
-				setCubeType('floor', 1);
-				break;
-			case '2'.charCodeAt(0):
-				setCubeType('floor', 2);
-				break;
-			case '3'.charCodeAt(0):
-				setCubeType('wall', 0);
-				break;
-            case '4'.charCodeAt(0):
-				setCubeType('wall', 1);
-				break;
-            case '5'.charCodeAt(0):
-				setCubeType('wall', 2);
-				break;
-            case '6'.charCodeAt(0):
-				setCubeType('wall', 3);
-				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;
@@ -286,6 +276,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			case 'K'.charCodeAt(0):
 				translateCubes(0, -1, 0);
 				break;
+			case 'R'.charCodeAt(0):
+				rotateDesk();
+				break;
 			case 17:
 				isCtrlDown = true;
 				break;
@@ -294,13 +287,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
 			case 38:
 				zoomInOut('in');
-				//controls.position0.setZ(controls.position0.z - 100);
-				//controls.reset();
 				break;
 			case 40:
 				zoomInOut('out');
-				//controls.position0.setZ(controls.position0.z + 100);
-				//controls.reset();
 				break;
 		}	
 	};
@@ -339,21 +328,62 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	};
 	
-	var setVoxelPosition = function (intersector) {
+	var setRollOverPosition = function (intersector) {
 		var normalMatrix = new THREE.Matrix3();
 		normalMatrix.getNormalMatrix(intersector.object.matrixWorld);
 		var rotatedNormal = new THREE.Vector3().copy(intersector.face.normal);
 		rotatedNormal.applyMatrix3(normalMatrix);
-		//var tmpVec = new THREE.Vector3().copy(intersector.face.normal),
-		//voxelPosition.add(intersector.point, intersector.object.matrixRotationWorld.multiplyVector3(tmpVec));
-		voxelPosition.addVectors(intersector.point, rotatedNormal);
-		voxelPosition.x = Math.floor(voxelPosition.x / 10) * 10 + 5;
-		voxelPosition.y = Math.floor(voxelPosition.y / 10) * 10 + 5;
-		voxelPosition.z = Math.floor(voxelPosition.z / 10) * 10 + 5;
+		rollOverPosition.addVectors(intersector.point, rotatedNormal);
+        
+        if (rollOverMesh) {
+			if (rollOverMesh._p === 'desk') {
+				rollOverPosition.y = Math.floor((rollOverPosition.y + (rollOverMesh._h)) / 10) * 10 + 1;
+				if (rollOverMesh._r) {
+					rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 2;
+                    rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 7;
+				} else {
+					rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 3.2;
+                    rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 2;
+				}
+			} else {
+				rollOverPosition.y = Math.floor((rollOverPosition.y + (rollOverMesh._h)) / 10) * 10;
+				var typeArr = rollOverMesh._p.split('x');
+				if (rollOverMesh._r) {
+					if (typeArr[0] % 2 === 0) {
+						if (typeArr[1] % 2 === 0) {
+							rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10;
+							rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10;
+						} else {
+							rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 5;
+							rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10;
+						}
+					} else {
+						if (typeArr[1] % 2 === 0) {
+							rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10;
+							rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 5;
+						} else {
+							rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 5;
+							rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 5;
+						}
+					}
+				} else {
+					if (typeArr[0] % 2 === 0) {
+						rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10;
+					} else {
+						rollOverPosition.x = Math.floor((rollOverPosition.x) / 10) * 10 + 5;
+					}
+					if (typeArr[1] % 2 === 0) {
+						rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10;
+					} else {
+						rollOverPosition.z = Math.floor((rollOverPosition.z) / 10) * 10 + 5;
+					}
+				}
+			}
+        }
 	};
 	
 	var lastPutDelTime = Date.now();
-	var putDelVoxel = function () {
+	var putDelDesk = function () {
 		if (isCtrlDown === false && isAltDown === false) {
 			return;
 		}
@@ -370,30 +400,46 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 			
 			if (isAltDown) {
-				if (intersector.object != planeObj) {
-					scene.remove(intersector.object);
-				}
+                if (intersector.object._p) {
+                    if (intersector.object._p === 'desk') {
+                        scene.remove(intersector.object);
+                    } else {
+						for (var i = 0; i < objectType.length; i++) {
+							if (intersector.object._p === objectType[i]) {
+								scene.remove(intersector.object);
+							}
+						}
+					}
+                }
 			} else if (isCtrlDown) {
-				setVoxelPosition(intersector);
-				
-				var voxel = new THREE.Mesh(cubeGeo, cubeMaterials[cbPattern][cbType]);
-				voxel.position.copy(voxelPosition);
-				voxel.matrixAutoUpdate = false;
-				voxel.updateMatrix();
-				scene.add(voxel);
+				setRollOverPosition(intersector);
+                var mat = cubeMaterials['desk'][0].clone();
+				var desk = new THREE.Mesh(deskGeo[rollOverMesh._p].geometry.clone(), mat);
+                switch (rollOverMesh._p) {
+                    case 'desk':
+                        desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                        break;
+                    default:
+                        desk.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -5, 0));
+                        break;
+                }
+				desk.position.copy(rollOverPosition);
+                if (rollOverMesh._r === true) {
+                    desk.rotation.y += Math.PI / 2;
+                    desk._r = true;
+                } else {
+                    desk._r = false;
+                }
+				desk.matrixAutoUpdate = false;
+				desk.updateMatrix();
+                desk._p = rollOverMesh._p;
+                desk._userID = null;
+				scene.add(desk);
 			}
 		}
 	};
 	
 	var zoomInOut = function (inout) {
-			//intersects = raycaster.intersectObjects(scene.children);
-		/*if (intersects.length > 0) {
-			var intersector = getRealIntersector(intersects);
-			//var center = intersector.center;
-			setVoxelPosition(intersector);
-			var distance = voxelPosition.distanceTo(camera.position);
-		}*/
-		
 		switch (inout) {
 			case 'in':
 				zoomFactor = (zoomFactor > 1) ? 1 : zoomFactor;
@@ -407,11 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
 		}
 		
-		//console.log(zoomFactor);
-		//camera.fov = fov;
 		camera.fov *= zoomFactor;
 		camera.updateProjectionMatrix();
-		//console.log(distance);
 	};
 	
 	var printPNG = function (e) {
@@ -460,17 +503,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		var children = scene.children,
 			voxels = [],
-			child;
+			child, isDesk;
 
 		for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
-				continue;
+			isBooth = false;
+			if (child._p !== 'desk') {
+				for (var i = 0; i < objectType.length; i++) {
+					if (child._p === objectType[i]) {
+						isBooth = true;
+					}
+				}
+
+				if (!isBooth) {
+					continue;
+				}
 			}
-			if (child.geometry instanceof THREE.BoxGeometry === false) {
-				continue;
-			}
-			if (child === rollOverMesh) {
+            
+            if (child === rollOverMesh) {
 				continue;
 			}
 			
@@ -485,16 +535,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		var dataUri = JSON.stringify(voxels);
 		var xhr = new XMLHttpRequest();
-        var fileName = encodeURIComponent(Date.now().valueOf());
-		var params = 'filename=' + fileName + '&content=' + dataUri;
-		xhr.open('POST', '/api/json2', true);
+        var fileName = encodeURIComponent('object_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&position=indoor&content=' + dataUri;
+		xhr.open('POST', '/api/file', true);
 		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-		//xhr.setRequestHeader('content-length', params.length);
-		//xhr.setRequestHeader('connection', 'close');
 		xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-				//console.log(this.response.message);
 				lastSavedFileName = fileName;
                 alert('JSON \'' + fileName + '.json\' saved');
 			}
@@ -541,6 +588,37 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		xhr.send();
 	}, false);
+	loadButtons[1].addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/files/indoor', true);
+		xhr.responseType = 'text';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                var files = JSON.parse(this.responseText),
+					wrapper = document.querySelector('.lists'),
+					tr;
+				wrapper.innerHTML = '';
+				for (var i = 0; i < files.length; i++) {
+					tr = document.createElement('li');
+					ta = document.createElement('a');
+					ta.setAttribute('href', files[i]);
+					ta.innerHTML = files[i];
+					ta.addEventListener('click', function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						onFileNameClick2(e);
+					});
+					tr.appendChild(ta);
+					wrapper.appendChild(tr);
+					navigation.show();
+				}
+			}
+		};
+		xhr.send();
+	}, false);
 
 	var onFileNameClick = function(e) {
 		var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
@@ -548,14 +626,64 @@ document.addEventListener('DOMContentLoaded', function() {
         
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', '/api/file/indoor/' + fileName.replace('.json', ''), true);
-		xhr.responseType = 'text';
+		xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-                loadJSON(this.responseText);
+                createMap(this.response);
 			}
 		};
 		xhr.send();
 	};
+
+	var onFileNameClick2 = function(e) {
+		var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
+		lastSavedFileName = fileName.replace('.json', '');
+        
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/file/indoor/' + fileName.replace('.json', ''), true);
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                createMap(this.response);
+			}
+		};
+		xhr.send();
+	};
+
+	var createMap = function (json) {
+        var children = scene.children.slice(0);
+		
+		for (var i = 0; i < children.length; i++) {
+			if (children[i].name === 'map') {
+				scene.remove(children[i]);
+				continue;
+			}
+			if (children[i] instanceof THREE.Mesh === false) {
+				continue;
+			}
+			if (children[i].geometry instanceof THREE.BoxGeometry === false) {
+				continue;
+			}
+			if (children[i] === rollOverMesh) {
+				continue;
+			}
+			
+			scene.remove(children[i]);
+		}
+        
+        var geometries = json,
+            numGeo = geometries.length,
+            mesh, geo;
+        for (var i = 0; i < numGeo; i++) {
+            geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
+            mesh = new THREE.Mesh(geo.geometry, cubeMaterials[geometries[i].p][geometries[i].t]);
+            mesh.position.x = geometries[i].x;
+			mesh.position.y = geometries[i].y;
+			mesh.position.z = geometries[i].z;
+            mesh.name = 'map';
+            scene.add(mesh);
+        }
+    };
 
 	var navigation = {
         element: document.querySelector('#dimmedbg')
@@ -612,13 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	var render = function () {
-		//var mouse3D = projector.unprojectVector(mouse2D.clone(), camera);
-		//var mouse3D = mouse2D.clone();
-		//mouse3D.unproject(camera);
-		//ray.direction = mouse3D.subSelf(camera.position).normalize();
-		//ray.direction = mouse3D.sub(camera.position).normalize();
-		//var intersects = ray.intersectScene(scene);
-		putDelVoxel();
+		putDelDesk();
 		raycaster.setFromCamera(mouse2D, camera);
 		var intersects = raycaster.intersectObjects(scene.children);
 
@@ -626,9 +748,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 
 			if (intersector) {
-				setVoxelPosition(intersector);
-				//rollOverMesh.position = voxelPosition;
-				rollOverMesh.position.copy(voxelPosition);
+				setRollOverPosition(intersector);
+				if (rollOverMesh) {
+					rollOverMesh.position.copy(rollOverPosition);
+				}
 			}
 		}
 		
@@ -641,30 +764,186 @@ document.addEventListener('DOMContentLoaded', function() {
     desk2Buttons[0].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        makeDesk(2, 2);
+        setRollOver(deskGeo['2x2'].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x2');
     });
     desk2Buttons[1].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        makeDesk(2, 3);
+        setRollOver(deskGeo['2x3'].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x3');
     });
     desk2Buttons[2].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        makeDesk(2, 4);
+        setRollOver(deskGeo['2x4'].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x4');
     });
     desk2Buttons[3].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        makeDesk(2, 5);
+        setRollOver(deskGeo['2x5'].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x5');
     });
     desk2Buttons[4].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        makeDesk(2, 6);
+        setRollOver(deskGeo['2x6'].geometry.clone(), cubeMaterials['desk'][0].clone(), '2x6');
     });
 
-    var makeDesk = function(w, h) {
+	var desk3Buttons = document.querySelectorAll('.desk3series a');
+    desk3Buttons[0].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x3'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x3');
+    });
+    desk3Buttons[1].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x4'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x4');
+    });
+    desk3Buttons[2].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x5'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x5');
+    });
+    desk3Buttons[3].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x6'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x6');
+    });
+    desk3Buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x7'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x7');
+    });
+	desk3Buttons[5].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['3x8'].geometry.clone(), cubeMaterials['desk'][0].clone(), '3x8');
+    });
+
+	var desk4Buttons = document.querySelectorAll('.desk4series a');
+    desk4Buttons[0].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x4'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x4');
+    });
+    desk4Buttons[1].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x5'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x5');
+    });
+    desk4Buttons[2].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x6'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x6');
+    });
+    desk4Buttons[3].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x7'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x7');
+    });
+    desk4Buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x8'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x8');
+    });
+	desk4Buttons[5].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x9'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x9');
+    });
+	desk4Buttons[6].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['4x10'].geometry.clone(), cubeMaterials['desk'][0].clone(), '4x10');
+    });
+
+	var desk5Buttons = document.querySelectorAll('.desk5series a');
+    desk5Buttons[0].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x5'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x5');
+    });
+    desk5Buttons[1].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x6'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x6');
+    });
+    desk5Buttons[2].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x7'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x7');
+    });
+    desk5Buttons[3].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x8'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x8');
+    });
+    desk5Buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x9'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x9');
+    });
+	desk5Buttons[5].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['5x10'].geometry.clone(), cubeMaterials['desk'][0].clone(), '5x10');
+    });
+
+	var desk6Buttons = document.querySelectorAll('.desk6series a');
+    desk6Buttons[0].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['6x6'].geometry.clone(), cubeMaterials['desk'][0].clone(), '6x6');
+    });
+    desk6Buttons[1].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['6x7'].geometry.clone(), cubeMaterials['desk'][0].clone(), '6x7');
+    });
+    desk6Buttons[2].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['6x8'].geometry.clone(), cubeMaterials['desk'][0].clone(), '6x8');
+    });
+    desk6Buttons[3].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['6x9'].geometry.clone(), cubeMaterials['desk'][0].clone(), '6x9');
+    });
+    desk6Buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['6x10'].geometry.clone(), cubeMaterials['desk'][0].clone(), '6x10');
+    });
+
+	var desk8Buttons = document.querySelectorAll('.desk8series a');
+    desk8Buttons[0].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['8x9'].geometry.clone(), cubeMaterials['desk'][0].clone(), '8x9');
+    });
+    desk8Buttons[1].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['8x10'].geometry.clone(), cubeMaterials['desk'][0].clone(), '8x10');
+    });
+    desk8Buttons[2].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['10x15'].geometry.clone(), cubeMaterials['desk'][0].clone(), '10x15');
+    });
+    desk8Buttons[3].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['12x18'].geometry.clone(), cubeMaterials['desk'][0].clone(), '12x18');
+		//makeDesk(12, 18);
+    });
+	desk8Buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRollOver(deskGeo['desk'].geometry.clone(), cubeMaterials['desk'][0].clone(), 'desk');
+    });
+
+    /*var makeDesk = function(w, h) {
         var group = new THREE.Mesh();
         var topG = new THREE.BoxGeometry(w * 50, 10, h * 50);
         var mat = cubeMaterials['desk'][0];
@@ -680,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var dataUri = JSON.stringify(tObj);
 		var xhr = new XMLHttpRequest();
-        var fileName = encodeURIComponent('desk_' + w + '_' + h);
+        var fileName = encodeURIComponent('desk_' + w + 'x' + h);
 		var params = 'filename=' + fileName + '&position=indoor&content=' + dataUri;
 		xhr.open('POST', '/api/file', true);
 		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
@@ -691,5 +970,5 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		};
 		xhr.send(params);
-    };
+    };*/
 });

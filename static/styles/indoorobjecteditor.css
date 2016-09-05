@@ -122,7 +122,7 @@ dl.grp.desk6series:hover {
 }
 ul.grp.desk8series:hover,
 dl.grp.desk8series:hover {
-  height: 400%;
+  height: 500%;
 }
 ul.grp.size dt,
 dl.grp.size dt {
@@ -281,7 +281,22 @@ dl.grp.bgimg:hover dd button {
   background-color: #007acc;
 }
 footer {
-  display: none;
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 40px;
+  bottom: 0;
+  left: 0;
+}
+footer p {
+  display: inline-block;
+  left: 0;
+  top: 0;
+  line-height: 40px;
+  padding: 0 20px;
+  color: #fff;
+  font-weight: 400;
+  background: rgba(0, 0, 0, 0.3);
 }
 #dimmedbg {
   position: absolute;

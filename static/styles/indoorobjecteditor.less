@@ -145,7 +145,7 @@ ul, dl {
 
         &.desk8series {
             &:hover {
-                height: 400%;
+                height: 500%;
             }
         }
 
@@ -320,7 +320,23 @@ ul, dl {
 }
 
 footer {
-    display: none;
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: @nav-menu-height;
+    bottom: 0;
+    left: 0;
+
+    p {
+        display: inline-block;
+        left: 0;
+        top: 0;
+        line-height: @nav-menu-height;
+        padding: 0 20px;
+        color: #fff;
+        font-weight: 400;
+        background: rgba(0, 0, 0, 0.3);
+    }
 }
 
 #dimmedbg {
