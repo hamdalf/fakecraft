@@ -196,6 +196,38 @@ document.addEventListener('DOMContentLoaded', function() {
     sizeSetter[0].value = defaultWidth;
     sizeSetter[1].value = defaultHeight;
 	var bgSetter = document.querySelectorAll('.bgimg input');
+	bgSetter[1].addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/images/indoor', true);
+		xhr.responseType = 'text';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                var files = JSON.parse(this.responseText),
+					wrapper = document.querySelector('.lists'),
+					tr;
+				wrapper.innerHTML = '';
+				for (var i = 0; i < files.length; i++) {
+					tr = document.createElement('li');
+					ta = document.createElement('a');
+					ta.setAttribute('href', files[i]);
+					ta.innerHTML = files[i];
+					ta.addEventListener('click', function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
+						document.querySelectorAll('.bgimg input')[1].value = fileName;
+					});
+					tr.appendChild(ta);
+					wrapper.appendChild(tr);
+					navigation.show();
+				}
+			}
+		};
+		xhr.send();
+	}, false);
     document.querySelector('.size button').addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -469,31 +501,31 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
 		
 		var children = scene.children,
-			voxels = [],
+			desks = [],
 			child;
 
 		for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			if (child instanceof THREE.Mesh === false) {
+
+			if (typeof child._p === 'undefined') {
 				continue;
 			}
-			if (child.geometry instanceof THREE.BoxGeometry === false) {
+
+			if (typeof child._userID === 'undefined') {
 				continue;
 			}
-			if (child === rollOverMesh) {
-				continue;
-			}
-			
-			voxels.push({
-				x: (child.position.x - 5) / 10,
-				y: (child.position.y - 5) / 10,
-				z: (child.position.z - 5) / 10,
-				p: child.material._cubePattern,
-				t: child.material._cubeType
+
+			desks.push({
+				x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
+				p: child._p,
+                r: child._r,
+                i: child._userID
 			});
 		}
 		
-		var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(voxels);
+		var dataUri = "data:application/json;charset=utf-8," + JSON.stringify(desks);
 		window.open(dataUri, 'jsonwindow');
 	};
 	
@@ -502,38 +534,31 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
 		
 		var children = scene.children,
-			voxels = [],
-			child, isDesk;
+			desks = [],
+			child;
 
 		for (var i = 0; i < children.length; i++) {
 			child = children[i];
-			isBooth = false;
-			if (child._p !== 'desk') {
-				for (var i = 0; i < objectType.length; i++) {
-					if (child._p === objectType[i]) {
-						isBooth = true;
-					}
-				}
 
-				if (!isBooth) {
-					continue;
-				}
-			}
-            
-            if (child === rollOverMesh) {
+			if (typeof child._p === 'undefined') {
 				continue;
 			}
-			
-			voxels.push({
-				x: (child.position.x - 5) / 10,
-				y: (child.position.y - 5) / 10,
-				z: (child.position.z - 5) / 10,
-				p: child.material._cubePattern,
-				t: child.material._cubeType
+
+			if (typeof child._userID === 'undefined') {
+				continue;
+			}
+
+			desks.push({
+				x: child.position.x,
+				y: child.position.y,
+				z: child.position.z,
+				p: child._p,
+                r: child._r,
+                i: child._userID
 			});
 		}
 		
-		var dataUri = JSON.stringify(voxels);
+		var dataUri = JSON.stringify(desks);
 		var xhr = new XMLHttpRequest();
         var fileName = encodeURIComponent('object_' + Date.now().valueOf());
 		var params = 'filename=' + fileName + '&position=indoor&content=' + dataUri;
@@ -644,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		xhr.responseType = 'json';
 		xhr.onload = function (e) {
 			if (this.status == 200) {
-                createMap(this.response);
+                createDesks(this.response);
 			}
 		};
 		xhr.send();
@@ -681,6 +706,48 @@ document.addEventListener('DOMContentLoaded', function() {
 			mesh.position.y = geometries[i].y;
 			mesh.position.z = geometries[i].z;
             mesh.name = 'map';
+            scene.add(mesh);
+        }
+    };
+
+	var createDesks = function(json) {
+        var children = scene.children.slice(0);
+        
+        for (var i = 0; i < children.length; i++) {
+			if (typeof children[i]._p === 'undefined') {
+				continue;
+			}
+			if (typeof children[i]._userID === 'undefined') {
+				continue;
+			}
+			scene.remove(children[i]);
+		}
+        
+        var desks = json,
+            numDesk = desks.length,
+            mesh;
+        for (var i = 0; i < numDesk; i++) {
+            var mat = cubeMaterials['desk'][0].clone();
+            mesh = new THREE.Mesh(deskGeo[desks[i].p].geometry.clone(), mat);
+            mesh.position.set(desks[i].x, desks[i].y, desks[i].z);
+            switch (desks[i].p) {
+                case 'desk':
+                    mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-80, -36, -40));
+                    break;
+                default:
+                    mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -5, 0));
+                    break;
+            }
+            if (desks[i].r === true) {
+                mesh.rotation.y += Math.PI / 2;
+                mesh._r = true;
+            } else {
+                mesh._r = false;
+            }
+            mesh.matrixAutoUpdate = false;
+            mesh.updateMatrix();
+            mesh._p = desks[i].p;
+            mesh._userID = desks[i].i;
             scene.add(mesh);
         }
     };

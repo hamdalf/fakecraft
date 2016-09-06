@@ -96,6 +96,10 @@ ul.grp.mode:hover,
 dl.grp.mode:hover {
   height: 200%;
 }
+ul.grp.load:hover,
+dl.grp.load:hover {
+  height: 200%;
+}
 ul.grp.print:hover,
 dl.grp.print:hover {
   height: 200%;
