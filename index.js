@@ -27,6 +27,7 @@ mongoose.connection.on('disconnected', function () {
     Load routers
 */
 var userRouters = require('./routes/users'),
+    makerRouters = require('./routes/makers'),
     jsonRouters = require('./routes/json'),
     passFinderRouters = require('./routes/passfinder'),
     robotRouters = require('./routes/robot');
@@ -37,6 +38,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(bodyParser.json());
 
 app.use('/api', userRouters);
+app.use('/api', makerRouters);
 app.use('/api', jsonRouters);
 app.use('/api', passFinderRouters);
 app.use('/api', robotRouters);

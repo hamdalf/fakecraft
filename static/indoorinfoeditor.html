@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Indoor Object Editor</title>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Google Fonts embed code : "Open Sans Condensed" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&subset=latin,latin-ext">
+	<link rel="stylesheet" href="/styles/html5doctor.css" >
+	<link rel="stylesheet" href="/styles/indoorinfoeditor.css" >
+	<script src="/scripts/threejs/three72.min.js"></script>
+	<script src="/scripts/threejs/examples/js/renderers/Projector.js"></script>
+	<script src="/scripts/threejs/examples/js/controls/TrackballControls.js"></script>
+	<script src="/scripts/threejs/Detector.js"></script>
+	<script src="/scripts/threejs/RequestAnimationFrame.js"></script>
+	<script src="/scripts/threex/threex.windowresize.js"></script>
+	<script src="/scripts/csg/csg.js"></script>
+    <script src="/scripts/csg/ThreeCSG.js"></script>
+	<script src="/scripts/officeflooreditor.pattern.js"></script>
+	<script src="/scripts/indoorinfoeditor.js"></script>
+</head>
+<body>
+	<div id="container">
+		<nav>
+			<h1>Indoor Editor</h1>
+			<ul class="grp mode">
+                <li class="on"><a href="indoorinfoeditor.html">Edit data</a></li>
+                <li><a href="indoorobjecteditor.html">Edit desks</a></li>
+				<li><a href="indooreditor.html">Edit floor</a></li>
+			</ul>
+			<ul class="grp load">
+				<li class="on"><a href="/files/floor">Load floor</a></li>
+				<li><a href="/files/desks">Load Desks</a></li>
+			</ul>
+            <ul class="grp users">
+				<li class="on"><a href="/users">Users</a></li>
+			</ul>
+		</nav>
+		<div id="floatPannel">
+            <button id="btnClose">Close</button>
+            <div id="userList" class="innerPanel">
+                <h3>Maker List</h3>
+                <ul class="list allow_scroll">
+                    <li></li>
+                </ul>
+                <button id="btnCreateUser" class="flatbtn blue">Create New Maker</button>
+            </div>
+            <div id="userForm" class="innerPanel">
+                <h3>Edit Maker Information</h3>
+                <dl class="list not_scroll">
+                    <dt><label for="datatype">Type</label></dt>
+                    <dd>
+                        <select name="datatype">
+                            <option value="0">Maker</option>
+                            <option value="1">Room</option>
+                        </select>
+                    </dd>
+                    <dt><label for="username">Name</label></dt>
+                    <dd><input type="text" name="username" /></dd>
+                    <dt><label for="standno">Stand No.</label></dt>
+                    <dd><input type="text" name="standno" /></dd>
+                    <dt><label for="hall">Hall</label></dt>
+                    <dd><input type="text" name="hall" /></dd>
+                    <dt><label for="pictureUrl">Picture URL</label></dt>
+                    <dd><input type="text" name="pictureUrl" /></dd>
+                    <dt><label for="infoUrl">Info URL</label></dt>
+                    <dd><input type="text" name="infoUrl" /></dd>
+                </dl>
+                <button id="btnCancel" class="flatbtn gray">Cancel</button>
+                <button id="btnDelete" class="flatbtn orange">Delete</button>
+                <button id="btnSave" class="flatbtn blue">Save</button>
+            </div>
+            <div id="deskInfo" class="innerPanel">
+                <h3>Information</h3>
+                <dl class="list not_scroll">
+                    <dt><label>Desk ID</label></dt>
+                    <dd></dd>
+                    <dt><label>Maker</label></dt>
+                    <dd></dd>
+                </dl>
+                <button id="btnClear">Clear User</button>
+                <button id="btnAssign">Assign User</button>
+            </div>
+        </div>
+        <div id="dimmedbg">
+			<div class="popupWrapper">
+				<p>
+					<a class="popupclose" href="#">close</a>
+				</p>
+				<ul class="lists">
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -96,172 +96,151 @@ ul.grp.mode:hover,
 dl.grp.mode:hover {
   height: 300%;
 }
-ul.grp.print:hover,
-dl.grp.print:hover {
+ul.grp.load:hover,
+dl.grp.load:hover {
   height: 200%;
 }
-ul.grp.save:hover,
-dl.grp.save:hover {
-  height: 200%;
-}
-ul.grp.size dt,
-dl.grp.size dt {
-  float: left;
-  list-style: none;
-  display: inline-block;
-  height: 40px;
-  line-height: 42px;
-  padding: 0 5px 0 20px;
-  font-size: 70%;
-  color: #ffffff;
-  font-weight: 600;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-ul.grp.size dt::after,
-dl.grp.size dt::after {
-  content: ":";
-  display: inline-block;
-}
-ul.grp.size dd,
-dl.grp.size dd {
-  float: left;
-  list-style: none;
-  display: inline-block;
-  height: 40px;
-  line-height: 40px;
-  padding: 0 20px 0 5px;
-}
-ul.grp.size dd input[type=text],
-dl.grp.size dd input[type=text] {
-  display: inline-block;
-  font-size: 70%;
-  width: 30px;
-  height: calc(40px - 10px);
-  line-height: calc(40px - 10px);
-  box-sizing: border-box;
-  border: none;
-  background-color: transparent;
-  color: #fff;
-}
-ul.grp.size dd input[type=text]:focus,
-dl.grp.size dd input[type=text]:focus {
-  outline: none;
-}
-ul.grp.size dd button,
-dl.grp.size dd button {
-  display: inline-block;
-  font-size: 70%;
-  box-shadow: none;
-  border: none;
-  height: calc(40px - 10px);
-  text-transform: uppercase;
-  background-color: rgba(0, 122, 204, 0.3);
-  color: #fff;
-}
-ul.grp.size dd button:focus,
-dl.grp.size dd button:focus {
-  outline: none;
-}
-ul.grp.size:hover dd input[type=text],
-dl.grp.size:hover dd input[type=text] {
-  background-color: #fff;
-  color: #000;
-}
-ul.grp.size:hover dd button,
-dl.grp.size:hover dd button {
-  background-color: #007acc;
-}
-ul.grp.bgimg dt,
-dl.grp.bgimg dt {
-  float: left;
-  list-style: none;
-  display: inline-block;
-  height: 40px;
-  line-height: 42px;
-  padding: 0 5px 0 20px;
-  font-size: 70%;
-  color: #ffffff;
-  font-weight: 600;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-ul.grp.bgimg dt::after,
-dl.grp.bgimg dt::after {
-  content: ":";
-  display: inline-block;
-}
-ul.grp.bgimg dd,
-dl.grp.bgimg dd {
-  float: left;
-  list-style: none;
-  display: inline-block;
-  height: 40px;
-  line-height: 40px;
-  padding: 0 20px 0 5px;
-}
-ul.grp.bgimg dd input[type=text],
-dl.grp.bgimg dd input[type=text] {
-  display: inline-block;
-  font-size: 70%;
-  height: calc(40px - 10px);
-  line-height: calc(40px - 10px);
-  box-sizing: border-box;
-  border: none;
-  background-color: transparent;
-  color: #fff;
-  -o-transition: all 0.2s ease-in-out;
-  -ms-transition: all 0.2s ease-in-out;
-  -moz-transition: all 0.2s ease-in-out;
-  -webkit-transition: all 0.2s ease-in-out;
-  transition: all 0.2s ease-in-out;
-}
-ul.grp.bgimg dd input[type=text]:focus,
-dl.grp.bgimg dd input[type=text]:focus {
-  outline: none;
-}
-ul.grp.bgimg dd input#layer,
-dl.grp.bgimg dd input#layer {
-  width: 20px;
-}
-ul.grp.bgimg dd input#bgimg,
-dl.grp.bgimg dd input#bgimg {
-  width: 50px;
-}
-ul.grp.bgimg dd button,
-dl.grp.bgimg dd button {
-  display: inline-block;
-  font-size: 70%;
-  box-shadow: none;
-  border: none;
-  height: calc(40px - 10px);
-  text-transform: uppercase;
-  background-color: rgba(0, 122, 204, 0.3);
-  color: #fff;
-}
-ul.grp.bgimg dd button:focus,
-dl.grp.bgimg dd button:focus {
-  outline: none;
-}
-ul.grp.bgimg:hover dd input[type=text],
-dl.grp.bgimg:hover dd input[type=text] {
-  background-color: #fff;
-  color: #000;
-}
-ul.grp.bgimg:hover dd input#layer,
-dl.grp.bgimg:hover dd input#layer {
-  width: 20px;
-}
-ul.grp.bgimg:hover dd input#bgimg,
-dl.grp.bgimg:hover dd input#bgimg {
-  width: 150px;
-}
-ul.grp.bgimg:hover dd button,
-dl.grp.bgimg:hover dd button {
-  background-color: #007acc;
-}
-footer {
+#floatPannel {
   display: none;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 100px;
+  width: 400px;
+  height: 700px;
+  background-color: rgba(10, 10, 10, 0.7);
+  border-radius: 5px;
+  overflow: hidden;
+  font-family: 'Open Sans Condensed';
+}
+#floatPannel.dimmed {
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+}
+#floatPannel #btnClose {
+  text-indent: -9999px;
+  background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: transparent;
+  border-style: none;
+  display: block;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+#floatPannel .innerPanel {
+  background: transparent;
+  margin: 25px auto 0 auto;
+  display: block;
+  width: 95%;
+  height: 95%;
+  overflow: hidden;
+}
+#floatPannel .innerPanel h3 {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.5em;
+  margin: 0 0 5px 0;
+}
+#floatPannel .innerPanel .list {
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  max-height: 90%;
+}
+#floatPannel .innerPanel .list.allow_scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#floatPannel .innerPanel .list.not_scroll {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+#floatPannel .innerPanel .list a {
+  color: #000;
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1.5em;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+  padding: 5px 0;
+}
+#floatPannel .innerPanel .list a img {
+  width: 25px;
+  height: 25px;
+  margin: 0 10px;
+  vertical-align: middle;
+}
+#floatPannel .innerPanel .list a .nick {
+  color: #0000ff;
+  margin: 0 0 0 10px;
+  font-weight: 600;
+}
+#floatPannel .innerPanel .list a .floor {
+  color: #a0a0a0;
+  margin: 0 0 0 10px;
+  font-weight: 400;
+}
+#floatPannel .innerPanel .list a .makername {
+  max-width: 250px;
+  height: 100%;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+}
+#floatPannel .innerPanel .list a:hover {
+  background-color: #E18728;
+}
+#floatPannel .innerPanel dl {
+  list-style: none;
+  padding: 10px 0;
+}
+#floatPannel .innerPanel dl dt {
+  list-style: none;
+  float: left;
+  line-height: 2em;
+}
+#floatPannel .innerPanel dl dt label {
+  font-weight: 600;
+  padding: 0 0 0 10px;
+}
+#floatPannel .innerPanel dl dt::after {
+  content: ':';
+  display: inline;
+  padding: 0 10px 0 0;
+}
+#floatPannel .innerPanel dl dd {
+  list-style: none;
+  line-height: 2em;
+}
+#floatPannel .innerPanel dl dd input[name=pictureUrl] {
+  width: 250px;
+}
+#floatPannel .flatbtn {
+  border-style: none;
+  border-radius: 3px;
+  color: #fff;
+  font-family: 'Open Sans Condensed';
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 0 10px;
+  margin: 0 5px 0 0;
+}
+#floatPannel .flatbtn.blue {
+  background-color: #3399CC;
+}
+#floatPannel .flatbtn.gray {
+  background-color: #a0a0a0;
+}
+#floatPannel .flatbtn.orange {
+  background-color: #ff6600;
 }
 #dimmedbg {
   position: absolute;
