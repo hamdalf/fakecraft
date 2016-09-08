@@ -348,6 +348,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    var saveJSON = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+		var children = scene.children,
+			desks = [],
+			child;
+            
+        for (var i = 0; i < children.length; i++) {
+			child = children[i];
+			if (child.name !== 'deskroot') {
+				continue;
+			}
+			
+			desks.push({
+				x: child.desk.position.x,
+				y: child.desk.position.y,
+				z: child.desk.position.z,
+				p: child.desk._p,
+                r: child.desk._r,
+                i: child.desk._userID
+			});
+		}
+        
+        var dataUri = JSON.stringify(desks);
+		var xhr = new XMLHttpRequest();
+        var fileName = encodeURIComponent('object_' + Date.now().valueOf());
+		var params = 'filename=' + fileName + '&position=indoor&content=' + dataUri;
+		xhr.open('POST', '/api/file', true);
+		xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+		xhr.responseType = 'json';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                alert('JSON \'' + fileName + '.json\' saved');
+			}
+		};
+		xhr.send(params);
+	};
+
+    var saveButtons = document.querySelectorAll('.save a');
+	saveButtons[0].addEventListener('click', saveJSON, false);
+
     var OfficeDesk = function(p) {
         this.root = new THREE.Object3D();
         this.root.name = 'deskroot';
@@ -468,8 +510,8 @@ document.addEventListener('DOMContentLoaded', function() {
             scale = 1.3,
             fontH = fontSize,
             fontW;
-        canvas.width = 256;
-        canvas.height = 256;
+        canvas.width = 512;
+        canvas.height = 512;
         context.translate(canvas.width / 2, canvas.height / 2);
         context.font = '600 ' + fontSize + 'px "' + fontFamily + '"';
         fontW = context.measureText(txt).width;
@@ -747,11 +789,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#btnClear').addEventListener('click', clearUser);
     
     var setUserIdToDesk = function (deskId, uid) {
-        //console.log(deskId, uid);
         findDeskById(deskId).setUser(uid);
         var user = findUserDataById(uid);
-        //console.log(uid, user);
-        user.floor = getSelectedFoor();
         saveUserData(user, uid, function() {
             closePanel();
         });
