@@ -187,13 +187,6 @@ dl.grp.load:hover {
   margin: 0 0 0 10px;
   font-weight: 400;
 }
-#floatPannel .innerPanel .list a .makername {
-  max-width: 250px;
-  height: 100%;
-  overflow: hidden;
-  display: inline-block;
-  vertical-align: middle;
-}
 #floatPannel .innerPanel .list a:hover {
   background-color: #E18728;
 }

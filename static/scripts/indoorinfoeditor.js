@@ -108,8 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			var intersector = getRealIntersector(intersects);
 
 			if (intersector) {
-                intersector.select();
-                goToDeskInfo(intersector.desk._userID, intersector.desk.uuid);
+                if (document.querySelector('#floatPannel').style.display != 'block' && navigation.isShow == false) {
+                    intersector.select();
+                    goToDeskInfo(intersector.desk._userID, intersector.desk.uuid);
+                }
 			} else {
                 /*if (typeof preChangedDeskId !== 'undefined') {
                     findDeskById(preChangedDeskId).material.color.setRGB(0.98, 0.90, 0.81);
@@ -263,13 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 
     var navigation = {
-        element: document.querySelector('#dimmedbg')
+        element: document.querySelector('#dimmedbg'),
+        isShow: false
     };
     navigation.show = function () {
         this.element.style.display = 'block';
+        this.isShow = true;
     };
     navigation.hide = function () {
         this.element.style.display = 'none';
+        this.isShow = false;
     };
 
 	var popupCloasBtn = document.querySelector('.popupclose');
@@ -431,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.desk._userID = uid;
         var user = findUserDataById(uid);
         if (user) {
-            this.setNamePanel(user.name);
+            this.setNamePanel(user.name.replace(/_amp_/g, '&'));
         }
      };
     
@@ -504,21 +509,46 @@ document.addEventListener('DOMContentLoaded', function() {
         var canvas = document.createElement('canvas'),
             context = canvas.getContext('2d'),
             fontSize = 20,
+            lineHeight = 25,
             fontFamily = 'Arial',
             bgColor = 'rgba(0,0,255,0.3)',
             fontColor = 'rgba(0,0,0,0.7)',
             scale = 1.3,
-            fontH = fontSize,
-            fontW;
-        canvas.width = 512;
-        canvas.height = 512;
+            //fontH = fontSize,
+            fontH = lineHeight,
+            //fontW,
+            tmpWidth,
+            line = '',
+            words = txt.split(' '),
+            maxWidth = 300,
+            y = 1;
+
+        canvas.width = 300;
+        canvas.height = 300;
         context.translate(canvas.width / 2, canvas.height / 2);
         context.font = '600 ' + fontSize + 'px "' + fontFamily + '"';
-        fontW = context.measureText(txt).width;
-        context.fillStyle = bgColor;
-        context.fillRect(-fontW*scale/2,-fontH*scale/1.3,fontW*scale,fontH*scale);
         context.fillStyle = fontColor;
-        context.fillText(txt, -fontW/2, 0);
+        //fontW = context.measureText(txt).width;
+        for (var n = 0; n < words.length; n++) {
+            var testLine = line + words[n] + ' ',
+                matrix = context.measureText(testLine),
+                testWidth = matrix.width;
+            if (testWidth > maxWidth && n > 0) {
+                tmpWidth = context.measureText(line).width;
+                context.fillText(line, -tmpWidth/2, lineHeight * (y - 1));
+                line = words[n] + ' ';
+                y += 1;
+            } else {
+                line = testLine;
+            }
+        }
+        tmpWidth = context.measureText(line).width;
+        context.fillText(line, -tmpWidth/2, lineHeight * (y - 1));
+        context.fillStyle = bgColor;
+        context.fillRect(-maxWidth*scale/2, -lineHeight, maxWidth*scale, fontH*y+10);
+        //context.fillRect(-fontW*scale/2,-fontH*scale/1.3,fontW*scale,fontH*scale);
+        
+        //context.fillText(txt, -fontW/2, 0);
         
         return canvas;
     };
@@ -616,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tmpHall = '<span class="floor">Hall ' + json[i].hall + '</span>';
             tmpLi = document.createElement('li');
             tmpA = document.createElement('a');
-            tmpA.innerHTML = '<img src="' + tmpImg + '">' + json[i].name + tmpStandNo + tmpHall;
+            tmpA.innerHTML = '<img src="' + tmpImg + '">' + json[i].name.replace(/_amp_/g, '&') + tmpStandNo + tmpHall;
             tmpA.setAttribute('href', '#');
             tmpA.setAttribute('data-id', json[i]._id);
             tmpA.addEventListener('click', clickUserNameActionByContext);
@@ -666,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         var dataType = (json[0].dataType) ? parseInt(json[0].dataType) : 0;
         document.querySelector('#userForm select[name=datatype]').selectedIndex = dataType;
-        document.querySelector('#userForm input[name=username]').value = json[0].name;
+        document.querySelector('#userForm input[name=username]').value = json[0].name.replace(/_amp_/g, '&');
         document.querySelector('#userForm input[name=standno]').value = json[0].standno;
         document.querySelector('#userForm input[name=hall]').value = json[0].hall;
         document.querySelector('#userForm input[name=pictureUrl]').value = json[0].pictureUrl;
@@ -696,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (uid) {
             callUserData(uid, function(id, res) {
-                fileds[1].innerHTML = res[0].name;
+                fileds[1].innerHTML = res[0].name.replace(/_amp_/g, '&');
             });
         } else {
             fileds[1].innerHTML = 'No maker yet';
@@ -757,7 +787,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var saveUserData = function (objData, uid, callback) {
         var xhr = new XMLHttpRequest(),
             params = 'datatype=' + objData.dataType
-                     + '&username=' + objData.name
+                     + '&username=' + objData.name.replace(/\&/g, '_amp_')
                      + '&standno=' + objData.standno
                      + '&hall=' + objData.hall
                      + '&pictureurl=' + objData.pictureUrl
