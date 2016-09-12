@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
         robotTrafficTimer,
         floorVersion = 'optimized_1473012184734',
         deskVersion = 'object_1473562024295',
-        originCameraPosition = [3000, 5000, 6500];
+        originCameraPosition = [3000, 5000, 6500],
+        eventIgnoringSignalForCanvas = false;
 
     var lightInit = false;
     
@@ -40,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     navMenus[2].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        initOfficeMap(20);
+        initOfficeMap();
     });
     
     var backMenu = document.querySelector('.navback');
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     exploreMenus[0].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        eventIgnoringSignalForCanvas = true;
         cameraAct.move('rotateleft');
     });
     exploreMenus[1].addEventListener('click', function (e) {
@@ -106,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     exploreMenus[5].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        eventIgnoringSignalForCanvas = true;
         cameraAct.move('rotateright');
     });
     exploreMenus[6].addEventListener('click', function (e) {
@@ -156,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         wrapper.classList.remove('show');
         wrapper.innerHTML = '';
         for (var i = 0; i < users.length; i++) {
-            if (users[i].name.toLowerCase().search(keyword) > -1 || users[i].nick.toLowerCase().search(keyword) > -1) {
+            if (users[i].name.toLowerCase().search(keyword.replace(/_amp_/g, '&')) > -1) {
                 tr = document.createElement('li');
                 switch (users[i].dataType) {
                     case '0':
@@ -172,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ta = document.createElement('a');
                 ta.setAttribute('href', '#');
                 ta.setAttribute('data-id', users[i]._id);
-                ta.innerHTML = (users[i].nick) ? users[i].name + ' (' + users[i].nick + ')' : users[i].name;
+                ta.innerHTML = users[i].name.replace(/_amp_/g, '&');
                 ta.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -198,13 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var onUserNameClick = function (e) {
         var userID = (e.srcElement) ? e.srcElement.getAttribute('data-id') : e.target.getAttribute('data-id'),
-            user = findUserDataById(userID),
-            floor;
-        if (user.floor && user.floor !== 'null') {
-            floor = parseInt(user.floor);
-        }
+            user = findUserDataById(userID);
         
-        initOfficeMap(floor, function(uid) {
+        initOfficeMap(function(uid) {
             return function () {
                 var objDesk = findDeskByUserId(userID);
                 if (objDesk) {
@@ -237,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ta = document.createElement('a');
             ta.setAttribute('href', '#');
             ta.setAttribute('data-id', users[i]._id);
-            ta.innerHTML = (users[i].nick) ? users[i].name + ' (' + users[i].nick + ')' : users[i].name;
+            ta.innerHTML = users[i].name.replace(/_amp_/g, '&');
             ta.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -357,6 +356,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         
         var onDocumentClick = function (e) {
+            if (eventIgnoringSignalForCanvas) {
+                eventIgnoringSignalForCanvas = false;
+                return;
+            }
+
             if (e.altKey) {
                 return makePath(e);
             }
@@ -850,9 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (this.status == 200) {
                 createMap(this.response);
                 //createMap( JSON.parse(this.responseText));
-                if (callback) {
-                    callback();
-                }
+                loadDesks(callback);
 			}
 		};
 		xhr.send();
@@ -1135,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tmpCameraClone.position.set(obj.position.x, obj.position.y, obj.position.z);
         tmpCameraClone.translateZ(-500);
         tmpCameraClone.translateX(window.innerWidth / 13);
-        tmpCameraClone.translateY(-(window.innerHeight / 11));
+        tmpCameraClone.translateY(-(window.innerHeight / 10));
         this.root.position.copy(tmpCameraClone.position);
         this.root.updateMatrix();
     };
@@ -1170,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.desk._p = p;
         this.root.desk = desk;
         this._objNamePanel = null;
+        this._heightNamePanel = null;
         this.update = function() {
             if (this.desk._r === true) {
                 this.desk.rotation.y += Math.PI / 2;
@@ -1249,7 +1252,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 useScreenCoordinates: false
             }),
             sprite = new THREE.Sprite(material);
-        sprite.position.set(this.desk.position.x, this.desk.position.y + 50, this.desk.position.z);
+        //sprite.position.set(this.desk.position.x, this.desk.position.y + 50, this.desk.position.z);
+        sprite.position.set(this.desk.position.x, this.desk.position.y + this._heightNamePanel, this.desk.position.z);
         sprite.scale.set(150, 150, 150);
         this._objNamePanel = sprite;
         this.root.add(this._objNamePanel);
@@ -1261,6 +1265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         this.root.remove(this._objNamePanel);
         this._objNamePanel = null;
+        this._heightNamePanel = null;
     };
     
     OfficeDesk.prototype.buildNameCanvas = function(txt, dataType) {
@@ -1270,14 +1275,15 @@ document.addEventListener('DOMContentLoaded', function() {
             lineHeight = 30,
             fontFamily = 'Arial',
             bgColor,
-            fontColor = 'rgba(0,0,0,0.8)',
+            fontColor = 'rgba(255,255,255,1.0)',
             scale = 1.3,
             fontH = lineHeight,
             tmpWidth,
             line = '',
             words = txt.split(' '),
             maxWidth = 300,
-            y = 1;
+            y = 1,
+            panelHeight;
 
         switch (dataType) {
             case '0':
@@ -1294,8 +1300,32 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas.height = 300;
         context.translate(canvas.width / 2, canvas.height / 2);
         context.font = '600 ' + fontSize + 'px "' + fontFamily + '"';
-        context.fillStyle = fontColor;
+        //context.fillStyle = fontColor;
 
+        // first background, next Text
+        for (var n = 0; n < words.length; n++) {
+            var testLine = line + words[n] + ' ',
+                matrix = context.measureText(testLine),
+                testWidth = matrix.width;
+            if (testWidth > maxWidth && n > 0) {
+                //tmpWidth = context.measureText(line).width;
+                //context.fillText(line, -tmpWidth/2, lineHeight * (y - 1));
+                line = words[n] + ' ';
+                y += 1;
+            } else {
+                line = testLine;
+            }
+        }
+        tmpWidth = context.measureText(line).width;
+        //context.fillText(line, -tmpWidth/2, lineHeight * (y - 1));
+        context.fillStyle = bgColor;
+        panelHeight = fontH*y+10;
+        context.fillRect(-maxWidth*scale/2, -lineHeight, maxWidth*scale, panelHeight);
+        //this._heightNamePanel = Math.round((panelHeight - 40) / 2) + 50;
+
+        y = 1, line= '';
+        context.fillStyle = fontColor;
+        //context.font = '600 ' + fontSize + 'px "' + fontFamily + '"';
         for (var n = 0; n < words.length; n++) {
             var testLine = line + words[n] + ' ',
                 matrix = context.measureText(testLine),
@@ -1311,8 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         tmpWidth = context.measureText(line).width;
         context.fillText(line, -tmpWidth/2, lineHeight * (y - 1));
-        context.fillStyle = bgColor;
-        context.fillRect(-maxWidth*scale/2, -lineHeight, maxWidth*scale, fontH*y+10);
+        this._heightNamePanel = Math.round((panelHeight - 40) / 2) + 50;
         
         return canvas;
     };
@@ -1338,15 +1367,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var UserInfo = function () {
         this.element = document.querySelector('.userinfo');
         this.img = document.querySelector('.userinfo img');
-        this.fullname = document.querySelector('.userinfo h3');
-        this.job = document.querySelector('.userinfo h4');
+        this.makername = document.querySelector('.userinfo h3');
+        this.standno = document.querySelector('.userinfo h4');
         this.email = document.querySelector('.userinfo dd.email');
-        this.skype = document.querySelector('.userinfo dd.skype');
-        this.mobile = document.querySelector('.userinfo dd.mobile');
         this.btnClose = document.querySelector('.userinfo .btnClose');
         this.emailLabel = document.querySelector('.userinfo dt.email');
-        this.skypeLabel = document.querySelector('.userinfo dt.skype');
-        this.mobileLabel = document.querySelector('.userinfo dt.mobile');
         this.btnCallRobot = document.querySelector('.userinfo .btnCallRobot');
         this.btnSendRobot = document.querySelector('.userinfo .btnSendRobot');
         
@@ -1384,57 +1409,30 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 this.img.setAttribute('src', 'images/colleagueeditor/ic_account_box_white_24px.svg');
             }
-            if (data.jobTitle) {
-                this.job.innerHTML = data.jobTitle;
-            } else {
-                this.job.innerHTML = '...';
-            }
+            this.makername.innerHTML = data.name;
             this.img.style.boxShadow = '';
             this.email.style.display = '';
-            this.skype.style.display = '';
-            this.mobile.style.display = '';
             this.emailLabel.style.display = '';
-            this.skypeLabel.style.display = '';
-            this.mobileLabel.style.display = '';
         } else if (data.dataType === '1') {
             if (data.pictureUrl) {
                 this.img.setAttribute('src', data.pictureUrl);
             } else {
                 this.img.setAttribute('src', 'images/colleagueeditor/ic_place_white_24px.svg');
             }
-            if (data.jobTitle) {
-                this.job.innerHTML = data.jobTitle;
-            } else {
-                this.job.innerHTML = 'Meeting Room';
-            }
             this.img.style.boxShadow = 'none';
-            this.email.style.display = 'none';
-            this.skype.style.display = 'none';
-            this.mobile.style.display = 'none';
-            this.emailLabel.style.display = 'none';
-            this.skypeLabel.style.display = 'none';
-            this.mobileLabel.style.display = 'none';
+            //this.email.style.display = 'none';
+            //this.emailLabel.style.display = 'none';
         }
         
-        var fullName = data.name;
-        fullName += (data.nick) ? '<span>(' + data.nick + ')</span>' : '';
-        this.fullname.innerHTML = fullName;
+        var positionStr = data.standno;
+        positionStr = 'Stand No. ' + positionStr + '<span>(Hall ' + data.hall + ')</span>';
+        this.standno.innerHTML = positionStr;
         
-        var preferredName = (data.nick) ? data.nick : data.name;
-        if (data.email) {
-            this.email.innerHTML = '<a href="mailto:' + data.email + '?subject=Hallo%2C%20' + preferredName + '&amp;body=sent%20by%20Office%20Finder">' + data.email + '</a>';
+        var preferredName = 'Open details';
+        if (data.infourl) {
+            this.email.innerHTML = '<a href="' + data.infourl + '" target="_blank">' + preferredName + '</a>';
         } else {
             this.email.innerHTML = '...';
-        }
-        if (data.skype) {
-            this.skype.innerHTML = '<a href="skype:' + data.skype + '?userinfo">' + data.skype + '</a>';
-        } else {
-            this.skype.innerHTML = '...';
-        }
-        if (data.mobile) {
-            this.mobile.innerHTML = data.mobile;
-        } else {
-            this.mobile.innerHTML = '...';
         }
     };
     
@@ -1489,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', function() {
             lightInit = true;
         }
         
-        loadJSONMap(loadDesks);
+        loadJSONMap(callback);
         
         if (!timerAnimationFrame) {
             animate();

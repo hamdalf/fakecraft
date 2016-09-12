@@ -41,6 +41,14 @@ var cubePattern = {
             transparent: true
 		}
 	},
+	path: {
+		0: {
+			shading: THREE.FlatShading,
+			color: new THREE.Color().setRGB(0.99, 0.43, 0.51),
+            opacity: 0.4,
+            transparent: true
+		}
+	},
     desk: {
         0: {
             shading: THREE.FlatShading,

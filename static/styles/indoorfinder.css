@@ -342,8 +342,8 @@ nav .lists li.people a:hover {
   background-image: url('../images/colleagueeditor/ic_rotate_left_white_24px.svg');
 }
 #canvasContainer.hedgehop .floornav {
-  width: 220px;
-  margin-left: -100px;
+  width: 170px;
+  margin-left: -115px;
 }
 #canvasContainer.hedgehop .floornav li.li-zoomin {
   display: none;
@@ -393,7 +393,7 @@ nav .lists li.people a:hover {
   bottom: 50%;
   right: 50px;
   margin-bottom: -200px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   border-top: 2px solid #fff;
   color: #fff;
   font-family: 'Open Sans Condensed';
@@ -401,14 +401,15 @@ nav .lists li.people a:hover {
   padding: 20px;
 }
 #canvasContainer .userinfo img {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   border-radius: 10px;
   float: left;
   margin-right: 10px;
-  margin-left: -50px;
-  margin-top: -50px;
+  margin-left: -70px;
+  margin-top: -70px;
   box-shadow: 2px 2px 5px #888888;
+  background-color: rgba(0, 114, 198, 0.9);
 }
 #canvasContainer .userinfo .btnClose {
   text-indent: -9999px;
@@ -427,10 +428,12 @@ nav .lists li.people a:hover {
   cursor: pointer;
 }
 #canvasContainer .userinfo h3 {
-  font-size: 25px;
+  font-size: 22px;
   line-height: 30px;
   font-weight: 600;
-  margin-top: -5px;
+  margin: -12px 0 10px 0;
+  max-width: 320px;
+  word-break: break-all;
 }
 #canvasContainer .userinfo h3 span {
   margin-left: 10px;
@@ -438,6 +441,8 @@ nav .lists li.people a:hover {
 #canvasContainer .userinfo h4 {
   font-size: 20px;
   font-weight: 400;
+  padding: 0px 0 0 90px;
+  word-break: break-all;
 }
 #canvasContainer .userinfo dl {
   list-style: none;

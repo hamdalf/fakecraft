@@ -88,13 +88,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			cubeMaterials[k] = {};
 		}
 		for (var l in cubePattern[k]) {
-			newTexture = {
+			/*newTexture = {
 				shading: THREE.FlatShading
-			};
+			};*/
+			newTexture = {};
 			for (var m in cubePattern[k][l]) {
 				newTexture[m] = cubePattern[k][l][m];
 			}
+			//delete newTexture.shading;	// for performance
+			//delete newTexture.transparent;	// for performance
+			//newTexture.opacity = 1.0;	// for performance
 			tempCube = new THREE.MeshPhongMaterial(newTexture);
+			//tempCube = new THREE.MeshBasicMaterial(newTexture);	// for performance
 			tempCube._cubePattern = k;
 			tempCube._cubeType = l;
 			cubeMaterials[k][l] = tempCube;
@@ -171,12 +176,48 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.size button').addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-		if (parseInt(bgSetter[0].value) == 0) {
+		if (!bgSetter[0].value) {
+			setGrid(sizeSetter[0].value, sizeSetter[1].value);
+		} else if (parseInt(bgSetter[0].value) == 0) {
         	setGrid(sizeSetter[0].value, sizeSetter[1].value, bgSetter[1].value);
 		} else {
 			addBGLayer(sizeSetter[0].value, sizeSetter[1].value, bgSetter[0].value, bgSetter[1].value);
 		}
     }, false);
+
+	var bgSetter = document.querySelectorAll('.bgimg input');
+	bgSetter[1].addEventListener('click', function(e) {
+		e.preventDefault();
+        e.stopPropagation();
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/api/images/indoor', true);
+		xhr.responseType = 'text';
+		xhr.onload = function (e) {
+			if (this.status == 200) {
+                var files = JSON.parse(this.responseText),
+					wrapper = document.querySelector('.lists'),
+					tr;
+				wrapper.innerHTML = '';
+				for (var i = 0; i < files.length; i++) {
+					tr = document.createElement('li');
+					ta = document.createElement('a');
+					ta.setAttribute('href', files[i]);
+					ta.innerHTML = files[i];
+					ta.addEventListener('click', function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						var fileName = (e.srcElement) ? e.srcElement.getAttribute('href') : e.target.getAttribute('href');
+						document.querySelectorAll('.bgimg input')[1].value = fileName;
+					});
+					tr.appendChild(ta);
+					wrapper.appendChild(tr);
+					navigation.show();
+				}
+			}
+		};
+		xhr.send();
+	}, false);
 
 	// BG image
 	document.querySelector('.bgimg button').addEventListener('click', function(e) {
@@ -253,6 +294,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				break;
             case '6'.charCodeAt(0):
 				setCubeType('wall', 3);
+				break;
+			case '7'.charCodeAt(0):
+				setCubeType('path', 0);
 				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
@@ -606,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		
 		var voxels = JSON.parse(mapJSON),
-			voxel, mesh;
+			voxel, mesh, tmpMaterial;
 		for (var i = 0; i < voxels.length; i++) {
             voxel = voxels[i];
 			mesh = new THREE.Mesh(cubeGeo, cubeMaterials[voxel.p][voxel.t]);
