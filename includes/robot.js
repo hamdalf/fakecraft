@@ -1,6 +1,7 @@
 var Robot = function() {
     this.id = '';
     this.name = '';
+    this.space = '';
     this.position = {
         x: 0,
         y: 0,

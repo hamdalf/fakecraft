@@ -1,0 +1,167 @@
+html {
+  height: 100%;
+}
+body {
+  margin: 0;
+  padding: 0;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#308ef2+0,ffffff+100 */
+  background: #1D478B;
+  /* Old browsers */
+  background: -moz-linear-gradient(bottom, #ffffff 15%, #fbfbfb 66%, #a5a5a5 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.15, #ffffff), color-stop(0.66, #fbfbfb), color-stop(1, #a5a5a5));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(bottom, #ffffff 15%, #fbfbfb 66%, #a5a5a5 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(bottom, #ffffff 15%, #fbfbfb 66%, #a5a5a5 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(bottom, #ffffff 15%, #fbfbfb 66%, #a5a5a5 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #ffffff 15%, #fbfbfb 66%, #a5a5a5 100%);
+  /* W3C */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
+input[type=text],
+button {
+  font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(100% - 10px);
+  height: 40px;
+  padding: 0 10px 0 0;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+nav h1 {
+  padding: 0 20px 0 20px;
+  line-height: 40px;
+  float: left;
+  background: #212226;
+}
+ul.grp,
+dl.grp {
+  display: block;
+  background-color: transparent;
+  float: left;
+  height: 40px;
+  overflow: hidden;
+  list-style: none;
+  -o-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -webkit-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+ul.grp:hover,
+dl.grp:hover {
+  background-color: rgba(180, 180, 180, 0.8);
+}
+ul.grp li,
+dl.grp li {
+  display: block;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 20px;
+  list-style: none;
+}
+ul.grp li a,
+dl.grp li a {
+  font-size: 70%;
+  color: #000000;
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+ul.grp li.on a,
+dl.grp li.on a {
+  color: #ffffff;
+  font-weight: 600;
+}
+ul.grp li:hover,
+dl.grp li:hover {
+  background-color: #007acc;
+}
+ul.grp li:hover a,
+dl.grp li:hover a {
+  color: #ffffff;
+}
+ul.grp.space dt,
+dl.grp.space dt {
+  float: left;
+  list-style: none;
+  display: inline-block;
+  height: 40px;
+  line-height: 42px;
+  padding: 0 5px 0 20px;
+  font-size: 70%;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+ul.grp.space dt::after,
+dl.grp.space dt::after {
+  content: ":";
+  display: inline-block;
+}
+ul.grp.space dd,
+dl.grp.space dd {
+  float: left;
+  list-style: none;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 20px 0 5px;
+}
+ul.grp.space dd input[type=text],
+dl.grp.space dd input[type=text] {
+  display: inline-block;
+  font-size: 70%;
+  width: 100px;
+  height: calc(40px - 10px);
+  line-height: calc(40px - 10px);
+  box-sizing: border-box;
+  border: none;
+  background-color: transparent;
+  color: #fff;
+}
+ul.grp.space dd input[type=text]:focus,
+dl.grp.space dd input[type=text]:focus {
+  outline: none;
+}
+ul.grp.space dd button,
+dl.grp.space dd button {
+  display: inline-block;
+  font-size: 70%;
+  box-shadow: none;
+  border: none;
+  height: calc(40px - 10px);
+  text-transform: uppercase;
+  background-color: rgba(0, 122, 204, 0.3);
+  color: #fff;
+}
+ul.grp.space dd button:focus,
+dl.grp.space dd button:focus {
+  outline: none;
+}
+ul.grp.space:hover dd input[type=text],
+dl.grp.space:hover dd input[type=text] {
+  background-color: #fff;
+  color: #000;
+}
+ul.grp.space:hover dd button,
+dl.grp.space:hover dd button {
+  background-color: #007acc;
+}
+#container,
+#m {
+  width: 100%;
+  height: 100%;
+}

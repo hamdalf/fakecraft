@@ -1,0 +1,179 @@
+@version: "0.0.1";
+@nav-menu-height: 40px;
+
+html {
+    height: 100%;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#308ef2+0,ffffff+100 */
+	background: #1D478B; /* Old browsers */
+	background: -moz-linear-gradient(bottom, #FFFFFF 15%, #FBFBFB 66%, #A5A5A5 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.15,#FFFFFF), color-stop(0.66,#FBFBFB), color-stop(1,#A5A5A5)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(bottom, #FFFFFF 15%, #FBFBFB 66%, #A5A5A5 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(bottom, #FFFFFF 15%, #FBFBFB 66%, #A5A5A5 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(bottom, #FFFFFF 15%, #FBFBFB 66%, #A5A5A5 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #FFFFFF 15%, #FBFBFB 66%, #A5A5A5 100%); /* W3C */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
+
+input[type=text], button {
+    font-family: 'Open Sans Condensed', sans-serif, Arial;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: calc(~'100% - 10px');
+    height: @nav-menu-height;
+    padding: 0 10px 0 0;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+
+    h1 {
+        padding: 0 20px 0 20px;
+        line-height: @nav-menu-height;
+        //display: inline-block;
+        float: left;
+        background: rgba(33, 34, 38, 1);
+    }
+}
+
+ul, dl {
+    &.grp {
+        display: block;
+        background-color: transparent;
+        float: left;
+        height: @nav-menu-height;
+        overflow: hidden;
+        list-style: none;
+        -o-transition: all .2s ease-in-out;
+        -ms-transition: all .2s ease-in-out;
+        -moz-transition: all .2s ease-in-out;
+        -webkit-transition: all .2s ease-in-out;
+        transition: all .2s ease-in-out;
+        
+
+        &:hover {
+            background-color: rgba(180, 180, 180, 0.8);
+        }
+
+        li {
+            display: block;
+            width: 100%;
+            height: @nav-menu-height;
+            line-height: @nav-menu-height;
+            padding: 0 20px;
+            list-style: none;
+
+            a {
+                font-size: 70%;
+                color: rgba(0, 0, 0, 1);
+                text-decoration: none;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            &.on {
+                a {
+                    color: rgba(255, 255, 255, 1);
+                    font-weight: 600;
+                }
+            }
+
+            &:hover {
+                background-color: rgba(0, 122, 204, 1);
+
+                a {
+                    color: rgba(255, 255, 255, 1);
+                }
+            }
+        }
+
+        &.space {
+            dt {
+                float: left;
+                list-style: none;
+                display: inline-block;
+                height: @nav-menu-height;
+                line-height: @nav-menu-height + 2px;
+                padding: 0 5px 0 20px;
+                font-size: 70%;
+                color: rgba(255, 255, 255, 1);
+                font-weight: 600;
+                text-decoration: none;
+                text-transform: uppercase;
+
+                &::after {
+                    content: ":";
+                    display: inline-block;
+                }
+            }
+
+            dd {
+                float: left;
+                list-style: none;
+                display: inline-block;
+                height: @nav-menu-height;
+                line-height: @nav-menu-height;
+                padding: 0 20px 0 5px;
+
+                input[type=text] {
+                    display: inline-block;
+                    font-size: 70%;
+                    width: 100px;
+                    height: calc(~'@{nav-menu-height} - 10px');
+                    line-height: calc(~'@{nav-menu-height} - 10px');
+                    box-sizing: border-box;
+                    border: none;
+                    background-color: transparent;
+                    color: #fff;
+                    
+                    &:focus {
+                        outline: none;
+                    }
+                }
+
+                button {
+                    display: inline-block;
+                    font-size: 70%;
+                    box-shadow: none;
+                    border: none;
+                    height: calc(~'@{nav-menu-height} - 10px');
+                    text-transform: uppercase;
+                    background-color: rgba(0, 122, 204, 0.3);
+                    color: #fff;
+
+                    &:focus {
+                        outline: none;
+                    }
+                }
+            }
+
+            &:hover {
+                dd {
+                    input[type=text] {
+                        background-color: #fff;
+                        color: #000;
+                    }
+
+                    button {
+                        background-color: rgba(0, 122, 204, 1);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#container, #m {
+    width: 100%;
+    height: 100%;
+}

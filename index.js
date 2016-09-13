@@ -30,6 +30,7 @@ var userRouters = require('./routes/users'),
     makerRouters = require('./routes/makers'),
     jsonRouters = require('./routes/json'),
     passFinderRouters = require('./routes/passfinder'),
+    passFinder2Routers = require('./routes/passfinder2'),
     robotRouters = require('./routes/robot');
 
 // specifies this directory is cleared for serving static files
@@ -41,6 +42,7 @@ app.use('/api', userRouters);
 app.use('/api', makerRouters);
 app.use('/api', jsonRouters);
 app.use('/api', passFinderRouters);
+app.use('/api', passFinder2Routers);
 app.use('/api', robotRouters);
 
 var server = app.listen(3000, function () {
