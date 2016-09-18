@@ -50,7 +50,11 @@ GraphSearch.prototype = {
                 yHalf = Math.round(this.yLength / 2);
 
             if (this.optimized) {
-
+                for (var i = 0; i < floorData.length; i++) {
+                    if (floorData[i].p == 'path') {
+                        nodes[floorData[i].x + xHalf][floorData[i].z + yHalf] = 1;
+                    }
+                }
             } else {
                 for (var i = 0; i < floorData.length; i++) {
                     if (floorData[i].p == 'floor') {
@@ -82,26 +86,26 @@ GraphSearch.prototype = {
                         if (deskData[i].r == true) {
                             if (typeArr[0] % 2 === 0) {
                                 if (typeArr[1] % 2 === 0) {
-                                    minW = Math.floor(typeArr[0] / 2);
+                                    minW = Math.floor(typeArr[1] / 2);
                                     maxW = minW;
-                                    minH = Math.floor(typeArr[1] / 2);
+                                    minH = Math.floor(typeArr[0] / 2);
                                     maxH = minH;
                                 } else {
-                                    minW = Math.floor(typeArr[0] / 2);
+                                    minW = Math.floor(typeArr[1] / 2);
                                     maxW = minW + 1;
-                                    minH = Math.floor(typeArr[1] / 2);
+                                    minH = Math.floor(typeArr[0] / 2);
                                     maxH = minH;
                                 }
                             } else {
                                 if (typeArr[1] % 2 === 0) {
-                                    minW = Math.floor(typeArr[0] / 2);
+                                    minW = Math.floor(typeArr[1] / 2);
                                     maxW = minW;
-                                    minH = Math.floor(typeArr[1] / 2);
+                                    minH = Math.floor(typeArr[0] / 2);
                                     maxH = minH + 1;
                                 } else {
-                                    minW = Math.floor(typeArr[0] / 2);
+                                    minW = Math.floor(typeArr[1] / 2);
                                     maxW = minW + 1;
-                                    minH = Math.floor(typeArr[1] / 2);
+                                    minH = Math.floor(typeArr[0] / 2);
                                     maxH = minH + 1;
                                 }
                             }
@@ -186,7 +190,7 @@ GraphSearch.prototype = {
         return false;
     },
     reload: function() {
-        this.set(this.floor, true);
+        this.set(this.space, this.floor, true);
     }
 };
 

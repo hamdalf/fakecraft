@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     var container = document.querySelector('#container'),
-        canvas = document.querySelector('#m'),
+        canvas = document.querySelector('#stage canvas'),
         ctx = canvas.getContext('2d');
 
+    //ctx.scale(0.1, 0.1);
 
     var loadJSONMap = function (space, floor) {
         var xhr = new XMLHttpRequest();
@@ -17,47 +18,33 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     var createMap = function (json) {
-        if (groupCells) {
-            scene.remove(groupCells);
-        }
-
-        groupCells = new THREE.Mesh();
-        cells = {};
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         var nodes = json,
-            frag = document.createDocumentFragment(),
-            cellMat;
+            cellX, cellY, scale;
+
+        canvas.width = document.querySelector('#stage').clientWidth * parseInt(document.querySelectorAll('.space input')[1].value);
+        scale = canvas.width / (nodes.length * 10);
+        canvas.height = nodes[0].length * 10 * scale;
+        ctx.scale(scale, scale);
         
         for (var x = 0; x < nodes.length; x++) {
-            cells[x] = {};
             for (var y = 0; y < nodes[x].length; y++) {
                 if (nodes[x][y].weight == 0) {
-                    cellMat = new THREE.MeshBasicMaterial({
-                                    color: 0x777777,
-                                    wireframe: false
-                                });
+                    ctx.fillStyle = "rgba(200, 0, 0, 1)";
                 } else {
-                    cellMat = new THREE.MeshBasicMaterial({
-                                    color: 0x2194CE,
-                                    wireframe: false
-                                });
+                    ctx.fillStyle = "rgba(0, 200, 0, 1)";
                 }
-                var cell = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), cellMat);
-                cell.position.x = x * 5;
-                cell.position.z = y * 5;
-                cell.rotation.x = -(Math.PI * 90 / 180);
-                cell._dataX = x;
-                cell._dataY = y;
-                groupCells.add(cell);
-                cells[x][y] = cell;
+                ctx.strokeStyle = "rgba(0, 0, 0, 1)";
+                cellX = nodes[x][y].x * 10 + 1;
+                cellY = nodes[x][y].y * 10 + 1;
+                
+                ctx.fillRect(cellX, cellY, cellX + 9, cellY + 9);
+                ctx.strokeRect(cellX, cellY, cellX + 9, cellY + 9);
             }
         }
-        
-        //groupCells.rotation.x = -(Math.PI * 90 / 180);
-        groupCells.position.x = -(nodes.length * 10);
-        groupCells.position.z = -(nodes[0].length * 10);
-        scene.add(groupCells);
-        console.log('done');
     };
 
     var spaceSetter = document.querySelectorAll('.space input');

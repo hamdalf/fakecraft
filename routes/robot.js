@@ -1,6 +1,7 @@
 var express = require('express'),
     router = express.Router(),
     PathFinder = require('./pathfinder'),
+    PathFinder2 = require('./pathfinder2'),
     Robot = require('../includes/robot');
 
 
@@ -25,6 +26,19 @@ RobotCenter.addNewRobot = function (id, name) {
         this.robots[id].name = name;
     } else {
         this.robots[id].name = name;
+    }
+    return this.robots[id];
+};
+
+RobotCenter.addNewRobotInSpace = function (id, name, space) {
+    if (typeof this.robots[id] == 'undefined') {
+        this.robots[id] = new Robot();
+        this.robots[id].id = id;
+        this.robots[id].name = name;
+        this.robots[id].space = space;
+    } else {
+        this.robots[id].name = name;
+        this.robots[id].space = space;
     }
     return this.robots[id];
 };
@@ -60,6 +74,15 @@ RobotCenter.findIdleRobot = function(floor) {
     return false;
 };
 
+RobotCenter.findIdleRobotInSpace = function(space, floor) {
+    for (var key in this.robots) {
+        if (this.robots[key].space == space && this.robots[key].position.f == floor && this.robots[key].isBusy == false) {
+            return this.robots[key];
+        }
+    }
+    return false;
+};
+
 RobotCenter.moveRobot = function(id, floor, x, y) {
     if (typeof this.robots[id] == 'undefined') {
         return false;
@@ -67,6 +90,31 @@ RobotCenter.moveRobot = function(id, floor, x, y) {
         var aRobot = this.robots[id];
         aRobot.isBusy = true;
         var aGraph = PathFinder.getGraph(floor);
+
+        var startPoint = aGraph.graph.grid[aRobot.position.x][aRobot.position.y],
+            endPoint = aGraph.graph.grid[x][y];
+
+        if (aGraph.graph.grid[x][y].weight == 0) {
+            console.log(x, y);
+            var safePoint = aGraph.getNearestPoint(x, y);
+            endPoint = aGraph.graph.grid[safePoint.x][safePoint.y];
+            console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
+        }
+
+        var path = aGraph.astar.search(aGraph.graph, startPoint, endPoint, {closest: false});
+
+        aRobot.routes = path;
+        return aRobot;
+    }
+};
+
+RobotCenter.moveRobotInSpace = function(id, space, floor, x, y) {
+    if (typeof this.robots[id] == 'undefined') {
+        return false;
+    } else {
+        var aRobot = this.robots[id];
+        aRobot.isBusy = true;
+        var aGraph = PathFinder2.getGraph(space, floor);
 
         var startPoint = aGraph.graph.grid[aRobot.position.x][aRobot.position.y],
             endPoint = aGraph.graph.grid[x][y];
@@ -111,6 +159,14 @@ router.route('/robot/handsup/:id/:name').all(function(req, res, next) {
     next();
 }).get(function(req, res) {
     var aRobot = RobotCenter.addNewRobot(req.params.id, req.params.name);
+    res.json(aRobot);
+    res.end();
+});
+
+router.route('/robot/handsup2/:id/:name/:space').all(function(req, res, next) {
+    next();
+}).get(function(req, res) {
+    var aRobot = RobotCenter.addNewRobotInSpace(req.params.id, req.params.name, req.params.space);
     res.json(aRobot);
     res.end();
 });

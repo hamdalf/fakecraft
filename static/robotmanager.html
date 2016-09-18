@@ -13,15 +13,24 @@
 	<script src="/scripts/robotmanager.js"></script>
 </head>
 <body>
-    <table>
+    <nav>
+        <h1>Robot Manager</h1>
+        <dl class="grp robot">
+            <dt>New Robot</dt>
+            <dd><input type="text" name="space" id="space" value="" placeholder="SPACE" /> <input type="text" name="robotid" id="robotid" placeholder="ID" /> <input type="text" name="robotname" id="robotname" placeholder="NAME" /> <button>Add</button></dd>
+        </dl>
+    </nav>
+    <table id="robotlist">
         <thead>
             <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Name</th>
-                <th scope="col">Space</th>
-                <th scope="col">Busy</th>
-                <th scope="col">Direction</th>
-                <th scope="col">Route</th>
+                <th scope="col" class="id">Id</th>
+                <th scope="col" class="name">Name</th>
+                <th scope="col" class="space">Space</th>
+                <th scope="col" class="busy">Busy</th>
+                <th scope="col" class="position">Position</th>
+                <th scope="col" class="direction">Direction</th>
+                <th scope="col" class="route">Route</th>
+                <th scope="col" class="control">Control</th>
             </tr>
         </thead>
         <tbody>

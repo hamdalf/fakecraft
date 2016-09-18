@@ -3,7 +3,7 @@
 <script>
     var cnt = 0;
     document.write('[');
-    for (var x = -300; x < 300; x++) {
+    /*for (var x = -300; x < 300; x++) {
         for (var z = -175; z < 175; z++) {
             if (cnt > 0) {
                 document.write(',');
@@ -11,6 +11,13 @@
             document.write('{"x":' + x + ',"y":0,"z":' + z + ',"p":"floor","t":"0"}');
             cnt++;
         }
+    }*/
+    for (var x = 59; x < 79; x++) {
+        if (cnt > 0) {
+            document.write(',');
+        }
+        document.write('{"x":' + x + ',"y":1,"z":-92,"p":"path","t":"0"}');
+        cnt++;
     }
     document.write(']');
 </script>

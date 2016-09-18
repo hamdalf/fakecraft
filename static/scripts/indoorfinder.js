@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startPoint, endPoint, routeMesh, pointMesh,
         robotMeshs = {},
         robotTrafficTimer,
-        floorVersion = 'optimized_1473012184734',
+        floorVersion = 'optimized_1474229147381',
         deskVersion = 'object_1473562024295',
         originCameraPosition = [3000, 5000, 6500],
         eventIgnoringSignalForCanvas = false;

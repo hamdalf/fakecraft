@@ -6,9 +6,10 @@ var PathFinder2 = {
     graphSearchs: {},
     latestVersion: {
         'indoor': {
-            floor: '1472834490852',
+            floor: '1474228896186',
             desks: 'object_1473562024295',
             folder: 'indoor',
+            optimized: true,
             width: 600,
             height: 350
         }
@@ -24,6 +25,7 @@ PathFinder2.addGraph = function(space, floor) {
         this.graphSearchs[space][floor].fileFolder = this.latestVersion[space].folder;
         this.graphSearchs[space][floor].floorFile = this.latestVersion[space].floor;
         this.graphSearchs[space][floor].deskFile = this.latestVersion[space].desks;
+        this.graphSearchs[space][floor].optimized = this.latestVersion[space].optimized;
         this.graphSearchs[space][floor].xLength = this.latestVersion[space].width;
         this.graphSearchs[space][floor].yLength = this.latestVersion[space].height;
         this.graphSearchs[space][floor].set(space, floor);
