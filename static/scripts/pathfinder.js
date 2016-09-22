@@ -1,3 +1,5 @@
+var nodes;
+
 document.addEventListener('DOMContentLoaded', function() {
     var container = document.querySelector('#container'),
         canvas = document.querySelector('#stage canvas'),
@@ -22,8 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.fillStyle = "rgba(255, 255, 255, 1)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        var nodes = json,
-            cellX, cellY, scale;
+        nodes = json;
+        var cellX, cellY, scale;
 
         canvas.width = document.querySelector('#stage').clientWidth * parseInt(document.querySelectorAll('.space input')[1].value);
         scale = canvas.width / (nodes.length * 10);

@@ -160,6 +160,10 @@ ul.grp.robot dd button:focus,
 dl.grp.robot dd button:focus {
   outline: none;
 }
+ul.grp.robot dd button:hover,
+dl.grp.robot dd button:hover {
+  cursor: pointer;
+}
 ul.grp.robot:hover dd input[type=text],
 dl.grp.robot:hover dd input[type=text] {
   background-color: #fff;
@@ -172,6 +176,10 @@ dl.grp.robot:hover dd button {
 table {
   margin: 50px auto 0 auto;
   line-height: 25px;
+}
+table th {
+  padding: 5px 10px;
+  border: 1px solid #000;
 }
 table th.id {
   width: 50px;
@@ -186,34 +194,134 @@ table th.busy {
   width: 50px;
 }
 table th.position {
-  width: 100px;
+  width: 150px;
 }
 table th.direction {
   width: 50px;
 }
 table th.route {
-  width: 50px;
+  width: 100px;
 }
 table th.control {
   width: 100px;
 }
-table td.position input[type=text],
-table td.direction input[type=text] {
+table tbody tr:nth-child(2n) {
+  background-color: #cfcfcf;
+}
+table td {
+  padding: 5px 10px;
+}
+table td input[type=text] {
   display: inline-block;
   box-sizing: border-box;
   border: none;
   background-color: transparent;
+  font-size: 80%;
+}
+table td button {
+  font-size: 80%;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow: none;
+  border: none;
+  background-color: transparent;
+  font-weight: 600;
+}
+table td.robotid {
+  text-align: center;
+}
+table td.robotname {
+  text-align: center;
+}
+table td.space {
+  text-align: center;
+}
+table td.busy {
+  text-align: center;
+}
+table td.position {
+  text-align: center;
+}
+table td.position input[type=text] {
   width: 20px;
 }
-table td.position button,
+table td.position button {
+  display: none;
+}
+table td.position:hover input [type=text] {
+  border: 1px solid;
+}
+table td.position:hover button {
+  display: inline-block;
+  background-color: #007acc;
+  color: #fff;
+}
+table td.direction {
+  text-align: center;
+}
+table td.direction input[type=text] {
+  width: 20px;
+}
 table td.direction button {
   display: none;
 }
-table td.position:hover input [type=text],
 table td.direction:hover input [type=text] {
   border: 1px solid;
 }
-table td.position:hover button,
 table td.direction:hover button {
   display: inline-block;
+  background-color: #007acc;
+  color: #fff;
+}
+table td.route {
+  text-align: center;
+}
+table td.route button:nth-child(2n) {
+  margin-left: 5px;
+}
+table td.route button:hover {
+  display: inline-block;
+  background-color: #007acc;
+  color: #fff;
+}
+table td.control {
+  text-align: center;
+}
+table td.control button:nth-child(2n) {
+  margin-left: 5px;
+}
+table td.control button:hover {
+  display: inline-block;
+  background-color: #007acc;
+  color: #fff;
+}
+#popup {
+  display: none;
+  width: 300px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -100px 0 0 -150px;
+  border-radius: 5px;
+}
+#popup .btnClose {
+  text-indent: -9999px;
+  background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: transparent;
+  border-style: none;
+  display: block;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
 }

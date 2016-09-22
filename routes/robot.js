@@ -47,8 +47,14 @@ RobotCenter.removeRobot = function (id) {
     if (typeof this.robots[id] == 'undefined') {
         return false;
     } else {
+        var deletedRobot = new Robot();
+        deletedRobot.id = id;
+        //deletedRobot.name = this.robots[id].name;
+        //deletedRobot.space = this.robots[id].space;
         delete this.robots[id];
+        return deletedRobot;
     }
+    
 };
 
 RobotCenter.setPosition = function (id, floor, x, y, d) {
@@ -68,6 +74,15 @@ RobotCenter.setPosition = function (id, floor, x, y, d) {
 RobotCenter.findIdleRobot = function(floor) {
     for (var key in this.robots) {
         if (this.robots[key].position.f == floor && this.robots[key].isBusy == false) {
+            return this.robots[key];
+        }
+    }
+    return false;
+};
+
+RobotCenter.findIdleRobotInSpace = function(space, floor) {
+    for (var key in this.robots) {
+        if (this.robots[key].space == space && this.robots[key].position.f == floor && this.robots[key].isBusy == false) {
             return this.robots[key];
         }
     }
@@ -242,6 +257,23 @@ router.route('/robot/sendarobot/:floor/:x/:y').all(function(req, res, next) {
         res.end();
     } else {
         aRobot = RobotCenter.moveRobot(aRobot.id, floor, parseInt(req.params.x), parseInt(req.params.y));
+        aRobot.result = true;
+        res.json(aRobot);
+        res.end();
+    }
+});
+
+router.route('/robot/sendarobot2/:space/:floor/:x/:y').all(function(req, res, next) {
+    next();
+}).get(function(req, res) {
+    var floor = parseInt(req.params.floor),
+        aRobot = RobotCenter.findIdleRobotInSpace(req.params.space, floor);
+
+    if (aRobot == false) {
+        res.json({result:false});
+        res.end();
+    } else {
+        aRobot = RobotCenter.moveRobotInSpace(aRobot.id, req.params.space, floor, parseInt(req.params.x), parseInt(req.params.y));
         aRobot.result = true;
         res.json(aRobot);
         res.end();

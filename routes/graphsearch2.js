@@ -155,32 +155,36 @@ GraphSearch.prototype = {
     getNearestPoint: function(x1, y1) {
         var x1 = parseInt(x1),
             y1 = parseInt(y1),
-            x, y;
-        for (var l = 0; l < 20; l++) {
+            x, y, tmpLmt;
+        for (var l = 0; l < 50; l++) {
             console.log(l);
-            x = x1 - l;
-            for (y = y1 - l; y <= y1 + l; y++) {
+            x = (x1 - l >= 0) ? x1 - l : 0;
+            tmpLmt = (y1 + l < this.yLength) ? y1 + l : this.yLength - 1;
+            for (y = (y1 - l >= 0) ? y1 - l : 0; y <= tmpLmt; y++) {
                 console.log('part1:',x, y, y1+l);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            y = y1 - l;
-            for (x = x1 - l + 1; x < x1 + l; x++) {
+            y = (y1 - l >= 0) ? y1 - l : 0;
+            tmpLmt = (x1 + l < this.xLength) ? x1 + l : this.xLength;
+            for (x = (x1 - l + 1 >= 0) ? x1 - l + 1 : 0; x < tmpLmt; x++) {
                 console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            y = y1 + l;
-            for (x = x1 - l + 1; x < x1 + l; x++) {
+            y = (y1 + l < this.yLength) ? y1 + l : this.yLength - 1;
+            tmpLmt = (x1 + l < this.xLength) ? x1 + l : this.xLength;
+            for (x = (x1 - l + 1 >= 0) ? x1 - l + 1 : 0; x < tmpLmt; x++) {
                 console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};
                 }
             }
-            x = x1 + l;
-            for (y = y1 - l; y <= y1 + l; y++) {
+            x = (x1 + l < this.xLength) ? x1 + l  : this.xLength - 1;
+            tmpLmt = (y1 + l < this.yLength) ? y1 + l : this.yLength - 1;
+            for (y = (y1 - l >= 0) ? y1 - l : 0; y <= tmpLmt; y++) {
                 console.log(x, y);
                 if (this.graph.grid[x][y].weight > 0) {
                     return {"x": x, "y": y};

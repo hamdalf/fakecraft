@@ -5,13 +5,15 @@ document.addEventListener('DOMContentLoaded', function() {
         geoDesk = [],
         mouse2D, raycaster, timerAnimationFrame, lastMsec,
         users, deskObjs, preChangedDeskId, selectedDeskId,
-        cameraAct, floorNow, userInfo, planeNav,
+        cameraAct, userInfo, planeNav,
         startPoint, endPoint, routeMesh, pointMesh,
         robotMeshs = {},
         robotTrafficTimer,
         floorVersion = 'optimized_1474229147381',
         deskVersion = 'object_1473562024295',
         originCameraPosition = [3000, 5000, 6500],
+        floorNow = 0,
+        space = 'indoor',
         eventIgnoringSignalForCanvas = false;
 
     var lightInit = false;
@@ -426,8 +428,8 @@ document.addEventListener('DOMContentLoaded', function() {
         container3D.addEventListener('click', onDocumentClick, false);
         
         if (OLC) {
-            OLC.setMap('array', 0, 529, 0, 199);
-            OLC.setMap('canvas', -2650, 2650, -1000, 1000);
+            OLC.setMap('array', 0, 599, 0, 349);
+            OLC.setMap('canvas', -3000, 3000, -1750, 1750);
             OLC.setMap('geo', 13.421238, 52.525556, 13.420783, 52.525176, 13.421007, 52.525659);
         }
     };
@@ -882,14 +884,18 @@ document.addEventListener('DOMContentLoaded', function() {
             numGeo = geometries.length,
             mesh, geo;
         for (var i = 0; i < numGeo; i++) {
-            geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
-            mesh = new THREE.Mesh(geo.geometry, materials[geometries[i].p][geometries[i].t]);
-            mesh.position.x = geometries[i].x;
-			mesh.position.y = geometries[i].y;
-			mesh.position.z = geometries[i].z;
-            mesh.name = 'map';
-            mesh.pattern = geometries[i].p;
-            scene.add(mesh);
+            if (geometries[i].p == 'path') {
+
+            } else {
+                geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
+                mesh = new THREE.Mesh(geo.geometry, materials[geometries[i].p][geometries[i].t]);
+                mesh.position.x = geometries[i].x;
+                mesh.position.y = geometries[i].y;
+                mesh.position.z = geometries[i].z;
+                mesh.name = 'map';
+                mesh.pattern = geometries[i].p;
+                scene.add(mesh);
+            }
         }
     };
     
@@ -937,20 +943,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    var createRoute = function (node, color) {
+    var createRoute = function (node, rId, color) {
+        var robotId = rId? rId : '';
+
         if (routeMesh) {
-            scene.remove(routeMesh);
+            if (routeMesh._rId == robotId) {
+                scene.remove(routeMesh);
+            }
         }
         var nodes = [],
             lineColor = color? color : {color: 0xff6600},
             posArray, posCanvas;
-        console.log(node);
+        //console.log(node);
+        lineColor.opacity = 0.4;
+        lineColor.transparent = true;
+
         for (var i = 0; i < node.length; i++) {
             posArray = new ArrayUnit(node[i].x, node[i].y);
             posCanvas = posArray.toCanvas();
-            nodes.push(new THREE.Vector3(posCanvas.x, 50, posCanvas.y));
+            nodes.push(new THREE.Vector3(posCanvas.x, 20, posCanvas.y));
         }
-        console.log(nodes);
+        //console.log(nodes);
         var curve = new THREE.CatmullRomCurve3(nodes),
             shape = new THREE.Shape([
                 new THREE.Vector2(-5, 2),
@@ -965,6 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }),
             curveMat = new THREE.MeshBasicMaterial(lineColor);
         routeMesh = new THREE.Mesh(curveGeo, curveMat);
+        routeMesh._rId = robotId;
         scene.add(routeMesh);
     };
     
@@ -1002,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', function() {
             robotMeshs[k] = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({color:0x3b7fc4}));
             posArray = new ArrayUnit(parseInt(rl[k].position.x), parseInt(rl[k].position.y));
             posCanvas = posArray.toCanvas();
-            robotMeshs[k].position.copy(new THREE.Vector3(posCanvas.x, 50, posCanvas.y));
+            robotMeshs[k].position.copy(new THREE.Vector3(posCanvas.x, 20, posCanvas.y));
             //robotMeshs[k].geometry.center();
             switch (rl[k].direction) {
                 case 'x+':
@@ -1011,9 +1025,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'x-':
                     robotMeshs[k].rotateY(- Math.PI / 2);
                     break;
+                case 'y+':
+                    robotMeshs[k].rotateY(0);
+                    break;
+                case 'y-':
+                    robotMeshs[k].rotateY(Math.PI);
+                    break;
             }
+
             scene.add(robotMeshs[k]);
             //robotMeshs[k].geometry.center();
+            if (routeMesh) {
+                if (rl[k].isBusy === false && routeMesh._rId == k) {
+                    scene.remove(routeMesh);
+                }
+            }
+
             console.debug('A robot "' + k + '" was added on map');
         }
     };
@@ -1377,6 +1404,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         this.btnClose.addEventListener('click', function(t) {
             return function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                eventIgnoringSignalForCanvas = true;
                 t.hide();
                 if (typeof selectedDeskId !== 'undefined') {
                     if (findDeskById(selectedDeskId)) {
@@ -1389,11 +1419,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
         this.btnSendRobot.addEventListener('click', function(t) {
             return function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                eventIgnoringSignalForCanvas = true;
                 t.hide();
                 if (typeof selectedDeskId !== 'undefined') {
                     var objSelected = findDeskById(selectedDeskId);
                     if (objSelected) {
                         sendRobot(objSelected.desk.position.x, objSelected.desk.position.z);
+                        findDeskById(selectedDeskId).setMouseOut();
+                        selectedDeskId = void(0);
+                    }
+                }
+            }
+        }(this));
+
+        this.btnCallRobot.addEventListener('click', function(t) {
+            return function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                eventIgnoringSignalForCanvas = true;
+                t.hide();
+                if (typeof selectedDeskId !== 'undefined') {
+                    var objSelected = findDeskById(selectedDeskId);
+                    if (objSelected) {
+                        //sendRobot(objSelected.desk.position.x, objSelected.desk.position.z);
+                        alert('hohoho, please call a robot to your place');
                         findDeskById(selectedDeskId).setMouseOut();
                         selectedDeskId = void(0);
                     }
@@ -1518,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var startPoint = new CanvasUnit(x, y),
             startArray = startPoint.toArray(),
             xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/robot/sendarobot/' + floorNow + '/' + startArray.x + '/' + startArray.y, true);
+        xhr.open('GET', '/api/robot/sendarobot2/' + space + '/' + floorNow + '/' + startArray.x + '/' + startArray.y, true);
         xhr.responseType = 'text';
         xhr.onload = function (e) {
 			if (this.status == 200) {
@@ -1526,7 +1577,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (robot.result == false) {
                     alert('All robots are busy now. Please try later.');
                 } else {
-                    createRoute(robot.routes, {color: 0x0072c6});
+                    createRoute(robot.routes, robot.id, {color: 0x0072c6});
                 }
 			}
 		};
@@ -1545,10 +1596,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (this.status == 200) {
                 var robots = JSON.parse(this.responseText);
                 createRobotsByRobotList(robots);
-                setTimeout(getRobotsStatus, 5000);
+                robotTrafficTimer = setTimeout(getRobotsStatus, 5000);
 			}
 		};
 		xhr.send();
     };
-    setTimeout(getRobotsStatus, 5000);
+    robotTrafficTimer = setTimeout(getRobotsStatus, 5000);
 });

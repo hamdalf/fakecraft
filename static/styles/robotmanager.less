@@ -163,6 +163,10 @@ ul, dl {
                     &:focus {
                         outline: none;
                     }
+
+                    &:hover {
+                        cursor: pointer;
+                    }
                 }
             }
 
@@ -187,6 +191,9 @@ table {
 	line-height: 25px;
 
 	th {
+        padding: 5px 10px;
+        border: 1px solid #000;
+
 		&.id {
 			width: 50px;
 		}
@@ -204,7 +211,7 @@ table {
 		}
 
 		&.position {
-			width: 100px;
+			width: 150px;
 		}
 
 		&.direction {
@@ -212,7 +219,7 @@ table {
 		}
 
 		&.route {
-			width: 50px;
+			width: 100px;
 		}
 
 		&.control {
@@ -220,13 +227,55 @@ table {
 		}
 	}
 
+    tbody {
+        tr {
+            &:nth-child(2n) {
+                background-color: #cfcfcf;
+            }
+        }
+    }
+
 	td {
-		&.position, &.direction {
+        padding: 5px 10px;
+
+        input[type=text] {
+            display: inline-block;
+            box-sizing: border-box;
+            border: none;
+            background-color: transparent;
+            font-size: 80%;
+        }
+
+        button {
+            font-size: 80%;
+            cursor: pointer;
+            border-radius: 2px;
+            box-shadow: none;
+            border: none;
+            background-color: transparent;
+            font-weight: 600;
+        }
+
+        &.robotid {
+            text-align: center;
+        }
+
+        &.robotname {
+            text-align: center;
+        }
+
+        &.space {
+            text-align: center;
+        }
+
+        &.busy {
+            text-align: center;
+        }
+
+		&.position {
+            text-align: center;
+
 			input[type=text] {
-				display: inline-block;
-				box-sizing: border-box;
-				border: none;
-				background-color: transparent;
 				width: 20px;
 			}
 
@@ -241,8 +290,98 @@ table {
 
 				button {
 					display: inline-block;
+                    background-color: rgba(0, 122, 204, 1);
+                    color: #fff;
 				}
 			}
 		}
+
+        &.direction {
+            text-align: center;
+
+			input[type=text] {
+				width: 20px;
+			}
+
+			button {
+				display: none;
+			}
+
+			&:hover {
+				input [type=text] {
+					border: 1px solid;
+				}
+
+				button {
+					display: inline-block;
+                    background-color: rgba(0, 122, 204, 1);
+                    color: #fff;
+				}
+			}
+		}
+
+        &.route {
+            text-align: center;
+
+            button {
+                &:nth-child(2n) {
+                    margin-left: 5px;
+                }
+
+                &:hover {
+                    display: inline-block;
+                    background-color: rgba(0, 122, 204, 1);
+                    color: #fff;
+                }
+            }
+        }
+
+        &.control {
+            text-align: center;
+
+            button {
+                &:nth-child(2n) {
+                    margin-left: 5px;
+                }
+
+                &:hover {
+                    display: inline-block;
+                    background-color: rgba(0, 122, 204, 1);
+                    color: #fff;
+                }
+            }
+        }
 	}
+}
+
+#popup {
+    display: none;
+    width: 300px;
+    height: 200px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -100px 0 0 -150px;
+    border-radius: 5px;
+
+    .btnClose {
+        text-indent: -9999px;
+        background-image: url('../images/colleagueeditor/ic_clear_white_24px.svg');
+        background-position: 0 0;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: transparent;
+        border-style: none;
+        display: block;
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        cursor: pointer;
+    }
 }
