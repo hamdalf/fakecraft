@@ -45,6 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         initOfficeMap();
     });
+    document.querySelector('nav .menu4').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        navigation.geoConverter();
+    });
     
     var backMenu = document.querySelector('.navback');
     backMenu.addEventListener('click', function (e) {
@@ -65,20 +70,41 @@ document.addEventListener('DOMContentLoaded', function() {
     navigation.sceneDefault = function() {
         this.element.classList.remove('s');
         this.element.classList.remove('l');
+        this.element.classList.remove('g');
         document.querySelector('nav span').innerHTML = 'Please choose service';
     };
     navigation.sceneSearch = function() {
         this.element.classList.add('s');
         this.element.classList.remove('l');
+        this.element.classList.remove('g');
         document.querySelector('nav span').innerHTML = 'Input name (min. 3 letters)';
         document.querySelector('#s').value = '';
         document.querySelector('.quickresult').classList.remove('show');
     };
     navigation.sceneList = function() {
         this.element.classList.remove('s');
+        this.element.classList.remove('g');
         this.element.classList.add('l');
         document.querySelector('nav span').innerHTML = 'Select a name in the list';
     };
+    navigation.geoConverter = function() {
+        this.element.classList.remove('s');
+        this.element.classList.remove('l');
+        this.element.classList.add('g');
+        document.querySelector('nav span').innerHTML = 'Put Longitude & Latitude';
+    }
+
+    var OnClickGPSData = function (e) {
+        navigation.hide();
+        var longitude = document.querySelector('#longitude').value,
+            latitude = document.querySelector('#latitude').value,
+            geoLoc = new GeoUnit(longitude, latitude, 0),
+            canvasLoc = geoLoc.toCanvas();
+        console.log(geoLoc.longitude, geoLoc.latitude);
+        console.log(canvasLoc);
+        createPointByCanvasCoordinates(canvasLoc);
+    };
+    document.querySelector('#setgeo').addEventListener('click', OnClickGPSData);
     
     var exploreMenus = document.querySelectorAll('.floornav a');
     exploreMenus[0].addEventListener('click', function (e) {
@@ -428,9 +454,9 @@ document.addEventListener('DOMContentLoaded', function() {
         container3D.addEventListener('click', onDocumentClick, false);
         
         if (OLC) {
-            OLC.setMap('array', 0, 599, 0, 349);
-            OLC.setMap('canvas', -3000, 3000, -1750, 1750);
-            OLC.setMap('geo', 13.421238, 52.525556, 13.420783, 52.525176, 13.421007, 52.525659);
+            OLC.setMap('array', 0, 599, 0, 349, 1, -1);
+            OLC.setMap('canvas', -3000, 3000, -1750, 1750, 1, -1);
+            OLC.setMap('geo', 13.373968, 52.498213, 13.374511, 52.499363, 13.374970, 52.498031, -1);
         }
     };
     

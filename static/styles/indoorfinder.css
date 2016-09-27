@@ -89,6 +89,9 @@ nav.s .search {
 nav.s .lists {
   display: none;
 }
+nav.s .geoinput {
+  display: none;
+}
 nav.s .navback {
   display: inline-block;
 }
@@ -101,7 +104,25 @@ nav.l .search {
 nav.l .lists {
   display: block;
 }
+nav.l .geoinput {
+  display: none;
+}
 nav.l .navback {
+  display: inline-block;
+}
+nav.g .menus {
+  display: none;
+}
+nav.g .search {
+  display: none;
+}
+nav.g .lists {
+  display: none;
+}
+nav.g .geoinput {
+  display: block;
+}
+nav.g .navback {
   display: inline-block;
 }
 nav .navWrapper {
@@ -160,6 +181,13 @@ nav .menus li a.menu3 {
   background-image: url('../images/colleagueeditor/ic_explore_white_24px.svg');
   background-position: 0 0;
   margin-left: 20px;
+}
+nav .menus li a.menu4 {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: -20vw;
+  color: transparent;
 }
 nav .search {
   display: none;
@@ -256,6 +284,12 @@ nav .lists li.people a {
 }
 nav .lists li.people a:hover {
   background-image: url('../images/colleagueeditor/ic_account_box_white_24px.svg');
+}
+nav .geoinput {
+  display: none;
+  margin: 50px auto 0 auto;
+  width: 490px;
+  text-align: center;
 }
 #canvasContainer {
   display: none;

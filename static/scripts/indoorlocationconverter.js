@@ -14,7 +14,8 @@ var OLC = {
             verticalPoint: {
                 longitude: null,
                 latitude: null
-            }
+            },
+            rotationDirection: -1 // -1 : clock wise, 1: anti clock wise
         },
         cartesian: {
             zeroPoint: null,    // {x:,y:} format
@@ -59,24 +60,28 @@ var OLC = {
             x: {
                 min: null,
                 max: null,
-                length: null
+                length: null,
+                reverseFactor: 1
             },
             y: {
                 min: null,
                 max: null,
-                length: null
+                length: null,
+                reverseFactor: 1
             }
         },
         canvas: {
             x: {
                 min: null,
                 max: null,
-                length: null
+                length: null,
+                reverseFactor: 1
             },
             y: {
                 min: null,
                 max: null,
-                length: null
+                length: null,
+                reverseFactor: 1
             }
         }
     },
@@ -96,12 +101,13 @@ var OLC = {
                 this.map.geo.horizontalPoint.latitude = arguments[4];
                 this.map.geo.verticalPoint.longitude = arguments[5];
                 this.map.geo.verticalPoint.latitude = arguments[6];
+                this.map.geo.rotationDirection = arguments[7];
                 
                 this.map.cartesian.zeroPoint = proj4.transform(gps, cat, new proj4.toPoint([this.map.geo.zeroPoint.longitude, this.map.geo.zeroPoint.latitude]));
                 this.map.cartesian.horizontalPoint = proj4.transform(gps, cat, new proj4.toPoint([this.map.geo.horizontalPoint.longitude, this.map.geo.horizontalPoint.latitude]));
                 this.map.cartesian.verticalPoint = proj4.transform(gps, cat, new proj4.toPoint([this.map.geo.verticalPoint.longitude, this.map.geo.verticalPoint.latitude]));
                 
-                var parallelRotationDirection = -1; // -1 : clock wise, 1: anti clock wise
+                var parallelRotationDirection = this.map.geo.rotationDirection; // -1 : clock wise, 1: anti clock wise
                 var tmpParallelPoint = {x: this.map.cartesian.zeroPoint.x + parallelRotationDirection, y: this.map.cartesian.zeroPoint.y};
                 
                 this.map.cartesian.rotateDegreeForTransform = parallelRotationDirection * this.map.cartesian.getRotationRad(this.map.cartesian.zeroPoint, this.map.cartesian.horizontalPoint, tmpParallelPoint);
@@ -133,6 +139,8 @@ var OLC = {
                 this.map.array.x.max = arguments[2];
                 this.map.array.y.min = arguments[3];
                 this.map.array.y.max = arguments[4];
+                this.map.array.x.reverseFactor = arguments[5];
+                this.map.array.y.reverseFactor = arguments[6];
                 this.map.array.x.length = this.map.array.x.max - this.map.array.x.min + 1;
                 this.map.array.y.length = this.map.array.y.max - this.map.array.y.min + 1;
                 this.map.cartesian.objectScale.width = this.map.array.x.length * 0.1; // meter unit
@@ -143,6 +151,8 @@ var OLC = {
                 this.map.canvas.x.max = arguments[2];
                 this.map.canvas.y.min = arguments[3];
                 this.map.canvas.y.max = arguments[4];
+                this.map.canvas.x.reverseFactor = arguments[5];
+                this.map.canvas.y.reverseFactor = arguments[6];
                 this.map.canvas.x.length = this.map.canvas.x.max - this.map.canvas.x.min;
                 this.map.canvas.y.length = this.map.canvas.y.max - this.map.canvas.y.min;
                 break;
@@ -158,15 +168,8 @@ var GeoUnit = function (longitude, latitude, altitude) {
 
 GeoUnit.prototype = {
     toArray: function() {
-        var ratioX = OLC.map.array.x.length / OLC.map.cartesian.x.length,
-            ratioY = OLC.map.array.y.length / OLC.map.cartesian.y.length,
-            virtualX = this.longitude - OLC.map.geo.zeroPoint.longitude,
-            virtualY = this.latitude - OLC.map.geo.zeroPoint.latitude,
-            gridX = virtualX * Math.cos(OLC.map.geo.rotateDegree) - virtualY * Math.sin(OLC.map.geo.rotateDegree),
-            gridY = virtualX * Math.sin(OLC.map.geo.rotateDegree) - virtualY * Math.cos(OLC.map.geo.rotateDegree),
-            arrayX = Math.ceil((gridX - OLC.map.geo.longitude.min) * ratioX),
-            arrayY = Math.ceil((gridY - OLC.map.geo.latitude.min) * ratioY);
-        return new ArrayUnit(arrayX, arrayY);
+        var canvasUnit = this.toCanvas();
+        return canvasUnit.toArray();
     },
     toCanvas: function() {
         var gps = new proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
@@ -178,8 +181,9 @@ GeoUnit.prototype = {
             vY = cP.y - OLC.map.cartesian.zeroPoint.y,
             rX = vX * Math.cos(OLC.map.cartesian.rotateDegreeForTransform) - vY * Math.sin(OLC.map.cartesian.rotateDegreeForTransform),
             rY = vX * Math.sin(OLC.map.cartesian.rotateDegreeForTransform) + vY * Math.cos(OLC.map.cartesian.rotateDegreeForTransform),
-            canvasX = ((rX * ratioX) - OLC.map.canvas.x.min) * -1,
-            canvasY = (rY * ratioY) - OLC.map.canvas.y.max;
+            canvasX = ((rX * ratioX) - OLC.map.canvas.x.max) * OLC.map.canvas.x.reverseFactor,
+            canvasY = ((rY * ratioY) - OLC.map.canvas.y.min) * OLC.map.canvas.y.reverseFactor;
+            console.log(rX * ratioX, rY * ratioY);
         return new CanvasUnit(canvasX, canvasY);
     }
 };
@@ -191,7 +195,8 @@ var ArrayUnit = function (x, y) {
 
 ArrayUnit.prototype = {
     toGeo: function() {
-        
+        var canvasUnit = this.toCanvas();
+        return canvasUnit.toGeo();
     },
     toCanvas: function() {
         var ratioX = OLC.map.canvas.x.length / OLC.map.array.x.length,
@@ -209,7 +214,18 @@ var CanvasUnit = function (x, y) {
 
 CanvasUnit.prototype = {
     toGeo: function() {
-        
+        var gps = new proj4.Proj('EPSG:4326');    //source coordinates will be in Longitude/Latitude, WGS84
+        var cat = new proj4.Proj('EPSG:3785');    //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
+        var ratioX = OLC.map.canvas.x.length / OLC.map.cartesian.x.length,
+            ratioY = OLC.map.canvas.y.length / OLC.map.cartesian.y.length,
+            rX = ((canvasX / OLC.map.canvas.x.reverseFactor) +  - OLC.map.canvas.x.min) / ratioX,
+            rY = ((canvasY / OLC.map.canvas.y.reverseFactor) + OLC.map.canvas.y.max) / ratioY,
+            vY = (rY - (rX * Math.tan(OLC.map.cartesian.rotateDegreeForTransform))) / (Math.sin(OLC.map.cartesian.rotateDegreeForTransform) * Math.tan(OLC.map.cartesian.rotateDegreeForTransform) + 1),
+            vX = (rX / Math.cos(OLC.map.cartesian.rotateDegreeForTransform)) + (vY * Math.sin(OLC.map.cartesian.rotateDegreeForTransform) / Math.cos(OLC.map.cartesian.rotateDegreeForTransform)),
+            cPx = vX + OLC.map.cartesian.zeroPoint.x,
+            cPy = vY + OLC.map.cartesian.zeroPoint.y,
+            gP = proj4.transform(cat, gps, new proj4.toPoint([cPx, cPy]));
+        return new GeoUnit(gP.x, gP.y, 0);
     },
     toArray: function() {
         var ratioX = OLC.map.array.x.length / OLC.map.canvas.x.length,

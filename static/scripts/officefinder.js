@@ -266,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
             canvasLoc = geoLoc.toCanvas();
         console.log(geoLoc.longitude, geoLoc.latitude);
         console.log(canvasLoc);
+        console.log(geoLoc.toArray());
         createPointByCanvasCoordinates(canvasLoc);
     };
     document.querySelector('#setgeo').addEventListener('click', OnClickGPSData);
@@ -439,8 +440,8 @@ document.addEventListener('DOMContentLoaded', function() {
         container3D.addEventListener('click', onDocumentClick, false);
         
         if (OLC) {
-            OLC.setMap('array', 0, 529, 0, 199);
-            OLC.setMap('canvas', -2650, 2650, -1000, 1000);
+            OLC.setMap('array', 0, 529, 0, 199, -1, 1);
+            OLC.setMap('canvas', -2650, 2650, -1000, 1000, -1, 1);
             OLC.setMap('geo', 13.421238, 52.525556, 13.420783, 52.525176, 13.421007, 52.525659);
         }
     };
