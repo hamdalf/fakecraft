@@ -38,6 +38,7 @@ header h1 {
   line-height: 20px;
   color: #fff;
   font-weight: 600;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
 }
 header .topnav {
   position: absolute;
@@ -183,11 +184,22 @@ nav .menus li a.menu3 {
   margin-left: 20px;
 }
 nav .menus li a.menu4 {
-  width: 20px;
+  width: 150px;
   height: 20px;
   position: absolute;
   right: -20vw;
+  top: 10vh;
   color: transparent;
+  text-align: right;
+}
+nav .menus li a.menu5 {
+  width: 150px;
+  height: 20px;
+  position: absolute;
+  right: -20vw;
+  top: 15vh;
+  color: transparent;
+  text-align: right;
 }
 nav .search {
   display: none;
@@ -296,13 +308,14 @@ nav .geoinput {
 }
 #canvasContainer .hint {
   position: absolute;
-  bottom: 115px;
+  bottom: 110px;
   width: 100%;
   text-align: center;
   font-family: 'Open Sans Condensed';
   color: #fff;
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 500;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
 }
 #canvasContainer .floornav {
   position: absolute;
@@ -312,9 +325,9 @@ nav .geoinput {
   list-style: none;
   display: block;
   width: 110px;
-  margin-left: -85px;
+  margin-left: -66px;
   background: rgba(0, 0, 0, 0.3);
-  padding: 10px 30px;
+  padding: 5px 10px;
 }
 #canvasContainer .floornav li {
   list-style: none;
@@ -377,7 +390,7 @@ nav .geoinput {
 }
 #canvasContainer.hedgehop .floornav {
   width: 170px;
-  margin-left: -115px;
+  margin-left: -95px;
 }
 #canvasContainer.hedgehop .floornav li.li-zoomin {
   display: none;
@@ -396,7 +409,7 @@ nav .geoinput {
 }
 #canvasContainer.stratosphere .floornav {
   width: 110px;
-  margin-left: -85px;
+  margin-left: -66px;
 }
 #canvasContainer.stratosphere .floornav li.li-zoomin {
   display: none;
@@ -549,5 +562,6 @@ footer p {
   line-height: 20px;
   color: #fff;
   text-align: center;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }

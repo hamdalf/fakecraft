@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.element.classList.remove('s');
         this.element.classList.remove('g');
         this.element.classList.add('l');
-        document.querySelector('nav span').innerHTML = 'Select a name in the list';
+        document.querySelector('nav span').innerHTML = 'Select a name';
     };
     navigation.geoConverter = function() {
         this.element.classList.remove('s');
@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
             latitude = document.querySelector('#latitude').value,
             geoLoc = new GeoUnit(longitude, latitude, 0),
             canvasLoc = geoLoc.toCanvas();
-        console.log(geoLoc.longitude, geoLoc.latitude);
-        console.log(canvasLoc);
+        //console.log(geoLoc.longitude, geoLoc.latitude);
+        //console.log(canvasLoc);
         createPointByCanvasCoordinates(canvasLoc);
     };
     document.querySelector('#setgeo').addEventListener('click', OnClickGPSData);
@@ -455,8 +455,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (OLC) {
             OLC.setMap('array', 0, 599, 0, 349, 1, -1);
-            OLC.setMap('canvas', -3000, 3000, -1750, 1750, 1, -1);
-            OLC.setMap('geo', 13.373968, 52.498213, 13.374511, 52.499363, 13.374970, 52.498031, -1);
+            OLC.setMap('canvas', -3000, 3000, -1750, 1750, 1, -1, 1, 1);
+            OLC.setMap('geo', 13.373968, 52.498213, 13.374511, 52.499363, 13.374970, 52.498031, 1);
         }
     };
     
@@ -1120,8 +1120,8 @@ document.addEventListener('DOMContentLoaded', function() {
         this.root.add(this.background);
         var btnShape = new THREE.Shape();
         btnShape.moveTo(0, 0);
-        btnShape.lineTo(-8, -4);
-        btnShape.lineTo(8, -4);
+        btnShape.lineTo(-8, -6);
+        btnShape.lineTo(8, -6);
         btnShape.lineTo(0, 0);
         var btnGeo = new THREE.ShapeGeometry(btnShape);
         this.btnUp = new THREE.Mesh(btnGeo, new THREE.MeshBasicMaterial({

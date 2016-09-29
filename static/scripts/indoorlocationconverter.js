@@ -15,7 +15,8 @@ var OLC = {
                 longitude: null,
                 latitude: null
             },
-            rotationDirection: -1 // -1 : clock wise, 1: anti clock wise
+            rotationDirection: 1, // (make virtual horizonalpoint) -1 : to west(left), 1: to east(right)
+            rotationFromGeoToVirtual: 1 // -1: clock wise, 1: anti clock wise 
         },
         cartesian: {
             zeroPoint: null,    // {x:,y:} format
@@ -47,7 +48,7 @@ var OLC = {
                     p13 = Math.sqrt(Math.pow((p1.x - p3.x),2) + Math.pow((p1.y - p3.y),2)),
                     p23 = Math.sqrt(Math.pow((p2.x - p3.x),2) + Math.pow((p2.y - p3.y),2)),
                     resultRadian = Math.acos(((Math.pow(p12, 2)) + (Math.pow(p13, 2)) - (Math.pow(p23, 2))) / (2 * p12 * p13));
-                    
+                    //console.log('getRotationRad', resultRadian);
                 return resultRadian;
             },
             getDistance: function (p1, p2) {
@@ -82,7 +83,9 @@ var OLC = {
                 max: null,
                 length: null,
                 reverseFactor: 1
-            }
+            },
+            virtualXDirection: 1, // (make virtual horizonalpoint) -1 : to west(left), 1: to east(right)
+            virtualYDirection: -1, // (make virtual horizonalpoint) -1 : to south(left), 1: to north(right)
         }
     },
     setMap: function () {
@@ -107,25 +110,39 @@ var OLC = {
                 this.map.cartesian.horizontalPoint = proj4.transform(gps, cat, new proj4.toPoint([this.map.geo.horizontalPoint.longitude, this.map.geo.horizontalPoint.latitude]));
                 this.map.cartesian.verticalPoint = proj4.transform(gps, cat, new proj4.toPoint([this.map.geo.verticalPoint.longitude, this.map.geo.verticalPoint.latitude]));
                 
-                var parallelRotationDirection = this.map.geo.rotationDirection; // -1 : clock wise, 1: anti clock wise
+                var parallelRotationDirection = this.map.geo.rotationDirection; // (make virtual horizonalpoint) -1 : to west(left), 1: to east(right)
                 var tmpParallelPoint = {x: this.map.cartesian.zeroPoint.x + parallelRotationDirection, y: this.map.cartesian.zeroPoint.y};
                 
-                this.map.cartesian.rotateDegreeForTransform = parallelRotationDirection * this.map.cartesian.getRotationRad(this.map.cartesian.zeroPoint, this.map.cartesian.horizontalPoint, tmpParallelPoint);
+                if (parallelRotationDirection > 0) {
+                    if (this.map.cartesian.horizontalPoint.y > tmpParallelPoint.y) {
+                        this.map.geo.rotationFromGeoToVirtual = -1;
+                    } else {
+                        this.map.geo.rotationFromGeoToVirtual = 1;
+                    }
+                } else {
+                    if (this.map.cartesian.horizontalPoint.y > tmpParallelPoint.y) {
+                        this.map.geo.rotationFromGeoToVirtual = 1;
+                    } else {
+                        this.map.geo.rotationFromGeoToVirtual = -1;
+                    }
+                }
+                // get degree from this.map.cartesian.horizontalPoint to tmpParallelPoint
+                this.map.cartesian.rotateDegreeForTransform = this.map.geo.rotationFromGeoToVirtual * this.map.cartesian.getRotationRad(this.map.cartesian.zeroPoint, this.map.cartesian.horizontalPoint, tmpParallelPoint);    // getRotationRad is always plus (> 0)
                 
                 var vX = this.map.cartesian.verticalPoint.x - this.map.cartesian.zeroPoint.x,
                     vY = this.map.cartesian.verticalPoint.y - this.map.cartesian.zeroPoint.y,
                     rX = vX * Math.cos(this.map.cartesian.rotateDegreeForTransform) - vY * Math.sin(this.map.cartesian.rotateDegreeForTransform),
                     rY = vX * Math.sin(this.map.cartesian.rotateDegreeForTransform) + vY * Math.cos(this.map.cartesian.rotateDegreeForTransform);
-                    
+                //console.log('ZZ', this.map.cartesian.zeroPoint);
                 this.map.cartesian.virtualVerticalPoint = {x: rX + this.map.cartesian.zeroPoint.x, y: rY + this.map.cartesian.zeroPoint.y};
-                
+                //console.log('VV', this.map.cartesian.virtualVerticalPoint);
                 vX = this.map.cartesian.horizontalPoint.x - this.map.cartesian.zeroPoint.x;
                 vY = this.map.cartesian.horizontalPoint.y - this.map.cartesian.zeroPoint.y;
                 rX = vX * Math.cos(this.map.cartesian.rotateDegreeForTransform) - vY * Math.sin(this.map.cartesian.rotateDegreeForTransform);
                 rY = vX * Math.sin(this.map.cartesian.rotateDegreeForTransform) + vY * Math.cos(this.map.cartesian.rotateDegreeForTransform);
                     
                 this.map.cartesian.virtualHorizontalPoint = {x: rX + this.map.cartesian.zeroPoint.x, y: rY + this.map.cartesian.zeroPoint.y};
-                
+                //console.log('VH', this.map.cartesian.virtualHorizontalPoint);
                 var xMin = Math.min(this.map.cartesian.virtualHorizontalPoint.x, this.map.cartesian.zeroPoint.x),
                     xMax = Math.max(this.map.cartesian.virtualHorizontalPoint.x, this.map.cartesian.zeroPoint.x),
                     yMin = Math.min(this.map.cartesian.virtualVerticalPoint.y, this.map.cartesian.zeroPoint.y),
@@ -153,6 +170,8 @@ var OLC = {
                 this.map.canvas.y.max = arguments[4];
                 this.map.canvas.x.reverseFactor = arguments[5];
                 this.map.canvas.y.reverseFactor = arguments[6];
+                this.map.canvas.virtualXDirection = arguments[7];
+                this.map.canvas.virtualYDirection = arguments[8];
                 this.map.canvas.x.length = this.map.canvas.x.max - this.map.canvas.x.min;
                 this.map.canvas.y.length = this.map.canvas.y.max - this.map.canvas.y.min;
                 break;
@@ -181,9 +200,25 @@ GeoUnit.prototype = {
             vY = cP.y - OLC.map.cartesian.zeroPoint.y,
             rX = vX * Math.cos(OLC.map.cartesian.rotateDegreeForTransform) - vY * Math.sin(OLC.map.cartesian.rotateDegreeForTransform),
             rY = vX * Math.sin(OLC.map.cartesian.rotateDegreeForTransform) + vY * Math.cos(OLC.map.cartesian.rotateDegreeForTransform),
-            canvasX = ((rX * ratioX) - OLC.map.canvas.x.max) * OLC.map.canvas.x.reverseFactor,
-            canvasY = ((rY * ratioY) - OLC.map.canvas.y.min) * OLC.map.canvas.y.reverseFactor;
-            console.log(rX * ratioX, rY * ratioY);
+            canvasX, canvasY;
+
+            if (OLC.map.geo.rotationFromGeoToVirtual < 0) {
+                if (OLC.map.geo.rotationDirection > 0) {
+                    if (OLC.map.canvas.x.reverseFactor > 0) {
+                        canvasX = ((rX * ratioX) - OLC.map.canvas.x.max) * OLC.map.canvas.x.reverseFactor;
+                    } else {
+                        canvasX = ((rX * ratioX) - OLC.map.canvas.x.min) * OLC.map.canvas.x.reverseFactor;
+                    }
+                    if (OLC.map.canvas.y.reverseFactor > 0) {
+                        canvasY = ((rY * ratioY) - OLC.map.canvas.y.max) * OLC.map.canvas.y.reverseFactor;
+                    } else {
+                        canvasY = ((rY * ratioY) - OLC.map.canvas.y.min) * OLC.map.canvas.y.reverseFactor;
+                    }
+                }
+            } else {
+
+            }
+            //console.log('* ratio: ', rX * ratioX, rY * ratioY);
         return new CanvasUnit(canvasX, canvasY);
     }
 };
