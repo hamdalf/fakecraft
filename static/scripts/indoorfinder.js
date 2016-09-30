@@ -811,6 +811,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (this.moveType === 'forwardtopoint' || this.moveType === 'backwardtopoint') {
                 //camera.lookAt(this.spinPoint);
                 //this.finalPosition = null;
+                //this.setPosition(this.finalPosition.x, this.finalPosition.y, this.finalPosition.z);
+                //console.log(this.finalPosition, originCameraPosition);
             }
             this.finalPosition = null;
             
@@ -821,6 +823,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 planeNav.show();
             }
             
+            distanceFromMap = Math.sqrt(camera.position.x * camera.position.x + camera.position.y * camera.position.y + camera.position.z * camera.position.z);
             if (distanceFromMap < this.heightMax) {
                 container3D.classList.remove('stratosphere');
             } else {
