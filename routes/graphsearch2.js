@@ -156,6 +156,7 @@ GraphSearch.prototype = {
         var x1 = parseInt(x1),
             y1 = parseInt(y1),
             x, y, tmpLmt;
+            console.log('find nearest point: ' + x1 + ', ' + y1);
         for (var l = 0; l < 50; l++) {
             //console.log(l);
             x = (x1 - l >= 0) ? x1 - l : 0;

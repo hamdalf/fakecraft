@@ -33,7 +33,11 @@ router.route('/passfinder/:space/:floor/:x1/:y1/:x2/:y2').all(function(req, res,
         console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
     }
 
+    try {
     var path = aGraph.astar.search(aGraph.graph, startPoint, endPoint, {closest: false});
+    } catch(ex) {
+        console.log(ex);
+    }
     
     res.json(path);
     res.end();
