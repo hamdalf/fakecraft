@@ -124,7 +124,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (this.status == 200) {
                 console.log(this.response);
                 var robotInfo = this.response;
-                popup.msg('[' + robotInfo.routes[0].x + ',' + robotInfo.routes[0].y + '] ~ [' + robotInfo.routes[robotInfo.routes.length-1].x + ',' + robotInfo.routes[robotInfo.routes.length-1].y + ']');
+                popup.msg('[' + robotInfo.routes[0].x + ',' + robotInfo.routes[0].y + '] ~ [' + robotInfo.routes[robotInfo.routes.length-1].x + ',' + robotInfo.routes[robotInfo.routes.length-1].y + ']', function(robotInfo) {
+                    return function() {
+                        setRobotPosition(robotInfo.id, robotInfo.position.f, robotInfo.routes[robotInfo.routes.length-1].x, robotInfo.routes[robotInfo.routes.length-1].y, robotInfo.direction);
+                    }
+                }(robotInfo));
                 popup.show();
 			}
 		};
@@ -258,8 +262,15 @@ document.addEventListener('DOMContentLoaded', function() {
         hide: function() {
             this.element.style.display = 'none';
         },
-        msg: function(str) {
+        msg: function(str, callback) {
             this.element.querySelector('p').innerHTML = str;
+            this.element.querySelector('p').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                callback();
+                popup.hide();
+            });
         }
     };
     popup.element.querySelector('.btnClose').addEventListener('click', function(e) {
