@@ -6,7 +6,7 @@ var PathFinder2 = {
     graphSearchs: {},
     latestVersion: {
         'indoor': {
-            floor: '1474228896186',
+            floor: '1475237203275',
             desks: 'object_1473562024295',
             folder: 'indoor',
             optimized: true,
