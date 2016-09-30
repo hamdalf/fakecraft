@@ -13,6 +13,10 @@ var cubePattern = {
 		2: {
 			shading: THREE.FlatShading,
 			color: new THREE.Color().setRGB(0.5, 0.5, 0.5)
+		},
+		3: {
+			shading: THREE.FlatShading,
+			color: new THREE.Color().setRGB(0.45, 0.7, 0.15)
 		}
 	},
 	wall: {

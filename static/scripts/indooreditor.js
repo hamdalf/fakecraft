@@ -298,6 +298,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			case '7'.charCodeAt(0):
 				setCubeType('path', 0);
 				break;
+			case '8'.charCodeAt(0):
+				setCubeType('floor', 3);
+				break;
 			case 'A'.charCodeAt(0):
 				isADown = true;
 				break;

@@ -110,14 +110,14 @@ RobotCenter.moveRobot = function(id, floor, x, y) {
             endPoint = aGraph.graph.grid[x][y];
 
         if (aGraph.graph.grid[x][y].weight == 0) {
-            console.log(x, y);
+            //console.log(x, y);
             var safePoint = aGraph.getNearestPoint(x, y);
             endPoint = aGraph.graph.grid[safePoint.x][safePoint.y];
-            console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
+            //console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
         }
 
         var path = aGraph.astar.search(aGraph.graph, startPoint, endPoint, {closest: false});
-
+        console.log('move robot:' + path.length);
         aRobot.routes = path;
         return aRobot;
     }
