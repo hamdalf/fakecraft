@@ -1605,6 +1605,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 var robot = JSON.parse(this.responseText);
                 if (robot.result == false) {
                     alert('All robots are busy now. Please try later.');
+                } else if (robot.routes.length == 0) {
+                    alert('Server memory resource is not enough.');
                 } else {
                     createRoute(robot.routes, robot.id, {color: 0x0072c6});
                 }

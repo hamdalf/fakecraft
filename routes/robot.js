@@ -141,7 +141,7 @@ RobotCenter.moveRobotInSpace = function(id, space, floor, x, y) {
             console.log('Change Goal: ' + safePoint.x + '/' + safePoint.y);
         }
 
-        var path = aGraph.astar.search(aGraph.graph, startPoint, endPoint, {closest: false});
+        var path = aGraph.astar.search(aGraph.graph, startPoint, endPoint, {closest: true});
 
         aRobot.routes = path;
         return aRobot;
