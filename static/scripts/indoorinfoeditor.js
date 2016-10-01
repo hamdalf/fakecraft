@@ -1,5 +1,7 @@
 var defaultWidth = 600,		// 605
     defaultHeight = 350;	// 346
+// for user list
+var selectedDeskId, userData;
 
 document.addEventListener('DOMContentLoaded', function() {
 	if (!Detector.webgl) {
@@ -316,13 +318,17 @@ document.addEventListener('DOMContentLoaded', function() {
             numGeo = geometries.length,
             mesh, geo;
         for (var i = 0; i < numGeo; i++) {
-            geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
-            mesh = new THREE.Mesh(geo.geometry, cubeMaterials[geometries[i].p][geometries[i].t]);
-            mesh.position.x = geometries[i].x;
-			mesh.position.y = geometries[i].y;
-			mesh.position.z = geometries[i].z;
-            mesh.name = 'map';
-            scene.add(mesh);
+            try {
+                geo = THREE.JSONLoader.prototype.parse(geometries[i].g.data);
+                mesh = new THREE.Mesh(geo.geometry, cubeMaterials[geometries[i].p][geometries[i].t]);
+                mesh.position.x = geometries[i].x;
+                mesh.position.y = geometries[i].y;
+                mesh.position.z = geometries[i].z;
+                mesh.name = 'map';
+                scene.add(mesh);
+            } catch(ex) {
+                console.log(ex);
+            }
         }
     };
 
@@ -592,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	animate();
 
     // for user list
-    var selectedDeskId, userData;
+    //var selectedDeskId, userData;
     
     var findUserDataById = function(id) {
         var result = null;
