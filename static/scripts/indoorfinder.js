@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //tmpCameraClone.translateX(window.innerWidth / 11);
         //tmpCameraClone.translateY(-(window.innerHeight / 12));
         tmpCameraClone.translateX(120);
-        tmpCameraClone.translateY(-30);
+        tmpCameraClone.translateY(-10);
         this.root.position.copy(tmpCameraClone.position);
         this.root.updateMatrix();
     };
