@@ -1193,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tmpCameraClone.position.set(obj.position.x, obj.position.y, obj.position.z);
         tmpCameraClone.translateZ(-500);
         tmpCameraClone.translateX(window.innerWidth / 11);
-        tmpCameraClone.translateY(-(window.innerHeight / 12));
+        tmpCameraClone.translateY(-(window.innerHeight / 14));
         this.root.position.copy(tmpCameraClone.position);
         this.root.updateMatrix();
     };
